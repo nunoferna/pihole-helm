@@ -1,0 +1,28 @@
+apiVersion: v2
+name: pihole
+description: Enterprise-grade Pi-hole v6 Helm Chart with full FTL configuration support.
+type: application
+version: 1.2.0
+appVersion: "2024.03.2"
+kubeVersion: ">=1.23.0"
+keywords:
+  - pihole
+  - dns
+  - adblock
+  - dhcp
+  - monitoring
+home: https://github.com/pi-hole/docker-pi-hole
+icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
+sources:
+  - https://github.com/pi-hole/docker-pi-hole
+maintainers:
+  - name: Nuno Fernandes
+    email: nuno.o.fernandes@outlook.pt
+annotations:
+  artifacthub.io/category: security
+  artifacthub.io/license: MIT
+  artifacthub.io/images: |
+    - name: pihole
+      image: pihole/pihole:latest
+    - name: pihole-exporter
+      image: ekofr/pihole-exporter:v1.0.0

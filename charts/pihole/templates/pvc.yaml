@@ -1,0 +1,29 @@
+{{- if .Values.persistence.etcPihole.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-etc-pihole
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.etcPihole.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.etcPihole.size }}
+---
+{{- end }}
+{{- if .Values.persistence.etcDnsmasq.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-etc-dnsmasq
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.etcDnsmasq.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.etcDnsmasq.size }}
+{{- end }}

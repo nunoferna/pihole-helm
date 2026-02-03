@@ -1,0 +1,86 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "pihole": {
+            "type": "object",
+            "properties": {
+                "ftl": {
+                    "type": "object",
+                    "properties": {
+                        "dns": {
+                            "type": "object",
+                            "properties": {
+                                "upstreams": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "listeningMode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ALL",
+                                        "LOCAL",
+                                        "SINGLE",
+                                        "BIND"
+                                    ]
+                                },
+                                "blocking": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "mode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "NULL",
+                                                "IP",
+                                                "NX",
+                                                "NODATA",
+                                                "IP_NODATA_AAAA"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "ntp": {
+                            "type": "object"
+                        },
+                        "webserver": {
+                            "type": "object"
+                        },
+                        "dhcp": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "serviceDns": {
+            "type": "object",
+            "required": [
+                "enabled",
+                "type"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "networking": {
+            "type": "object",
+            "properties": {
+                "hostNetwork": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

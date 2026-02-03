@@ -1,0 +1,301 @@
+# ------------------------------------------------------------------------------
+# GLOBAL & IMAGE SETTINGS
+# ------------------------------------------------------------------------------
+image:
+  repository: pihole/pihole
+  pullPolicy: IfNotPresent
+  tag: "" # Defaults to appVersion
+
+timezone: "UTC"
+
+# ------------------------------------------------------------------------------
+# PI-HOLE FTL CONFIGURATION (COMPLETE)
+# ------------------------------------------------------------------------------
+pihole:
+  # Web Password logic (Kubernetes specific helper)
+  web:
+    password: ""
+    passwordSecretKey: "password"
+    existingSecret: ""
+
+  # FTL Configuration
+  # Maps directly to pihole-FTL.toml structure
+  # Reference: https://docs.pi-hole.net/ftldns/configfile/
+  ftl:
+    # [dns]
+    dns:
+      upstreams: ["8.8.8.8", "1.1.1.1"]
+      listeningMode: "ALL"
+      port: 53
+      queryLogging: true
+      ignoreLocalhost: false
+      dnssec: false
+      bogusPriv: true
+      domainNeeded: false
+      blockESNI: true
+      CNAMEdeepInspect: true
+      EDNS0ECS: true
+      showDNSSEC: true
+      analyzeOnlyAandAAAA: false
+      piholePTR: "PI.HOLE"
+      replyWhenBusy: "ALLOW"
+      blockTTL: 2
+      localise: true
+
+      # Custom arrays
+      hosts: []
+      cnameRecords: []
+      revServers: []
+
+      cache:
+        size: 10000
+        optimizer: 3600
+        upstreamBlockedTTL: 86400
+
+      blocking:
+        active: true
+        mode: "NULL"
+        edns: "TEXT"
+
+      domain:
+        name: "lan"
+        local: true
+
+      rateLimit:
+        count: 1000
+        interval: 60
+
+      specialDomains:
+        mozillaCanary: true
+        iCloudPrivateRelay: true
+        designatedResolver: true
+
+      reply:
+        host:
+          force4: false
+          IPv4: ""
+          force6: false
+          IPv6: ""
+        blocking:
+          force4: false
+          IPv4: ""
+          force6: false
+          IPv6: ""
+
+    # [ntp]
+    ntp:
+      ipv4:
+        active: true
+        address: ""
+      ipv6:
+        active: true
+        address: ""
+      sync:
+        active: true
+        server: "pool.ntp.org"
+        interval: 3600
+        count: 8
+        rtc:
+          set: false
+          device: "/dev/rtc0"
+          utc: true
+
+    # [resolver]
+    resolver:
+      resolveIPv4: true
+      resolveIPv6: true
+      networkNames: true
+      refreshNames: "IPV4_ONLY"
+
+    # [database]
+    database:
+      DBimport: true
+      maxDBdays: 91
+      DBinterval: 60
+      useWAL: true
+      network:
+        parseARPcache: true
+        expire: 91
+
+    # [dhcp]
+    dhcp:
+      active: false
+      start: ""
+      end: ""
+      router: ""
+      netmask: "255.255.255.0"
+      leaseTime: "24h"
+      ipv6: false
+      rapidCommit: false
+      multiDNS: false
+      logging: false
+      ignoreUnknownClients: false
+      hosts: []
+
+    # [webserver]
+    webserver:
+      domain: "pi.hole"
+      acl: ""
+      port: "80o,443os,[::]:80o,[::]:443os"
+      threads: 50
+      serve_all: false
+      headers:
+        - "X-DNS-Prefetch-Control: off"
+        - "Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+        - "X-Frame-Options: DENY"
+        - "X-XSS-Protection: 0"
+        - "X-Content-Type-Options: nosniff"
+        - "Referrer-Policy: strict-origin-when-cross-origin"
+      advancedOpts: []
+
+      session:
+        timeout: 1800
+        restore: true
+
+      tls:
+        cert: "/etc/pihole/tls.pem"
+        validity: 47
+
+      paths:
+        webroot: "/var/www/html"
+        webhome: "/admin/"
+        prefix: ""
+
+      interface:
+        boxed: true
+        theme: "default-auto"
+
+      api:
+        max_sessions: 16
+        prettyJSON: false
+        pwhash: ""
+        totp_secret: ""
+        app_pwhash: ""
+        app_sudo: false
+        cli_pw: true
+        excludeClients: []
+        excludeDomains: []
+        maxHistory: 86400
+        maxClients: 10
+        client_history_global_max: true
+        allow_destructive: true
+        temp:
+          limit: 60.0
+          unit: "C"
+
+    # [files]
+    files:
+      pid: "/run/pihole-FTL.pid"
+      database: "/etc/pihole/pihole-FTL.db"
+      gravity: "/etc/pihole/gravity.db"
+      gravity_tmp: "/tmp"
+      macvendor: "/etc/pihole/macvendor.db"
+      pcap: ""
+      log:
+        ftl: "/var/log/pihole/FTL.log"
+        dnsmasq: "/var/log/pihole/pihole.log"
+        webserver: "/var/log/pihole/webserver.log"
+
+    # [misc]
+    misc:
+      privacylevel: 0
+      delay_startup: 0
+      nice: -10
+      addr2line: true
+      etc_dnsmasq_d: false
+      dnsmasq_lines: []
+      extraLogging: false
+      readOnly: false
+      normalizeCPU: true
+      hide_dnsmasq_warn: false
+      check:
+        load: true
+        shmem: 90
+        disk: 90
+
+  # Custom IDs
+  uid: 1000
+  gid: 1000
+
+# ------------------------------------------------------------------------------
+# NETWORKING
+# ------------------------------------------------------------------------------
+networking:
+  hostNetwork: false
+
+# ------------------------------------------------------------------------------
+# SERVICES
+# ------------------------------------------------------------------------------
+serviceDns:
+  enabled: true
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    tcp: 53
+    udp: 53
+
+serviceWeb:
+  enabled: true
+  type: ClusterIP
+  ports:
+    http: 80
+    https: 443
+
+serviceDhcp:
+  enabled: false
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    dhcp: 67
+
+# ------------------------------------------------------------------------------
+# PERSISTENCE
+# ------------------------------------------------------------------------------
+persistence:
+  etcPihole:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 500Mi
+  etcDnsmasq:
+    enabled: false
+    accessMode: ReadWriteOnce
+    size: 100Mi
+
+# ------------------------------------------------------------------------------
+# METRICS
+# ------------------------------------------------------------------------------
+metrics:
+  enabled: true
+  image:
+    repository: ekofr/pihole-exporter
+    tag: v1.0.0
+  port: 9617
+
+# ------------------------------------------------------------------------------
+# SECURITY
+# ------------------------------------------------------------------------------
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
+      - SYS_TIME
+
+networkPolicy:
+  enabled: false
+  webAllowFrom: []
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+resources:
+  limits:
+    memory: 256Mi
+    cpu: 200m
+  requests:
+    memory: 128Mi
+    cpu: 100m
+
+affinity: {}
+nodeSelector: {}
+tolerations: []

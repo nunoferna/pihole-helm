@@ -1,0 +1,20 @@
+{{- if .Values.serviceDhcp.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pihole.fullname" . }}-dhcp
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.serviceDhcp.annotations | nindent 4 }}
+spec:
+  type: {{ .Values.serviceDhcp.type }}
+  externalTrafficPolicy: {{ .Values.serviceDhcp.externalTrafficPolicy }}
+  ports:
+    - port: {{ .Values.serviceDhcp.ports.dhcp }}
+      targetPort: dhcp
+      protocol: UDP
+      name: dhcp
+  selector:
+    {{- include "pihole.selectorLabels" . | nindent 4 }}
+{{- end }}

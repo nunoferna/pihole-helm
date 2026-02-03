@@ -1,0 +1,23 @@
+{{- if .Values.serviceWeb.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pihole.fullname" . }}-web
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.serviceWeb.annotations | nindent 4 }}
+spec:
+  type: {{ .Values.serviceWeb.type }}
+  ports:
+    - port: {{ .Values.serviceWeb.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.serviceWeb.ports.https }}
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    {{- include "pihole.selectorLabels" . | nindent 4 }}
+{{- end }}
