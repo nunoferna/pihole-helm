@@ -280,12 +280,26 @@ persistence:
 metrics:
   enabled: false
   image:
-    repository: bazmonk/pihole6_exporter
+    repository: ekofr/pihole-exporter
     tag: latest
     pullPolicy: IfNotPresent
-  port: 9666
-  host: "127.0.0.1"
-  # authKey: ""  # Optional: App password for authentication (not session ID)
+  port: 9617
+  env:
+    - name: PIHOLE_HOSTNAME
+      value: "127.0.0.1"
+    - name: PIHOLE_PORT
+      value: "80"
+    - name: INTERVAL
+      value: "10s"
+    # Uncomment to use password authentication:
+    # - name: PIHOLE_PASSWORD
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: pihole-secret
+    #       key: password
+    # Or use API token (WEBPASSWORD from /etc/pihole/setupVars.conf):
+    # - name: PIHOLE_API_TOKEN
+    #   value: "your-api-token-here"
   resources:
     limits:
       memory: 64Mi

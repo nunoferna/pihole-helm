@@ -50,7 +50,7 @@ Namespace: {{ .Release.Namespace }}
 📊 Monitoring
 ------------------------------------------------------------------------------
 {{- if .Values.metrics.enabled }}
-  ✓ Prometheus exporter (pihole6_exporter) enabled on port {{ .Values.metrics.port }}
+  ✓ Prometheus exporter (ekofr/pihole-exporter) enabled on port {{ .Values.metrics.port }}
   {{- if .Values.metrics.serviceMonitor.enabled }}
   ✓ ServiceMonitor created for auto-discovery
   {{- else }}
@@ -58,7 +58,7 @@ Namespace: {{ .Release.Namespace }}
   {{- end }}
 {{- else }}
   ! Metrics disabled - set metrics.enabled=true to enable monitoring
-  ! Note: Requires Docker image of bazmonk/pihole6_exporter
+  ! Note: Configure authentication via PIHOLE_PASSWORD or PIHOLE_API_TOKEN in values.yaml
 {{- end }}
 
 ------------------------------------------------------------------------------

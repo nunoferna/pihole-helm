@@ -430,19 +430,14 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
-        # METRICS SIDECAR (pihole6_exporter)
+        # METRICS SIDECAR (ekofr/pihole-exporter)
         {{- if .Values.metrics.enabled }}
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
-          args:
-            - "-H"
-            - {{ .Values.metrics.host | quote }}
-            - "-p"
-            - {{ .Values.metrics.port | quote }}
-            {{- if .Values.metrics.authKey }}
-            - "-k"
-            - {{ .Values.metrics.authKey | quote }}
+          env:
+            {{- if .Values.metrics.env }}
+            {{- toYaml .Values.metrics.env | nindent 12 }}
             {{- end }}
           ports:
             - name: metrics
