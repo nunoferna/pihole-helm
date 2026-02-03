@@ -7,7 +7,9 @@ on:
     branches:
       - main
     paths:
-      - "charts/**"
+      - "Chart.yaml"
+      - "values.yaml"
+      - "templates/**"
 
 jobs:
   release:
@@ -45,6 +47,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         with:
           skip_existing: true
+          charts_dir: .
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
