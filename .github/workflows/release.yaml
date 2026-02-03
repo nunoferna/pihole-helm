@@ -1,6 +1,7 @@
 name: Release Charts
 
-permissions: {}
+permissions:
+  contents: read
 
 on:
   push:
@@ -13,9 +14,8 @@ jobs:
   release:
     if: github.repository == 'nunoferna/pihole-helm'
     permissions:
-      contents: write # to push chart release and create a release
-      packages: write # to push OCI chart package to GitHub Registry
-      id-token: write # needed for keyless signing
+      contents: write
+      packages: write
 
     runs-on: ubuntu-latest
     steps:
@@ -34,12 +34,21 @@ jobs:
         with:
           version: v4.1.0
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.7.0
-
-      - name: Install helm-sigstore plugin
+      # The GitHub repository secret `PGP_PRIVATE_KEY` contains the private key
+      # in ASCII-armored format. To export a (new) key, run this command:
+      # `gpg --armor --export-secret-key <my key>`
+      - name: Prepare PGP key
         run: |
-          helm plugin install https://github.com/sigstore/helm-sigstore --verify=false
+          IFS=""
+          echo "$PGP_PRIVATE_KEY" | gpg --dearmor > $HOME/secring.gpg
+          echo "$PGP_PASSPHRASE" > $HOME/passphrase.txt
+
+          # Tell chart-releaser-action where to find the key and its passphrase
+          echo "CR_KEYRING=$HOME/secring.gpg" >> "$GITHUB_ENV"
+          echo "CR_PASSPHRASE_FILE=$HOME/passphrase.txt" >> "$GITHUB_ENV"
+        env:
+          PGP_PRIVATE_KEY: "${{ secrets.PGP_PRIVATE_KEY }}"
+          PGP_PASSPHRASE: "${{ secrets.PGP_PASSPHRASE }}"
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
@@ -49,30 +58,19 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_GENERATE_RELEASE_NOTES: true
 
-      - name: Login to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push and sign charts to GHCR with Sigstore
+      - name: Push charts to GHCR
         run: |
           shopt -s nullglob
           for pkg in .cr-release-packages/*.tgz; do
             if [ -z "${pkg:-}" ]; then
               break
             fi
-            # Extract chart name and version from package filename
-            # Format: chartname-version.tgz
-            pkg_file=$(basename "${pkg}")
-            pkg_name="${pkg_file%-*}"
-            pkg_version="${pkg_file#*-}"
-            pkg_version="${pkg_version%.tgz}"
-            
-            # Push chart to OCI registry
             helm push "${pkg}" oci://ghcr.io/${{ github.repository_owner }}/charts
-            
-            # Sign OCI chart with Cosign (keyless signing)
-            cosign sign --yes "ghcr.io/${{ github.repository_owner }}/charts/${pkg_name}:${pkg_version}"
           done
