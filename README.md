@@ -16,7 +16,7 @@ This repository contains an enterprise-grade Helm chart for Pi-hole, a network-w
 - **🔌 Split Services**: Dedicated LoadBalancer for DNS, ClusterIP for Web UI, optional DHCP service
 - **💾 Persistent Storage**: Data persistence for `/etc/pihole` and `/etc/dnsmasq.d`
 - **🔒 Security Features**: NetworkPolicy support, Pod Disruption Budget, and configurable security contexts
-- **🔐 Keyless Signing**: Charts are signed with Sigstore/Cosign for supply chain security
+- **🔐 GPG Signing**: Charts are signed with GPG for supply chain security
 - **📦 Multiple Distribution Methods**: Available via GitHub Releases and GitHub Container Registry (OCI)
 
 ## Quick Start
@@ -45,7 +45,7 @@ helm install pihole pihole-helm/pihole \
 
 ```bash
 # Install from GitHub Container Registry
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 1.2.0
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 1.5.0
 ```
 
 ## Configuration
@@ -149,8 +149,8 @@ The exporter provides comprehensive metrics including DNS queries, blocked ads, 
 ## Chart Versioning
 
 This chart follows [Semantic Versioning](https://semver.org/):
-- **Chart Version**: Version of the Helm chart itself (e.g., `1.2.0`)
-- **App Version**: Version of Pi-hole container (e.g., `2024.03.2`)
+- **Chart Version**: Version of the Helm chart itself (e.g., `1.5.0`)
+- **App Version**: Version of Pi-hole container (e.g., `2025.1.1`)
 
 ## Requirements
 
@@ -161,15 +161,18 @@ This chart follows [Semantic Versioning](https://semver.org/):
 
 ### Chart Signing
 
-All chart releases are automatically signed using Sigstore/Cosign with keyless signing. This ensures chart authenticity and integrity.
+All chart releases are automatically signed using GPG. This ensures chart authenticity and integrity.
+
+The GPG public key is available at: https://nunoferna.github.io/pihole-helm/pubkey.gpg
 
 To verify a chart signature:
 ```bash
-# Install the helm-sigstore plugin
-helm plugin install https://github.com/sigstore/helm-sigstore
+# Import the public key
+curl -L https://nunoferna.github.io/pihole-helm/pubkey.gpg | gpg --import
 
-# Verify OCI chart
-cosign verify ghcr.io/nunoferna/charts/pihole:1.2.0
+# Download and verify a chart
+helm pull pihole-helm/pihole --version 1.5.0
+helm verify pihole-1.5.0.tgz
 ```
 
 ### NetworkPolicy
@@ -208,10 +211,10 @@ This repository uses GitHub Actions for automated releases:
 1. Chart changes are pushed to the `main` branch
 2. GitHub Actions workflow automatically:
    - Packages the chart
-   - Creates a GitHub Release
+   - Signs it with GPG
+   - Creates a GitHub Release with provenance files
    - Pushes to GitHub Pages (Helm repository)
    - Pushes to GitHub Container Registry (OCI)
-   - Signs charts with Cosign
 
 ## Contributing
 
