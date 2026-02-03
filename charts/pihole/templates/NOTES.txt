@@ -1,0 +1,94 @@
+{{- $webPassword := "" }}
+{{- if .Values.pihole.web.existingSecret }}
+  {{- $webPassword = "(from existing secret)" }}
+{{- else if .Values.pihole.web.password }}
+  {{- $webPassword = .Values.pihole.web.password }}
+{{- else }}
+  {{- $webPassword = "(auto-generated)" }}
+{{- end }}
+
+****************************************************************************
+*** Pi-hole v6 has been deployed! ***
+****************************************************************************
+
+Chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+------------------------------------------------------------------------------
+🌐 Web Interface Access
+------------------------------------------------------------------------------
+{{- if eq .Values.serviceWeb.type "LoadBalancer" }}
+  Run this to get the LoadBalancer IP:
+  export WEB_IP=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "http://$WEB_IP/admin/"
+{{- else if eq .Values.serviceWeb.type "NodePort" }}
+  export NODE_PORT=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+  export NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+  echo "http://$NODE_IP:$NODE_PORT/admin/"
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "pihole.fullname" . }}-web 8080:80
+  Then visit: http://localhost:8080/admin/
+{{- end }}
+
+  Password: {{ $webPassword }}
+
+------------------------------------------------------------------------------
+🔍 DNS Service Access
+------------------------------------------------------------------------------
+{{- if .Values.serviceDns.enabled }}
+{{- if eq .Values.serviceDns.type "LoadBalancer" }}
+  DNS Server IP (LoadBalancer):
+  kubectl get svc {{ include "pihole.fullname" . }}-dns -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+{{- else }}
+  Service Type: {{ .Values.serviceDns.type }}
+  Service Name: {{ include "pihole.fullname" . }}-dns
+{{- end }}
+{{- end }}
+
+------------------------------------------------------------------------------
+📊 Monitoring
+------------------------------------------------------------------------------
+{{- if .Values.metrics.enabled }}
+  ✓ Prometheus exporter (pihole6_exporter) enabled on port {{ .Values.metrics.port }}
+  {{- if .Values.metrics.serviceMonitor.enabled }}
+  ✓ ServiceMonitor created for auto-discovery
+  {{- else }}
+  ! ServiceMonitor disabled - set metrics.serviceMonitor.enabled=true to enable
+  {{- end }}
+{{- else }}
+  ! Metrics disabled - set metrics.enabled=true to enable monitoring
+  ! Note: Requires Docker image of bazmonk/pihole6_exporter
+{{- end }}
+
+------------------------------------------------------------------------------
+💾 Persistence
+------------------------------------------------------------------------------
+  /etc/pihole: {{ if .Values.persistence.etcPihole.enabled }}✓ Enabled ({{ .Values.persistence.etcPihole.size }}){{ else }}✗ Disabled{{ end }}
+  /etc/dnsmasq.d: {{ if .Values.persistence.etcDnsmasq.enabled }}✓ Enabled ({{ .Values.persistence.etcDnsmasq.size }}){{ else }}✗ Disabled{{ end }}
+
+------------------------------------------------------------------------------
+🔐 Security
+------------------------------------------------------------------------------
+  Network Policy: {{ if .Values.networkPolicy.enabled }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+  Host Network: {{ if .Values.networking.hostNetwork }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+  PDB: {{ if .Values.podDisruptionBudget.enabled }}✓ Enabled (minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}){{ else }}✗ Disabled{{ end }}
+
+------------------------------------------------------------------------------
+📝 Configuration
+------------------------------------------------------------------------------
+  Upstream DNS: {{ .Values.pihole.ftl.dns.upstreams | join ", " }}
+  Query Logging: {{ .Values.pihole.ftl.dns.queryLogging }}
+  DHCP: {{ if .Values.pihole.ftl.dhcp.active }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+  DNSSEC: {{ if .Values.pihole.ftl.dns.dnssec }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+
+------------------------------------------------------------------------------
+📚 Documentation
+------------------------------------------------------------------------------
+  Chart Documentation: https://github.com/pi-hole/docker-pi-hole
+  Pi-hole FTL Config: https://docs.pi-hole.net/ftldns/configfile/
+
+To get the password secret:
+  kubectl get secret {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }} -n {{ .Release.Namespace }} -o jsonpath='{.data.{{ .Values.pihole.web.passwordSecretKey }}}' | base64 -d
+
+****************************************************************************

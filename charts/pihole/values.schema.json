@@ -1,21 +1,77 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
+    "required": [
+        "pihole"
+    ],
     "properties": {
+        "image": {
+            "type": "object",
+            "required": [
+                "repository",
+                "pullPolicy"
+            ],
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "timezone": {
+            "type": "string"
+        },
         "pihole": {
             "type": "object",
+            "required": [
+                "ftl"
+            ],
             "properties": {
+                "web": {
+                    "type": "object",
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "passwordSecretKey": {
+                            "type": "string"
+                        },
+                        "existingSecret": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "ftl": {
                     "type": "object",
                     "properties": {
                         "dns": {
                             "type": "object",
+                            "required": [
+                                "upstreams"
+                            ],
                             "properties": {
                                 "upstreams": {
                                     "type": "array",
                                     "items": {
                                         "type": "string"
-                                    }
+                                    },
+                                    "minItems": 1
                                 },
                                 "listeningMode": {
                                     "type": "string",
@@ -25,6 +81,17 @@
                                         "SINGLE",
                                         "BIND"
                                     ]
+                                },
+                                "port": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 65535
+                                },
+                                "queryLogging": {
+                                    "type": "boolean"
+                                },
+                                "dnssec": {
+                                    "type": "boolean"
                                 },
                                 "blocking": {
                                     "type": "object",
@@ -41,6 +108,18 @@
                                                 "NODATA",
                                                 "IP_NODATA_AAAA"
                                             ]
+                                        },
+                                        "edns": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "cache": {
+                                    "type": "object",
+                                    "properties": {
+                                        "size": {
+                                            "type": "integer",
+                                            "minimum": 0
                                         }
                                     }
                                 }
@@ -50,12 +129,74 @@
                             "type": "object"
                         },
                         "webserver": {
-                            "type": "object"
+                            "type": "object",
+                            "properties": {
+                                "port": {
+                                    "type": "string"
+                                },
+                                "domain": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "dhcp": {
+                            "type": "object",
+                            "properties": {
+                                "active": {
+                                    "type": "boolean"
+                                }
+                            }
+                        },
+                        "database": {
                             "type": "object"
+                        },
+                        "resolver": {
+                            "type": "object"
+                        },
+                        "files": {
+                            "type": "object"
+                        },
+                        "misc": {
+                            "type": "object",
+                            "properties": {
+                                "privacylevel": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 3
+                                }
+                            }
                         }
                     }
+                },
+                "uid": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "gid": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "annotations": {
+                    "type": "object"
+                }
+            }
+        },
+        "networking": {
+            "type": "object",
+            "properties": {
+                "hostNetwork": {
+                    "type": "boolean"
                 }
             }
         },
@@ -70,17 +211,145 @@
                     "type": "boolean"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "ClusterIP",
+                        "NodePort",
+                        "LoadBalancer"
+                    ]
+                },
+                "externalTrafficPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Local",
+                        "Cluster"
+                    ]
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "ports": {
+                    "type": "object",
+                    "properties": {
+                        "tcp": {
+                            "type": "integer"
+                        },
+                        "udp": {
+                            "type": "integer"
+                        }
+                    }
                 }
             }
         },
-        "networking": {
+        "serviceWeb": {
+            "type": "object",
+            "required": [
+                "enabled",
+                "type"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "ClusterIP",
+                        "NodePort",
+                        "LoadBalancer"
+                    ]
+                },
+                "annotations": {
+                    "type": "object"
+                }
+            }
+        },
+        "serviceDhcp": {
             "type": "object",
             "properties": {
-                "hostNetwork": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "ClusterIP",
+                        "NodePort",
+                        "LoadBalancer"
+                    ]
+                }
+            }
+        },
+        "persistence": {
+            "type": "object",
+            "properties": {
+                "etcPihole": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "accessMode": {
+                            "type": "string"
+                        },
+                        "size": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "etcDnsmasq": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "metrics": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "serviceMonitor": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "networkPolicy": {
+            "type": "object",
+            "properties": {
+                "enabled": {
                     "type": "boolean"
                 }
             }
+        },
+        "podDisruptionBudget": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "resources": {
+            "type": "object"
+        },
+        "affinity": {
+            "type": "object"
+        },
+        "nodeSelector": {
+            "type": "object"
+        },
+        "tolerations": {
+            "type": "array"
         }
     }
 }

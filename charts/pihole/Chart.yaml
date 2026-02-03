@@ -24,5 +24,5 @@ annotations:
   artifacthub.io/images: |
     - name: pihole
       image: pihole/pihole:latest
-    - name: pihole-exporter
-      image: ekofr/pihole-exporter:v1.0.0
+    - name: pihole6-exporter
+      image: bazmonk/pihole6_exporter:latest

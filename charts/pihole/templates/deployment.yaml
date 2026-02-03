@@ -16,8 +16,13 @@ spec:
       labels:
         {{- include "pihole.selectorLabels" . | nindent 8 }}
     spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
       hostNetwork: {{ .Values.networking.hostNetwork }}
       dnsPolicy: {{ if .Values.networking.hostNetwork }}ClusterFirstWithHostNet{{ else }}ClusterFirst{{ end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       
       containers:
         - name: {{ .Chart.Name }}
@@ -405,6 +410,14 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
           
+          readinessProbe:
+            httpGet:
+              path: /admin/
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          
           volumeMounts:
             {{- if .Values.persistence.etcPihole.enabled }}
             - name: etc-pihole
@@ -417,21 +430,20 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
-        # METRICS SIDECAR
+        # METRICS SIDECAR (pihole6_exporter)
         {{- if .Values.metrics.enabled }}
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
-          env:
-            - name: PIHOLE_HOSTNAME
-              value: "127.0.0.1"
-            - name: PIHOLE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }}
-                  key: {{ .Values.pihole.web.passwordSecretKey }}
-            - name: PORT
-              value: {{ .Values.metrics.port | quote }}
+          args:
+            - "-H"
+            - {{ .Values.metrics.host | quote }}
+            - "-p"
+            - {{ .Values.metrics.port | quote }}
+            {{- if .Values.metrics.authKey }}
+            - "-k"
+            - {{ .Values.metrics.authKey | quote }}
+            {{- end }}
           ports:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}

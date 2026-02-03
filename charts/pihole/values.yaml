@@ -6,6 +6,8 @@ image:
   pullPolicy: IfNotPresent
   tag: "" # Defaults to appVersion
 
+imagePullSecrets: []
+
 timezone: "UTC"
 
 # ------------------------------------------------------------------------------
@@ -218,6 +220,14 @@ pihole:
   gid: 1000
 
 # ------------------------------------------------------------------------------
+# SERVICE ACCOUNT
+# ------------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: "pihole"
+  annotations: {}
+
+# ------------------------------------------------------------------------------
 # NETWORKING
 # ------------------------------------------------------------------------------
 networking:
@@ -230,6 +240,7 @@ serviceDns:
   enabled: true
   type: LoadBalancer
   externalTrafficPolicy: Local
+  annotations: {}
   ports:
     tcp: 53
     udp: 53
@@ -237,6 +248,7 @@ serviceDns:
 serviceWeb:
   enabled: true
   type: ClusterIP
+  annotations: {}
   ports:
     http: 80
     https: 443
@@ -245,6 +257,7 @@ serviceDhcp:
   enabled: false
   type: LoadBalancer
   externalTrafficPolicy: Local
+  annotations: {}
   ports:
     dhcp: 67
 
@@ -265,11 +278,29 @@ persistence:
 # METRICS
 # ------------------------------------------------------------------------------
 metrics:
-  enabled: true
+  enabled: false
   image:
-    repository: ekofr/pihole-exporter
-    tag: v1.0.0
-  port: 9617
+    repository: bazmonk/pihole6_exporter
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 9666
+  host: "127.0.0.1"
+  # authKey: ""  # Optional: App password for authentication (not session ID)
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 50m
+    requests:
+      memory: 32Mi
+      cpu: 10m
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+    labels: {}
+    annotations: {}
+    relabelings: []
+    metricRelabelings: []
 
 # ------------------------------------------------------------------------------
 # SECURITY
