@@ -10,6 +10,7 @@ data:
     set -e
     
     GRAVITY_DB="/etc/pihole/gravity.db"
+    FTL_CMD="/usr/bin/pihole-FTL"
 
     echo "[Helm] Waiting for gravity.db to be initialized..."
     until [ -f "$GRAVITY_DB" ]; do
@@ -25,7 +26,7 @@ data:
        
        while true; do
          # Attempt the SQL command
-         if pihole-FTL sqlite3 -ni "$GRAVITY_DB" "$1"; then
+         if $FTL_CMD sqlite3 -ni "$GRAVITY_DB" "$1"; then
             return 0
          fi
          
