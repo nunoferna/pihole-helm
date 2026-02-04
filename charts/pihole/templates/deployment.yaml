@@ -37,6 +37,10 @@ spec:
                 {{- range .Values.securityContext.capabilities.add }}
                 - {{ . }}
                 {{- end }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "/usr/local/bin/import-lists.sh"]
           env:
             - name: TZ
               value: {{ .Values.timezone | quote }}
@@ -428,8 +432,9 @@ spec:
               mountPath: /etc/dnsmasq.d
             {{- end }}
             - name: lists
-              mountPath: /etc/cont-init.d/99-helm-lists.sh
-              subPath: 99-helm-lists.sh
+              mountPath: /usr/local/bin/import-lists.sh
+              subPath: import-lists.sh
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 

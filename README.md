@@ -45,7 +45,7 @@ helm install pihole pihole-helm/pihole \
 
 ```bash
 # Install from GitHub Container Registry
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.1.1
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.1.2
 ```
 
 ## Configuration
@@ -149,7 +149,7 @@ The exporter provides comprehensive metrics including DNS queries, blocked ads, 
 ## Chart Versioning
 
 This chart follows [Semantic Versioning](https://semver.org/):
-- **Chart Version**: Version of the Helm chart itself (e.g., `0.1.1`)
+- **Chart Version**: Version of the Helm chart itself (e.g., `0.1.2`)
 - **App Version**: Version of Pi-hole container (e.g., `2025.11.1`)
 
 ## Requirements
@@ -171,8 +171,8 @@ To verify a chart signature:
 curl -L https://nunoferna.github.io/pihole-helm/pubkey.gpg | gpg --import
 
 # Download and verify a chart
-helm pull pihole-helm/pihole --version 0.1.1
-helm verify pihole-0.1.1.tgz
+helm pull pihole-helm/pihole --version 0.1.2
+helm verify pihole-0.1.2.tgz
 ```
 
 ### NetworkPolicy
