@@ -460,11 +460,11 @@ spec:
         - name: etc-dnsmasq
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
+        {{- end }}
         - name: lists
           configMap:
             name: {{ include "pihole.fullname" . }}-lists
             defaultMode: 0755
-        {{- end }}
       
       {{- with .Values.nodeSelector }}
       nodeSelector:
