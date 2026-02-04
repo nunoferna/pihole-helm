@@ -9,7 +9,9 @@ metadata:
     {{- toYaml .Values.serviceDhcp.annotations | nindent 4 }}
 spec:
   type: {{ .Values.serviceDhcp.type }}
+  {{- if or (eq .Values.serviceDhcp.type "LoadBalancer") (eq .Values.serviceDhcp.type "NodePort") }}
   externalTrafficPolicy: {{ .Values.serviceDhcp.externalTrafficPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.serviceDhcp.ports.dhcp }}
       targetPort: dhcp

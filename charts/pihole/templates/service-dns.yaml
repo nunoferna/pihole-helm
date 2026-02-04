@@ -9,7 +9,9 @@ metadata:
     {{- toYaml .Values.serviceDns.annotations | nindent 4 }}
 spec:
   type: {{ .Values.serviceDns.type }}
+  {{- if or (eq .Values.serviceDns.type "LoadBalancer") (eq .Values.serviceDns.type "NodePort") }}
   externalTrafficPolicy: {{ .Values.serviceDns.externalTrafficPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.serviceDns.ports.tcp }}
       targetPort: dns-tcp
