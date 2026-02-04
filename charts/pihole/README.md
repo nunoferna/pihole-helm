@@ -1,8 +1,15 @@
-# Pi-hole Helm Chart (v6 Ready)
+# Pi-hole Helm Chart (v6 Ready) Alpha Version
 
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/pihole-helm)](https://artifacthub.io/packages/search?repo=pihole-helm)
 
 A production-ready Helm chart for Pi-hole, fully compatible with Pi-hole v6 FTL configuration variables.
+
+### Install from OCI Registry
+
+```bash
+# Install from GitHub Container Registry
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.1.0
+```
 
 ## Features
 - **Full FTL Control**: Configure `pihole-FTL.toml` settings directly via `values.yaml` (nested under `pihole.ftl`).

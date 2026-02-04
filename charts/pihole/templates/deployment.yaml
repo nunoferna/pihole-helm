@@ -427,6 +427,9 @@ spec:
             - name: etc-dnsmasq
               mountPath: /etc/dnsmasq.d
             {{- end }}
+            - name: lists
+              mountPath: /etc/cont-init.d/99-helm-lists.sh
+              subPath: 99-helm-lists.sh
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
@@ -457,6 +460,10 @@ spec:
         - name: etc-dnsmasq
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
+        - name: lists
+          configMap:
+            name: {{ include "pihole.fullname" . }}-lists
+            defaultMode: 0755
         {{- end }}
       
       {{- with .Values.nodeSelector }}

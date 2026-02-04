@@ -14,6 +14,29 @@ timezone: "UTC"
 # PI-HOLE FTL CONFIGURATION (COMPLETE)
 # ------------------------------------------------------------------------------
 pihole:
+  lists:
+    adlists:
+      - address: "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+        comment: "StevenBlack Master" # enabled is true by default
+      - address: "https://adaway.org/hosts.txt"
+        enabled: false # Explicitly disabled
+        comment: "AdAway"
+
+    whitelist:
+      - domain: "good-site.com"
+        # enabled: true (implicit)
+        # comment: "Helm-Import" (default if missing)
+
+    blacklist:
+      - domain: "bad-site.com"
+        comment: "Known malware"
+
+    regex_whitelist:
+      - domain: ".*\\.google\\.com$"
+        comment: "Allow Google subdomains"
+
+    regex_blacklist: []
+
   # Web Password logic (Kubernetes specific helper)
   web:
     password: ""
