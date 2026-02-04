@@ -31,6 +31,20 @@ data:
       fi
     done
     echo "[Helm] gravity.db found."
+
+    echo "[Helm Hook] Checking FTL process status..."
+    
+    FTL_READY=false
+    wait_timer=60
+    
+    while [ $wait_timer -gt 0 ]; do
+       if pidof pihole-FTL > /dev/null; then
+          FTL_READY=true
+          break
+       fi
+       sleep 2
+       wait_timer=$((wait_timer-2))
+    done
     
     echo "[Helm] Starting Custom List Configuration..."
 
@@ -80,20 +94,6 @@ data:
     {{- range .Values.pihole.lists.regex_blacklist }}
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
     {{- end }}
-
-    echo "[Helm Hook] Checking FTL process status..."
-    
-    FTL_READY=false
-    wait_timer=60
-    
-    while [ $wait_timer -gt 0 ]; do
-       if pidof pihole-FTL > /dev/null; then
-          FTL_READY=true
-          break
-       fi
-       sleep 2
-       wait_timer=$((wait_timer-2))
-    done
 
     if [ "$FTL_READY" = true ]; then
         echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
