@@ -5,16 +5,30 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
 data:
-  99-helm-lists.sh: |
+  import-lists.sh: |
     #!/bin/bash
-    set -e
+    set +e
     
     GRAVITY_DB="/etc/pihole/gravity.db"
-    FTL_CMD="/usr/bin/pihole-FTL"
+    
+    # Dynamic binary detection
+    if command -v pihole-FTL >/dev/null 2>&1; then
+      FTL_CMD=$(command -v pihole-FTL)
+    else
+      FTL_CMD="/usr/bin/pihole-FTL"
+    fi
 
     echo "[Helm] Waiting for gravity.db to be initialized..."
-    until [ -f "$GRAVITY_DB" ]; do
+    
+    timeout=90
+    
+    while [ ! -f "$GRAVITY_DB" ]; do
       sleep 2
+      timeout=$((timeout-2))
+      if [ $timeout -le 0 ]; then
+         echo "[Helm Hook] ERROR: gravity.db never appeared. Skipping import to allow Pod startup."
+         exit 0
+      fi
     done
     echo "[Helm] gravity.db found."
     
@@ -67,5 +81,31 @@ data:
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
     {{- end }}
 
-    echo "[Helm] Updating Gravity..."
-    pihole -g
+    echo "[Helm Hook] Checking FTL process status..."
+    
+    FTL_READY=false
+    wait_timer=60
+    
+    while [ $wait_timer -gt 0 ]; do
+       if pidof pihole-FTL > /dev/null; then
+          FTL_READY=true
+          break
+       fi
+       sleep 2
+       wait_timer=$((wait_timer-2))
+    done
+
+    if [ "$FTL_READY" = true ]; then
+        echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
+        if pihole -g; then
+           echo "[Helm Hook] Gravity updated successfully."
+        else
+           echo "[Helm Hook] WARNING: 'pihole -g' failed (likely busy). Lists are in DB and will update tonight."
+        fi
+    else
+        echo "[Helm Hook] WARNING: FTL process did not start within 60s. Skipping Gravity update."
+        echo "[Helm Hook] Your lists were imported to DB successfully. No further action needed."
+    fi
+    
+    echo "[Helm Hook] Finished."
+    exit 0
