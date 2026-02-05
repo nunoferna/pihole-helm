@@ -7,6 +7,39 @@ entries:
         - name: pihole
           image: pihole/pihole:2025.11.1
         - name: pihole-exporter
+          image: ekofr/pihole-exporter:v1.2.0
+      artifacthub.io/license: MIT
+    apiVersion: v2
+    appVersion: 2025.11.1
+    created: "2026-02-05T19:23:26.086449328Z"
+    description: Enterprise-grade Pi-hole v6 Helm Chart with full FTL configuration
+      support.
+    digest: fe17c71898eec75e5fea1026bf4f2a0cf24b445caacf146459aca62353cd97c8
+    home: https://nunoferna.github.io/pihole-helm/
+    icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
+    keywords:
+    - pihole
+    - dns
+    - adblock
+    - dhcp
+    - monitoring
+    kubeVersion: '>=1.23.0'
+    maintainers:
+    - email: nuno.o.fernandes@outlook.pt
+      name: Nuno Fernandes
+    name: pihole
+    sources:
+    - https://github.com/pi-hole/docker-pi-hole
+    type: application
+    urls:
+    - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.2.2/pihole-0.2.2.tgz
+    version: 0.2.2
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/images: |
+        - name: pihole
+          image: pihole/pihole:2025.11.1
+        - name: pihole-exporter
           image: ekofr/pihole-exporter:1.2.0
       artifacthub.io/license: MIT
     apiVersion: v2
@@ -298,4 +331,4 @@ entries:
     urls:
     - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.1.0/pihole-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-05T18:50:11.737203712Z"
+generated: "2026-02-05T19:23:26.086496215Z"
