@@ -1,0 +1,33 @@
+{{- if and .Values.serviceDns.enabled .Values.serviceDns.splitTcpUdp .Values.serviceDns.udp.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pihole.fullname" . }}-dns-udp
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+    app.kubernetes.io/component: dns-udp
+  annotations:
+    {{- toYaml .Values.serviceDns.udp.annotations | nindent 4 }}
+spec:
+  type: {{ .Values.serviceDns.udp.type }}
+  {{- if or (eq .Values.serviceDns.udp.type "LoadBalancer") (eq .Values.serviceDns.udp.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.serviceDns.udp.externalTrafficPolicy }}
+  {{- end }}
+  {{- with .Values.serviceDns.udp.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.serviceDns.udp.externalIPs }}
+  externalIPs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.serviceDns.udp.port }}
+      targetPort: dns-udp
+      protocol: UDP
+      name: dns-udp
+      {{- if and (eq .Values.serviceDns.udp.type "NodePort") .Values.serviceDns.udp.nodePort }}
+      nodePort: {{ .Values.serviceDns.udp.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "pihole.selectorLabels" . | nindent 4 }}
+{{- end }}

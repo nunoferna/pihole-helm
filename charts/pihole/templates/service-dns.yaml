@@ -1,4 +1,4 @@
-{{- if .Values.serviceDns.enabled }}
+{{- if and .Values.serviceDns.enabled (not .Values.serviceDns.splitTcpUdp) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,15 +12,28 @@ spec:
   {{- if or (eq .Values.serviceDns.type "LoadBalancer") (eq .Values.serviceDns.type "NodePort") }}
   externalTrafficPolicy: {{ .Values.serviceDns.externalTrafficPolicy }}
   {{- end }}
+  {{- with .Values.serviceDns.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.serviceDns.externalIPs }}
+  externalIPs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   ports:
     - port: {{ .Values.serviceDns.ports.tcp }}
       targetPort: dns-tcp
       protocol: TCP
       name: dns-tcp
+      {{- if and (eq .Values.serviceDns.type "NodePort") .Values.serviceDns.nodePorts.tcp }}
+      nodePort: {{ .Values.serviceDns.nodePorts.tcp }}
+      {{- end }}
     - port: {{ .Values.serviceDns.ports.udp }}
       targetPort: dns-udp
       protocol: UDP
       name: dns-udp
+      {{- if and (eq .Values.serviceDns.type "NodePort") .Values.serviceDns.nodePorts.udp }}
+      nodePort: {{ .Values.serviceDns.nodePorts.udp }}
+      {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
 {{- end }}

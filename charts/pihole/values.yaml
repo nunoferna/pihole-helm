@@ -11,6 +11,17 @@ imagePullSecrets: []
 timezone: "UTC"
 
 # ------------------------------------------------------------------------------
+# DEPLOYMENT SETTINGS
+# ------------------------------------------------------------------------------
+replicas: 1
+
+strategy:
+  type: Recreate
+  # rollingUpdate:
+  #   maxSurge: 1
+  #   maxUnavailable: 0
+
+# ------------------------------------------------------------------------------
 # PI-HOLE FTL CONFIGURATION (COMPLETE)
 # ------------------------------------------------------------------------------
 pihole:
@@ -46,201 +57,201 @@ pihole:
   # FTL Configuration
   # Maps directly to pihole-FTL.toml structure
   # Reference: https://docs.pi-hole.net/ftldns/configfile/
-  ftl:
-    # [dns]
-    dns:
-      upstreams: ["8.8.8.8", "1.1.1.1"]
-      listeningMode: "ALL"
-      port: 53
-      queryLogging: true
-      ignoreLocalhost: false
-      dnssec: false
-      bogusPriv: true
-      domainNeeded: false
-      blockESNI: true
-      CNAMEdeepInspect: true
-      EDNS0ECS: true
-      showDNSSEC: true
-      analyzeOnlyAandAAAA: false
-      piholePTR: "PI.HOLE"
-      replyWhenBusy: "ALLOW"
-      blockTTL: 2
-      localise: true
+  # ftl:
+    # dns:
+      # upstreams: []
+      # CNAMEdeepInspect: true
+      # blockESNI: true
+      # EDNS0ECS: true
+      # ignoreLocalhost: false
+      # showDNSSEC: true
+      # analyzeOnlyAandAAAA: false
+      # piholePTR: "PI.HOLE" # Options: https://docs.pi-hole.net/ftldns/configfile/#piholeptr
+      # replyWhenBusy: "ALLOW" # Options: https://docs.pi-hole.net/ftldns/configfile/#replywhenbusy
+      # blockTTL: 2
+      # hosts: []
+      # domainNeeded: false
+      # expandHosts: false
+      # bogusPriv: true
+      # dnssec: false
+      # interface: ""
+      # hostRecord: ""
+      # listeningMode: "LOCAL" # Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode
+      # queryLogging: true
+      # cnameRecords: []
+      # port: 53
+      # localise: true
+      # revServers: []
 
-      # Custom arrays
-      hosts: []
-      cnameRecords: []
-      revServers: []
+      # domain:
+        # name: "lan"
+        # local: true
 
-      cache:
-        size: 10000
-        optimizer: 3600
-        upstreamBlockedTTL: 86400
+      # cache:
+        # size: 10000
+        # optimizer: 3600
+        # upstreamBlockedTTL: 86400
 
-      blocking:
-        active: true
-        mode: "NULL"
-        edns: "TEXT"
+      # blocking:
+        # active: true
+        # mode: "NULL" # Options: https://docs.pi-hole.net/ftldns/configfile/#mode
+        # edns: "TEXT" # Options: https://docs.pi-hole.net/ftldns/configfile/#edns
+      
+      # specialDomains:
+        # mozillaCanary: true
+        # iCloudPrivateRelay: true
+        # designatedResolver: true
+      
+      # reply:
+        # host:
+          # force4: false
+          # IPv4: ""
+          # force6: false
+          # IPv6: ""
+        # blocking:
+          # force4: false
+          # IPv4: ""
+          # force6: false
+          # IPv6: ""
 
-      domain:
-        name: "lan"
-        local: true
+      # rateLimit:
+        # count: 1000
+        # interval: 60
 
-      rateLimit:
-        count: 1000
-        interval: 60
+    # dhcp:
+      # active: false
+      # start: ""
+      # end: ""
+      # router: ""
+      # netmask: ""
+      # leaseTime: ""
+      # ipv6: false
+      # rapidCommit: false
+      # multiDNS: false
+      # logging: false
+      # ignoreUnknownClients: false
+      # hosts: []
 
-      specialDomains:
-        mozillaCanary: true
-        iCloudPrivateRelay: true
-        designatedResolver: true
+    # ntp:
+      # ipv4:
+        # active: true
+        # address: ""
+      # ipv6:
+        # active: true
+        # address: ""
+      # sync:
+        # active: true
+        # server: "pool.ntp.org"
+        # interval: 3600
+        # count: 8
+        # rtc:
+          # set: false
+          # device: "/dev/rtc0"
+          # utc: true
+    
+    # resolver:
+      # resolveIPv4: true
+      # resolveIPv6: true
+      # networkNames: true
+      # refreshNames: "IPV4_ONLY" # Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames
 
-      reply:
-        host:
-          force4: false
-          IPv4: ""
-          force6: false
-          IPv6: ""
-        blocking:
-          force4: false
-          IPv4: ""
-          force6: false
-          IPv6: ""
+    # database:
+      # DBimport: true
+      # maxDBdays: 91
+      # DBinterval: 60
+      # useWAL: true
+      # network:
+        # parseARPcache: true
+        # expire: 91
 
-    # [ntp]
-    ntp:
-      ipv4:
-        active: true
-        address: ""
-      ipv6:
-        active: true
-        address: ""
-      sync:
-        active: true
-        server: "pool.ntp.org"
-        interval: 3600
-        count: 8
-        rtc:
-          set: false
-          device: "/dev/rtc0"
-          utc: true
+    # webserver:
+      # domain: "pi.hole"
+      # acl: ""
+      # port: "80o,443os,[::]:80o,[::]:443os"
+      # threads: 50
+      # headers:
+        # - "X-DNS-Prefetch-Control: off"
+        # - "Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+        # - "X-Frame-Options: DENY"
+        # - "X-XSS-Protection: 0"
+        # - "X-Content-Type-Options: nosniff"
+        # - "Referrer-Policy: strict-origin-when-cross-origin"
+      # serve_all: false
+      # advancedOpts: []
 
-    # [resolver]
-    resolver:
-      resolveIPv4: true
-      resolveIPv6: true
-      networkNames: true
-      refreshNames: "IPV4_ONLY"
+      # session:
+        # timeout: 1800
+        # restore: true
 
-    # [database]
-    database:
-      DBimport: true
-      maxDBdays: 91
-      DBinterval: 60
-      useWAL: true
-      network:
-        parseARPcache: true
-        expire: 91
+      # tls:
+        # cert: "/etc/pihole/tls.pem"
+        # validity: 47
 
-    # [dhcp]
-    dhcp:
-      active: false
-      start: ""
-      end: ""
-      router: ""
-      netmask: "255.255.255.0"
-      leaseTime: "24h"
-      ipv6: false
-      rapidCommit: false
-      multiDNS: false
-      logging: false
-      ignoreUnknownClients: false
-      hosts: []
+      # paths:
+        # webroot: "/var/www/html"
+        # webhome: "/admin/"
+        # prefix: ""
 
-    # [webserver]
-    webserver:
-      domain: "pi.hole"
-      acl: ""
-      port: "80o,443os,[::]:80o,[::]:443os"
-      threads: 50
-      serve_all: false
-      headers:
-        - "X-DNS-Prefetch-Control: off"
-        - "Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
-        - "X-Frame-Options: DENY"
-        - "X-XSS-Protection: 0"
-        - "X-Content-Type-Options: nosniff"
-        - "Referrer-Policy: strict-origin-when-cross-origin"
-      advancedOpts: []
+      # interface:
+        # boxed: true
+        # theme: "default-auto" # Options: https://docs.pi-hole.net/ftldns/configfile/#theme
 
-      session:
-        timeout: 1800
-        restore: true
+      # api:
+        # max_sessions: 16
+        # prettyJSON: false
+        # pwhash: ""
+        # totp_secret: ""
+        # app_pwhash: ""
+        # app_sudo: false
+        # cli_pw: true
+        # excludeClients: []
+        # excludeDomains: []
+        # maxHistory: 86400
+        # maxClients: 10
+        # client_history_global_max: true
+        # allow_destructive: true
+        # temp:
+          # limit: 60.000000
+          # unit: "C" # Options: https://docs.pi-hole.net/ftldns/configfile/#unit 
 
-      tls:
-        cert: "/etc/pihole/tls.pem"
-        validity: 47
+    # files:
+      # pid: "/run/pihole-FTL.pid"
+      # database: "/etc/pihole/pihole-FTL.db"
+      # gravity: "/etc/pihole/gravity.db"
+      # gravity_tmp: "/tmp"
+      # macvendor: "/etc/pihole/macvendor.db"
+      # pcap: ""
+      # log:
+        # ftl: "/var/log/pihole/FTL.log"
+        # dnsmasq: "/var/log/pihole/pihole.log"
+        # webserver: "/var/log/pihole/webserver.log"
 
-      paths:
-        webroot: "/var/www/html"
-        webhome: "/admin/"
-        prefix: ""
-
-      interface:
-        boxed: true
-        theme: "default-auto"
-
-      api:
-        max_sessions: 16
-        prettyJSON: false
-        pwhash: ""
-        totp_secret: ""
-        app_pwhash: ""
-        app_sudo: false
-        cli_pw: true
-        excludeClients: []
-        excludeDomains: []
-        maxHistory: 86400
-        maxClients: 10
-        client_history_global_max: true
-        allow_destructive: true
-        temp:
-          limit: 60.0
-          unit: "C"
-
-    # [files]
-    files:
-      pid: "/run/pihole-FTL.pid"
-      database: "/etc/pihole/pihole-FTL.db"
-      gravity: "/etc/pihole/gravity.db"
-      gravity_tmp: "/tmp"
-      macvendor: "/etc/pihole/macvendor.db"
-      pcap: ""
-      log:
-        ftl: "/var/log/pihole/FTL.log"
-        dnsmasq: "/var/log/pihole/pihole.log"
-        webserver: "/var/log/pihole/webserver.log"
-
-    # [misc]
-    misc:
-      privacylevel: 0
-      delay_startup: 0
-      nice: -10
-      addr2line: true
-      etc_dnsmasq_d: false
-      dnsmasq_lines: []
-      extraLogging: false
-      readOnly: false
-      normalizeCPU: true
-      hide_dnsmasq_warn: false
-      check:
-        load: true
-        shmem: 90
-        disk: 90
+    # misc:
+      # privacylevel: 0
+      # delay_startup: 0
+      # nice: -10
+      # addr2line: true
+      # etc_dnsmasq_d: false
+      # dnsmasq_lines: []
+      # extraLogging: false
+      # readOnly: false
+      # normalizeCPU: true
+      # hide_dnsmasq_warn: false
+      # check:
+        # load: true
+        # shmem: 90
+        # disk: 90
 
   # Custom IDs
-  uid: 1000
-  gid: 1000
+  # uid: 1000
+  # gid: 1000
+
+  # Other Pi-hole Variables
+  # tailFtlLog: 1                    # Whether to output FTL log (0 or 1)
+  # ftlCmd: "no-daemon"              # Customize dnsmasq startup options
+  # dnsmasqUser: "pihole"            # User that FTLDNS runs as
+  # additionalPackages: ""           # Additional Alpine packages to install
+  # verbose: 0                       # Enable verbose startup scripts (0 or 1)
 
 # ------------------------------------------------------------------------------
 # SERVICE ACCOUNT
@@ -261,28 +272,68 @@ networking:
 # ------------------------------------------------------------------------------
 serviceDns:
   enabled: true
+  # Split mode creates separate services for TCP and UDP
+  # Set to true for advanced use cases (different IPs, types per protocol)
+  # Default false keeps both protocols in one service (standard DNS behavior)
+  splitTcpUdp: false
+  
+  # Combined service configuration (used when splitTcpUdp: false)
   type: LoadBalancer
-  externalTrafficPolicy: Local
+  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
   annotations: {}
   ports:
     tcp: 53
     udp: 53
+  # loadBalancerIP: ""
+  # externalIPs: []
+  # nodePorts:
+  #   tcp: 30053
+  #   udp: 30054
+  
+  # TCP-specific service (used when splitTcpUdp: true)
+  tcp:
+    enabled: true
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    annotations: {}
+    port: 53
+    # loadBalancerIP: ""
+    # externalIPs: []
+  
+  # UDP-specific service (used when splitTcpUdp: true)
+  udp:
+    enabled: true
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    annotations: {}
+    port: 53
+    # loadBalancerIP: ""
+    # externalIPs: []
 
 serviceWeb:
   enabled: true
   type: ClusterIP
+  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
   annotations: {}
   ports:
     http: 80
     https: 443
+  # loadBalancerIP: ""
+  # externalIPs: []
+  # nodePorts:
+  #   http: 30080
+  #   https: 30443
 
 serviceDhcp:
   enabled: false
   type: LoadBalancer
-  externalTrafficPolicy: Local
+  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
   annotations: {}
   ports:
     dhcp: 67
+  # loadBalancerIP: ""
+  # externalIPs: []
+  # nodePort: 30067
 
 # ------------------------------------------------------------------------------
 # PERSISTENCE
@@ -292,6 +343,7 @@ persistence:
     enabled: true
     accessMode: ReadWriteOnce
     size: 500Mi
+  # By default, Pi-hole v6 no longer reads configuration files from /etc/dnsmasq.d/. Read: https://docs.pi-hole.net/docker/upgrading/v5-v6/?h=dnsmasq#custom-dnsmasq-config-files
   etcDnsmasq:
     enabled: false
     accessMode: ReadWriteOnce
@@ -304,9 +356,17 @@ metrics:
   enabled: false
   image:
     repository: ekofr/pihole-exporter
-    tag: latest
+    tag: 1.2.0
     pullPolicy: IfNotPresent
   port: 9617
+  service:
+    enabled: true
+    type: ClusterIP
+    # externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+    # annotations: {}
+    # loadBalancerIP: ""
+    # externalIPs: []
+    # nodePort: 30617
   env:
     - name: PIHOLE_HOSTNAME
       value: "127.0.0.1"
@@ -338,6 +398,13 @@ metrics:
     annotations: {}
     relabelings: []
     metricRelabelings: []
+  dashboards:
+    enabled: false
+    # Label for Grafana dashboard sidecar discovery
+    # For kube-prometheus-stack, use: grafana_dashboard
+    label: "grafana_dashboard"
+    labelValue: "1"
+    annotations: {}
 
 # ------------------------------------------------------------------------------
 # SECURITY
@@ -345,8 +412,8 @@ metrics:
 securityContext:
   capabilities:
     add:
-      - NET_ADMIN
-      - SYS_TIME
+      - NET_ADMIN # Required for DHCP functionality
+      - SYS_TIME # Required for NTP functionality
 
 networkPolicy:
   enabled: false

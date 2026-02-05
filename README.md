@@ -14,7 +14,7 @@ This repository contains an enterprise-grade Helm chart for Pi-hole, a network-w
 - **⚙️ 100+ Configuration Options**: Fine-grained control over DNS, DHCP, webserver, database, and more
 - **📊 Built-in Observability**: Integrated Prometheus metrics exporter sidecar ([ekofr/pihole-exporter](https://hub.docker.com/r/ekofr/pihole-exporter))
 - **🔌 Split Services**: Dedicated LoadBalancer for DNS, ClusterIP for Web UI, optional DHCP service
-- **💾 Persistent Storage**: Data persistence for `/etc/pihole` and `/etc/dnsmasq.d`
+- **💾 Persistent Storage**: Data persistence for `/etc/pihole` and `/etc/dnsmasq.d` (deprecated)
 - **🔒 Security Features**: NetworkPolicy support, Pod Disruption Budget, and configurable security contexts
 - **🔐 GPG Signing**: Charts are signed with GPG for supply chain security
 - **📦 Multiple Distribution Methods**: Available via GitHub Releases and GitHub Container Registry (OCI)
@@ -45,7 +45,7 @@ helm install pihole pihole-helm/pihole \
 
 ```bash
 # Install from GitHub Container Registry
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.1.6
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.2.0
 ```
 
 ## Configuration
@@ -93,12 +93,39 @@ serviceWeb:
 
 ### Metrics & Monitoring
 
+Enable Prometheus metrics exporter and optional Grafana dashboard:
+
 ```yaml
 metrics:
   enabled: true
+  # Prometheus ServiceMonitor (requires prometheus-operator)
   serviceMonitor:
     enabled: true
     interval: 30s
+  # Grafana Dashboard ConfigMap (auto-discovered by Grafana sidecar)
+  dashboards:
+    enabled: true
+    label: "grafana_dashboard" # Label for kube-prometheus-stack
+    labelValue: "1"
+```
+
+The chart includes the official [Pi-hole Exporter dashboard (ID: 10176)](https://grafana.com/grafana/dashboards/10176) which provides:
+
+- Total queries and ads blocked statistics
+- Query rate and blocking rate graphs
+- Top blocked domains and clients
+- DNS query type distribution
+- Cache statistics
+
+For Grafana to auto-discover the dashboard, ensure your Grafana deployment has the sidecar enabled:
+
+```yaml
+# In your Grafana values
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
 ```
 
 ### Persistence
@@ -126,6 +153,7 @@ For the complete list of configuration options, see the [chart's values.yaml](ch
 This chart includes optional support for the [ekofr/pihole-exporter](https://hub.docker.com/r/ekofr/pihole-exporter), a widely-used Prometheus exporter with 5M+ Docker Hub pulls. When enabled, it runs as a sidecar container and exposes metrics on port 9617.
 
 Enable the exporter with:
+
 ```yaml
 metrics:
   enabled: true
@@ -149,7 +177,8 @@ The exporter provides comprehensive metrics including DNS queries, blocked ads, 
 ## Chart Versioning
 
 This chart follows [Semantic Versioning](https://semver.org/):
-- **Chart Version**: Version of the Helm chart itself (e.g., `0.1.6`)
+
+- **Chart Version**: Version of the Helm chart itself (e.g., `0.2.0`)
 - **App Version**: Version of Pi-hole container (e.g., `2025.11.1`)
 
 ## Requirements
@@ -166,18 +195,20 @@ All chart releases are automatically signed using GPG. This ensures chart authen
 The GPG public key is available at: https://nunoferna.github.io/pihole-helm/pubkey.gpg
 
 To verify a chart signature:
+
 ```bash
 # Import the public key
 curl -L https://nunoferna.github.io/pihole-helm/pubkey.gpg | gpg --import
 
 # Download and verify a chart
-helm pull pihole-helm/pihole --version 0.1.6
-helm verify pihole-0.1.6.tgz
+helm pull pihole-helm/pihole --version 0.2.0
+helm verify pihole-0.2.0.tgz
 ```
 
 ### NetworkPolicy
 
 Enable NetworkPolicy to restrict pod network access:
+
 ```yaml
 networkPolicy:
   enabled: true
@@ -208,6 +239,7 @@ networkPolicy:
 ### Release Process
 
 This repository uses GitHub Actions for automated releases:
+
 1. Chart changes are pushed to the `main` branch
 2. GitHub Actions workflow automatically:
    - Packages the chart
@@ -252,6 +284,7 @@ This chart is distributed under the MIT License as specified in [Chart.yaml](cha
 ## Support
 
 For issues and questions:
+
 - Open an issue in this repository
 - Check the [Pi-hole documentation](https://docs.pi-hole.net/)
 - Visit the [Pi-hole community](https://discourse.pi-hole.net/)

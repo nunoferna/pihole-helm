@@ -1,0 +1,285 @@
+# ============================================================================
+# Example: Pi-hole with Full Monitoring Stack
+# ============================================================================
+# This configuration enables:
+# - Pi-hole Exporter sidecar (metrics collection)
+# - Kubernetes Service for metrics endpoint
+# - Prometheus ServiceMonitor (automatic scraping)
+# - Grafana Dashboard ConfigMap (auto-discovery)
+#
+# Prerequisites:
+# - Prometheus Operator (kube-prometheus-stack) installed
+# - Grafana with sidecar enabled (for dashboard auto-discovery)
+# ============================================================================
+
+metrics:
+  # Enable the Pi-hole exporter sidecar container
+  enabled: true
+  
+  # Exporter image configuration
+  image:
+    repository: ekofr/pihole-exporter
+    tag: 1.2.0
+    pullPolicy: IfNotPresent
+  
+  # Metrics port (default: 9617)
+  port: 9617
+  
+  # ----------------------------------------------------------------------------
+  # METRICS SERVICE
+  # ----------------------------------------------------------------------------
+  # Exposes the metrics endpoint for Prometheus scraping
+  service:
+    enabled: true
+    type: ClusterIP  # Recommended for Prometheus (cluster-internal scraping)
+    annotations: {}
+    
+    # Alternative configurations:
+    
+    # Example 1: NodePort (expose metrics externally on specific port)
+    # type: NodePort
+    # externalTrafficPolicy: Local
+    # nodePort: 30617
+    
+    # Example 2: LoadBalancer (expose with cloud provider LB)
+    # type: LoadBalancer
+    # externalTrafficPolicy: Local
+    # loadBalancerIP: "10.0.0.100"
+    # annotations:
+    #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+  
+  # ----------------------------------------------------------------------------
+  # EXPORTER CONFIGURATION
+  # ----------------------------------------------------------------------------
+  env:
+    - name: PIHOLE_HOSTNAME
+      value: "127.0.0.1"  # Sidecar talks to Pi-hole on localhost
+    - name: PIHOLE_PORT
+      value: "80"
+    - name: INTERVAL
+      value: "10s"  # Scrape interval (faster = more granular data)
+    
+    # Option 1: Password authentication (reference existing secret)
+    # - name: PIHOLE_PASSWORD
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: pihole-secret
+    #       key: password
+    
+    # Option 2: API token (from /etc/pihole/setupVars.conf WEBPASSWORD)
+    # - name: PIHOLE_API_TOKEN
+    #   value: "your-api-token-here"
+    
+    # Option 3: HTTPS configuration (if Pi-hole uses HTTPS)
+    # - name: PIHOLE_PROTOCOL
+    #   value: "https"
+  
+  # Resource limits for the exporter sidecar
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 50m
+    requests:
+      memory: 32Mi
+      cpu: 10m
+  
+  # ----------------------------------------------------------------------------
+  # PROMETHEUS SERVICEMONITOR
+  # ----------------------------------------------------------------------------
+  # Requires: Prometheus Operator / kube-prometheus-stack
+  serviceMonitor:
+    enabled: true
+    interval: 30s        # How often Prometheus scrapes
+    scrapeTimeout: 10s   # Timeout for each scrape
+    
+    # Labels for ServiceMonitor selection by Prometheus
+    # Must match your Prometheus serviceMonitorSelector
+    labels:
+      prometheus: kube-prometheus  # Common label for kube-prometheus-stack
+      # release: prometheus        # Alternative: match Helm release name
+    
+    # Additional annotations
+    annotations: {}
+    
+    # Advanced: Relabeling configurations
+    # relabelings:
+    #   # Add pod name as label
+    #   - sourceLabels: [__meta_kubernetes_pod_name]
+    #     targetLabel: pod
+    #   # Add namespace as label
+    #   - sourceLabels: [__meta_kubernetes_namespace]
+    #     targetLabel: namespace
+    
+    # Advanced: Metric relabeling (filter/transform metrics)
+    # metricRelabelings:
+    #   # Keep only Pi-hole metrics
+    #   - sourceLabels: [__name__]
+    #     regex: 'pihole_.*'
+    #     action: keep
+    #   # Drop high-cardinality metrics
+    #   - sourceLabels: [__name__]
+    #     regex: 'pihole_top_.*'
+    #     action: drop
+  
+  # ----------------------------------------------------------------------------
+  # GRAFANA DASHBOARD
+  # ----------------------------------------------------------------------------
+  # Auto-discovered by Grafana sidecar when enabled
+  dashboards:
+    enabled: true
+    
+    # Label for Grafana dashboard sidecar discovery
+    # MUST match your Grafana sidecar configuration
+    label: "grafana_dashboard"
+    labelValue: "1"
+    
+    # Optional annotations for dashboard ConfigMap
+    annotations: {}
+    # annotations:
+    #   k8s-sidecar-target-directory: "/tmp/dashboards/pihole"
+
+
+# ============================================================================
+# SETUP & VERIFICATION GUIDE
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# 1. INSTALL PREREQUISITES
+# ----------------------------------------------------------------------------
+# 
+# Install kube-prometheus-stack (includes Prometheus + Grafana):
+#
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   helm repo update
+#   helm install prometheus prometheus-community/kube-prometheus-stack \
+#     --namespace monitoring --create-namespace \
+#     --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+#     --set grafana.sidecar.dashboards.enabled=true \
+#     --set grafana.sidecar.dashboards.label=grafana_dashboard
+
+# ----------------------------------------------------------------------------
+# 2. GRAFANA CONFIGURATION
+# ----------------------------------------------------------------------------
+#
+# Ensure your Grafana deployment has the dashboard sidecar enabled:
+#
+# grafana:
+#   sidecar:
+#     dashboards:
+#       enabled: true
+#       label: grafana_dashboard        # Must match metrics.dashboards.label
+#       labelValue: "1"                  # Must match metrics.dashboards.labelValue
+#       folder: /tmp/dashboards
+#       searchNamespace: ALL             # Discover dashboards in all namespaces
+#       provider:
+#         foldersFromFilesStructure: true
+#
+# Access Grafana:
+#   kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+#   # Default credentials: admin / prom-operator
+
+# ----------------------------------------------------------------------------
+# 3. PROMETHEUS CONFIGURATION
+# ----------------------------------------------------------------------------
+#
+# Ensure ServiceMonitor discovery is configured:
+#
+# prometheus:
+#   prometheusSpec:
+#     # Option 1: Match ServiceMonitors with specific label
+#     serviceMonitorSelector:
+#       matchLabels:
+#         prometheus: kube-prometheus
+#     
+#     # Option 2: Discover all ServiceMonitors (not recommended for production)
+#     # serviceMonitorSelectorNilUsesHelmValues: false
+#     
+#     # Optional: Scrape interval override
+#     # evaluationInterval: 30s
+#     # scrapeInterval: 30s
+
+# ----------------------------------------------------------------------------
+# 4. VERIFY INSTALLATION
+# ----------------------------------------------------------------------------
+#
+# Check if metrics service is running:
+#   kubectl get svc -l app.kubernetes.io/name=pihole
+#   # Should show: <release-name>-pihole-metrics
+#
+# Check ServiceMonitor:
+#   kubectl get servicemonitor -l app.kubernetes.io/name=pihole
+#
+# Check Prometheus targets:
+#   kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+#   # Open: http://localhost:9090/targets
+#   # Look for: serviceMonitor/default/<release-name>-pihole/0
+#
+# Test metrics endpoint directly:
+#   kubectl port-forward svc/<release-name>-pihole-metrics 9617:9617
+#   curl http://localhost:9617/metrics
+#   # Should return Pi-hole metrics
+#
+# Check dashboard in Grafana:
+#   kubectl get configmap -l grafana_dashboard=1
+#   # Dashboard should appear automatically in Grafana UI
+
+# ----------------------------------------------------------------------------
+# 5. ALTERNATIVE: MANUAL DASHBOARD IMPORT
+# ----------------------------------------------------------------------------
+#
+# If dashboard auto-discovery doesn't work, manually import:
+#
+# Method 1: Import from Grafana.com
+#   1. Open Grafana UI
+#   2. Go to Dashboards → Import
+#   3. Enter dashboard ID: 10176
+#   4. Select your Prometheus datasource
+#   5. Click "Import"
+#
+# Method 2: Import from ConfigMap
+#   1. Extract dashboard JSON:
+#      kubectl get configmap <release-name>-pihole-dashboard -o jsonpath='{.data.pihole-exporter\.json}' > dashboard.json
+#   2. Import dashboard.json via Grafana UI
+#
+# Dashboard URL: https://grafana.com/grafana/dashboards/10176
+
+# ----------------------------------------------------------------------------
+# 6. TROUBLESHOOTING
+# ----------------------------------------------------------------------------
+#
+# Issue: ServiceMonitor not picked up by Prometheus
+# - Verify label selector matches: kubectl get servicemonitor -o yaml
+# - Check Prometheus logs: kubectl logs -n monitoring prometheus-kube-prometheus-prometheus-0
+#
+# Issue: No metrics in Prometheus
+# - Check service endpoints: kubectl get endpoints <release-name>-pihole-metrics
+# - Test metrics: kubectl port-forward svc/<release-name>-pihole-metrics 9617:9617
+# - Check exporter logs: kubectl logs <pihole-pod> -c metrics
+#
+# Issue: Dashboard not appearing in Grafana
+# - Verify ConfigMap labels: kubectl get configmap -l grafana_dashboard=1
+# - Check Grafana sidecar logs: kubectl logs -n monitoring <grafana-pod> -c grafana-sc-dashboard
+# - Ensure searchNamespace matches your Pi-hole namespace
+#
+# Issue: Authentication errors
+# - Verify PIHOLE_PASSWORD or PIHOLE_API_TOKEN is set correctly
+# - Check exporter logs for authentication failures
+
+# ----------------------------------------------------------------------------
+# 7. ADVANCED CONFIGURATIONS
+# ----------------------------------------------------------------------------
+#
+# Multiple Prometheus instances:
+#   Add multiple labels to serviceMonitor.labels to be discovered by different Prometheus instances
+#
+# Custom metrics retention:
+#   Configure in Prometheus:
+#   prometheusSpec:
+#     retention: 30d
+#     retentionSize: "50GiB"
+#
+# Alert rules for Pi-hole:
+#   Create PrometheusRule resource with alerts for high blocked queries, service down, etc.
+#
+# Multi-cluster monitoring:
+#   Use Thanos or Cortex for centralized metrics from multiple clusters
