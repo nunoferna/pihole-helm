@@ -19,7 +19,7 @@ metrics:
   # Exporter image configuration
   image:
     repository: ekofr/pihole-exporter
-    tag: 1.2.0
+    tag: v1.2.0
     pullPolicy: IfNotPresent
   
   # Metrics port (default: 9617)

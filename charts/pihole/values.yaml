@@ -356,7 +356,7 @@ metrics:
   enabled: false
   image:
     repository: ekofr/pihole-exporter
-    tag: 1.2.0
+    tag: v1.2.0
     pullPolicy: IfNotPresent
   port: 9617
   service:
