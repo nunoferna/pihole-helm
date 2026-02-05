@@ -51,574 +51,634 @@ spec:
               value: {{ .Values.timezone | quote }}
             {{- end }}
             
+            {{- with .Values.pihole.ftl }}
             # ------------------------------------------------------
             # [dns]
             # ------------------------------------------------------
-            {{- if .Values.pihole.ftl.dns.upstreams }}
+            {{- with .dns }}
+            {{- if .upstreams }}
             - name: FTLCONF_dns_upstreams
-              value: {{ .Values.pihole.ftl.dns.upstreams | join ";" | quote }}
+              value: {{ .upstreams | join ";" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "CNAMEdeepInspect" }}
+            {{- if hasKey . "CNAMEdeepInspect" }}
             - name: FTLCONF_dns_CNAMEdeepInspect
-              value: {{ .Values.pihole.ftl.dns.CNAMEdeepInspect | quote }}
+              value: {{ .CNAMEdeepInspect | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "blockESNI" }}
+            {{- if hasKey . "blockESNI" }}
             - name: FTLCONF_dns_blockESNI
-              value: {{ .Values.pihole.ftl.dns.blockESNI | quote }}
+              value: {{ .blockESNI | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "EDNS0ECS" }}
+            {{- if hasKey . "EDNS0ECS" }}
             - name: FTLCONF_dns_EDNS0ECS
-              value: {{ .Values.pihole.ftl.dns.EDNS0ECS | quote }}
+              value: {{ .EDNS0ECS | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "ignoreLocalhost" }}
+            {{- if hasKey . "ignoreLocalhost" }}
             - name: FTLCONF_dns_ignoreLocalhost
-              value: {{ .Values.pihole.ftl.dns.ignoreLocalhost | quote }}
+              value: {{ .ignoreLocalhost | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "showDNSSEC" }}
+            {{- if hasKey . "showDNSSEC" }}
             - name: FTLCONF_dns_showDNSSEC
-              value: {{ .Values.pihole.ftl.dns.showDNSSEC | quote }}
+              value: {{ .showDNSSEC | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "analyzeOnlyAandAAAA" }}
+            {{- if hasKey . "analyzeOnlyAandAAAA" }}
             - name: FTLCONF_dns_analyzeOnlyAandAAAA
-              value: {{ .Values.pihole.ftl.dns.analyzeOnlyAandAAAA | quote }}
+              value: {{ .analyzeOnlyAandAAAA | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.piholePTR }}
+            {{- if .piholePTR }}
             - name: FTLCONF_dns_piholePTR
-              value: {{ .Values.pihole.ftl.dns.piholePTR | quote }}
+              value: {{ .piholePTR | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.replyWhenBusy }}
+            {{- if .replyWhenBusy }}
             - name: FTLCONF_dns_replyWhenBusy
-              value: {{ .Values.pihole.ftl.dns.replyWhenBusy | quote }}
+              value: {{ .replyWhenBusy | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "blockTTL" }}
+            {{- if hasKey . "blockTTL" }}
             - name: FTLCONF_dns_blockTTL
-              value: {{ .Values.pihole.ftl.dns.blockTTL | quote }}
+              value: {{ .blockTTL | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.hosts }}
+            {{- if .hosts }}
             - name: FTLCONF_dns_hosts
-              value: {{ .Values.pihole.ftl.dns.hosts | join "\n" | quote }}
+              value: {{ .hosts | join "\n" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "domainNeeded" }}
+            {{- if hasKey . "domainNeeded" }}
             - name: FTLCONF_dns_domainNeeded
-              value: {{ .Values.pihole.ftl.dns.domainNeeded | quote }}
+              value: {{ .domainNeeded | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "expandHosts" }}
+            {{- if hasKey . "expandHosts" }}
             - name: FTLCONF_dns_expandHosts
-              value: {{ .Values.pihole.ftl.dns.expandHosts | quote }}
+              value: {{ .expandHosts | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "bogusPriv" }}
+            {{- if hasKey . "bogusPriv" }}
             - name: FTLCONF_dns_bogusPriv
-              value: {{ .Values.pihole.ftl.dns.bogusPriv | quote }}
+              value: {{ .bogusPriv | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "dnssec" }}
+            {{- if hasKey . "dnssec" }}
             - name: FTLCONF_dns_dnssec
-              value: {{ .Values.pihole.ftl.dns.dnssec | quote }}
+              value: {{ .dnssec | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.interface }}
+            {{- if .interface }}
             - name: FTLCONF_dns_interface
-              value: {{ .Values.pihole.ftl.dns.interface | quote }}
+              value: {{ .interface | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.hostRecord }}
+            {{- if .hostRecord }}
             - name: FTLCONF_dns_hostRecord
-              value: {{ .Values.pihole.ftl.dns.hostRecord | quote }}
+              value: {{ .hostRecord | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.listeningMode }}
+            {{- if .listeningMode }}
             - name: FTLCONF_dns_listeningMode
-              value: {{ .Values.pihole.ftl.dns.listeningMode | quote }}
+              value: {{ .listeningMode | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "queryLogging" }}
+            {{- if hasKey . "queryLogging" }}
             - name: FTLCONF_dns_queryLogging
-              value: {{ .Values.pihole.ftl.dns.queryLogging | quote }}
+              value: {{ .queryLogging | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.cnameRecords }}
+            {{- if .cnameRecords }}
             - name: FTLCONF_dns_cnameRecords
-              value: {{ .Values.pihole.ftl.dns.cnameRecords | join "\n" | quote }}
+              value: {{ .cnameRecords | join "\n" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns "port" }}
+            {{- if hasKey . "port" }}
             - name: FTLCONF_dns_port
-              value: {{ .Values.pihole.ftl.dns.port | quote }}
+              value: {{ .port | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.localise }}
+            {{- if .localise }}
             - name: FTLCONF_dns_localise
-              value: {{ .Values.pihole.ftl.dns.localise | quote }}
+              value: {{ .localise | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.revServers }}
+            {{- if .revServers }}
             - name: FTLCONF_dns_revServers
-              value: {{ .Values.pihole.ftl.dns.revServers | join "\n" | quote }}
+              value: {{ .revServers | join "\n" | quote }}
             {{- end }}
 
             # [dns.domain]
-            {{- if .Values.pihole.ftl.dns.domain.name }}
+            {{- with .domain }}
+            {{- if .name }}
             - name: FTLCONF_dns_domain_name
-              value: {{ .Values.pihole.ftl.dns.domain.name | quote }}
+              value: {{ .name | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.domain.local }}
+            {{- if .local }}
             - name: FTLCONF_dns_domain_local
-              value: {{ .Values.pihole.ftl.dns.domain.local | quote }}
+              value: {{ .local | quote }}
+            {{- end }}
             {{- end }}
 
             # [dns.cache]
-            {{- if hasKey .Values.pihole.ftl.dns.cache "size" }}
+            {{- with .cache }}
+            {{- if hasKey . "size" }}
             - name: FTLCONF_dns_cache_size
-              value: {{ .Values.pihole.ftl.dns.cache.size | quote }}
+              value: {{ .size | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.cache "optimizer" }}
+            {{- if hasKey . "optimizer" }}
             - name: FTLCONF_dns_cache_optimizer
-              value: {{ .Values.pihole.ftl.dns.cache.optimizer | quote }}
+              value: {{ .optimizer | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.cache "upstreamBlockedTTL" }}
+            {{- if hasKey . "upstreamBlockedTTL" }}
             - name: FTLCONF_dns_cache_upstreamBlockedTTL
-              value: {{ .Values.pihole.ftl.dns.cache.upstreamBlockedTTL | quote }}
+              value: {{ .upstreamBlockedTTL | quote }}
+            {{- end }}
             {{- end }}
 
             # [dns.blocking]
-            {{- if hasKey .Values.pihole.ftl.dns.blocking "active" }}
+            {{- with .blocking }}
+            {{- if hasKey . "active" }}
             - name: FTLCONF_dns_blocking_active
-              value: {{ .Values.pihole.ftl.dns.blocking.active | quote }}
+              value: {{ .active | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.blocking.mode }}
+            {{- if .mode }}
             - name: FTLCONF_dns_blocking_mode
-              value: {{ .Values.pihole.ftl.dns.blocking.mode | quote }}
+              value: {{ .mode | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.blocking.edns }}
+            {{- if .edns }}
             - name: FTLCONF_dns_blocking_edns
-              value: {{ .Values.pihole.ftl.dns.blocking.edns | quote }}
+              value: {{ .edns | quote }}
+            {{- end }}
             {{- end }}
 
             # [dns.specialDomains]
-            {{- if hasKey .Values.pihole.ftl.dns.specialDomains "mozillaCanary" }}
+            {{- with .specialDomains }}
+            {{- if hasKey . "mozillaCanary" }}
             - name: FTLCONF_dns_specialDomains_mozillaCanary
-              value: {{ .Values.pihole.ftl.dns.specialDomains.mozillaCanary | quote }}
+              value: {{ .mozillaCanary | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.specialDomains "iCloudPrivateRelay" }}
+            {{- if hasKey . "iCloudPrivateRelay" }}
             - name: FTLCONF_dns_specialDomains_iCloudPrivateRelay
-              value: {{ .Values.pihole.ftl.dns.specialDomains.iCloudPrivateRelay | quote }}
+              value: {{ .iCloudPrivateRelay | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.specialDomains "designatedResolver" }}
+            {{- if hasKey . "designatedResolver" }}
             - name: FTLCONF_dns_specialDomains_designatedResolver
-              value: {{ .Values.pihole.ftl.dns.specialDomains.designatedResolver | quote }}
+              value: {{ .designatedResolver | quote }}
+            {{- end }}
             {{- end }}
 
             # [dns.reply]
-            {{- if hasKey .Values.pihole.ftl.dns.reply.host "force4" }}
+            {{- with .reply }}
+            {{- with .host }}
+            {{- if hasKey . "force4" }}
             - name: FTLCONF_dns_reply_host_force4
-              value: {{ .Values.pihole.ftl.dns.reply.host.force4 | quote }}
+              value: {{ .force4 | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.reply.host.IPv4 }}
+            {{- if .IPv4 }}
             - name: FTLCONF_dns_reply_host_IPv4
-              value: {{ .Values.pihole.ftl.dns.reply.host.IPv4 | quote }}
+              value: {{ .IPv4 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.reply.host "force6" }}
+            {{- if hasKey . "force6" }}
             - name: FTLCONF_dns_reply_host_force6
-              value: {{ .Values.pihole.ftl.dns.reply.host.force6 | quote }}
+              value: {{ .force6 | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.reply.host.IPv6 }}
+            {{- if .IPv6 }}
             - name: FTLCONF_dns_reply_host_IPv6
-              value: {{ .Values.pihole.ftl.dns.reply.host.IPv6 | quote }}
+              value: {{ .IPv6 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.reply.blocking "force4" }}
+            {{- end }}
+            {{- with .blocking }}
+            {{- if hasKey . "force4" }}
             - name: FTLCONF_dns_reply_blocking_force4
-              value: {{ .Values.pihole.ftl.dns.reply.blocking.force4 | quote }}
+              value: {{ .force4 | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.reply.blocking.IPv4 }}
+            {{- if .IPv4 }}
             - name: FTLCONF_dns_reply_blocking_IPv4
-              value: {{ .Values.pihole.ftl.dns.reply.blocking.IPv4 | quote }}
+              value: {{ .IPv4 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.reply.blocking "force6" }}
+            {{- if hasKey . "force6" }}
             - name: FTLCONF_dns_reply_blocking_force6
-              value: {{ .Values.pihole.ftl.dns.reply.blocking.force6 | quote }}
+              value: {{ .force6 | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dns.reply.blocking.IPv6 }}
+            {{- if .IPv6 }}
             - name: FTLCONF_dns_reply_blocking_IPv6
-              value: {{ .Values.pihole.ftl.dns.reply.blocking.IPv6 | quote }}
+              value: {{ .IPv6 | quote }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # [dns.rateLimit]
-            {{- if hasKey .Values.pihole.ftl.dns.rateLimit "count" }}
+            {{- with .rateLimit }}
+            {{- if hasKey . "count" }}
             - name: FTLCONF_dns_rateLimit_count
-              value: {{ .Values.pihole.ftl.dns.rateLimit.count | quote }}
+              value: {{ .count | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dns.rateLimit "interval" }}
+            {{- if hasKey . "interval" }}
             - name: FTLCONF_dns_rateLimit_interval
-              value: {{ .Values.pihole.ftl.dns.rateLimit.interval | quote }}
+              value: {{ .interval | quote }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [dhcp]
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole.ftl.dhcp "active" }}
+            {{- with .dhcp }}
+            {{- if hasKey . "active" }}
             - name: FTLCONF_dhcp_active
-              value: {{ .Values.pihole.ftl.dhcp.active | quote }}
+              value: {{ .active | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.start }}
+            {{- if .start }}
             - name: FTLCONF_dhcp_start
-              value: {{ .Values.pihole.ftl.dhcp.start | quote }}
+              value: {{ .start | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.end }}
+            {{- if .end }}
             - name: FTLCONF_dhcp_end
-              value: {{ .Values.pihole.ftl.dhcp.end | quote }}
+              value: {{ .end | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.router }}
+            {{- if .router }}
             - name: FTLCONF_dhcp_router
-              value: {{ .Values.pihole.ftl.dhcp.router | quote }}
+              value: {{ .router | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.netmask }}
+            {{- if .netmask }}
             - name: FTLCONF_dhcp_netmask
-              value: {{ .Values.pihole.ftl.dhcp.netmask | quote }}
+              value: {{ .netmask | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.leaseTime }}
+            {{- if .leaseTime }}
             - name: FTLCONF_dhcp_leaseTime
-              value: {{ .Values.pihole.ftl.dhcp.leaseTime | quote }}
+              value: {{ .leaseTime | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dhcp "ipv6" }}
+            {{- if hasKey . "ipv6" }}
             - name: FTLCONF_dhcp_ipv6
-              value: {{ .Values.pihole.ftl.dhcp.ipv6 | quote }}
+              value: {{ .ipv6 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dhcp "rapidCommit" }}
+            {{- if hasKey . "rapidCommit" }}
             - name: FTLCONF_dhcp_rapidCommit
-              value: {{ .Values.pihole.ftl.dhcp.rapidCommit | quote }}
+              value: {{ .rapidCommit | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dhcp "multiDNS" }}
+            {{- if hasKey . "multiDNS" }}
             - name: FTLCONF_dhcp_multiDNS
-              value: {{ .Values.pihole.ftl.dhcp.multiDNS | quote }}
+              value: {{ .multiDNS | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dhcp "logging" }}
+            {{- if hasKey . "logging" }}
             - name: FTLCONF_dhcp_logging
-              value: {{ .Values.pihole.ftl.dhcp.logging | quote }}
+              value: {{ .logging | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.dhcp "ignoreUnknownClients" }}
+            {{- if hasKey . "ignoreUnknownClients" }}
             - name: FTLCONF_dhcp_ignoreUnknownClients
-              value: {{ .Values.pihole.ftl.dhcp.ignoreUnknownClients | quote }}
+              value: {{ .ignoreUnknownClients | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.dhcp.hosts }}
+            {{- if .hosts }}
             - name: FTLCONF_dhcp_hosts
-              value: {{ .Values.pihole.ftl.dhcp.hosts | join "\n" | quote }}
+              value: {{ .hosts | join "\n" | quote }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [ntp]
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole.ftl.ntp.ipv4 "active" }}
+            {{- with .ntp }}
+            {{- with .ipv4 }}
+            {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_ipv4_active
-              value: {{ .Values.pihole.ftl.ntp.ipv4.active | quote }}
+              value: {{ .active | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.ntp.ipv4.address }}
+            {{- if .address }}
             - name: FTLCONF_ntp_ipv4_address
-              value: {{ .Values.pihole.ftl.ntp.ipv4.address | quote }}
+              value: {{ .address | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.ipv6 "active" }}
+            {{- end }}
+            {{- with .ipv6 }}
+            {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_ipv6_active
-              value: {{ .Values.pihole.ftl.ntp.ipv6.active | quote }}
+              value: {{ .active | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.ntp.ipv6.address }}
+            {{- if .address }}
             - name: FTLCONF_ntp_ipv6_address
-              value: {{ .Values.pihole.ftl.ntp.ipv6.address | quote }}
+              value: {{ .address | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.sync "active" }}
+            {{- end }}
+            {{- with .sync }}
+            {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_sync_active
-              value: {{ .Values.pihole.ftl.ntp.sync.active | quote }}
+              value: {{ .active | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.ntp.sync.server }}
+            {{- if .server }}
             - name: FTLCONF_ntp_sync_server
-              value: {{ .Values.pihole.ftl.ntp.sync.server | quote }}
+              value: {{ .server | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.sync "interval" }}
+            {{- if hasKey . "interval" }}
             - name: FTLCONF_ntp_sync_interval
-              value: {{ .Values.pihole.ftl.ntp.sync.interval | quote }}
+              value: {{ .interval | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.sync "count" }}
+            {{- if hasKey . "count" }}
             - name: FTLCONF_ntp_sync_count
-              value: {{ .Values.pihole.ftl.ntp.sync.count | quote }}
+              value: {{ .count | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.sync.rtc "set" }}
+            {{- with .rtc }}
+            {{- if hasKey . "set" }}
             - name: FTLCONF_ntp_sync_rtc_set
-              value: {{ .Values.pihole.ftl.ntp.sync.rtc.set | quote }}
+              value: {{ .set | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.ntp.sync.rtc.device }}
+            {{- if .device }}
             - name: FTLCONF_ntp_sync_rtc_device
-              value: {{ .Values.pihole.ftl.ntp.sync.rtc.device | quote }}
+              value: {{ .device | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.ntp.sync.rtc "utc" }}
+            {{- if hasKey . "utc" }}
             - name: FTLCONF_ntp_sync_rtc_utc
-              value: {{ .Values.pihole.ftl.ntp.sync.rtc.utc | quote }}
+              value: {{ .utc | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [resolver]
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole.ftl.resolver "resolveIPv4" }}
+            {{- with .resolver }}
+            {{- if hasKey . "resolveIPv4" }}
             - name: FTLCONF_resolver_resolveIPv4
-              value: {{ .Values.pihole.ftl.resolver.resolveIPv4 | quote }}
+              value: {{ .resolveIPv4 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.resolver "resolveIPv6" }}
+            {{- if hasKey . "resolveIPv6" }}
             - name: FTLCONF_resolver_resolveIPv6
-              value: {{ .Values.pihole.ftl.resolver.resolveIPv6 | quote }}
+              value: {{ .resolveIPv6 | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.resolver "networkNames" }}
+            {{- if hasKey . "networkNames" }}
             - name: FTLCONF_resolver_networkNames
-              value: {{ .Values.pihole.ftl.resolver.networkNames | quote }}
+              value: {{ .networkNames | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.resolver.refreshNames }}
+            {{- if .refreshNames }}
             - name: FTLCONF_resolver_refreshNames
-              value: {{ .Values.pihole.ftl.resolver.refreshNames | quote }}
+              value: {{ .refreshNames | quote }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [database]
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole.ftl.database "DBimport" }}
+            {{- with .database }}
+            {{- if hasKey . "DBimport" }}
             - name: FTLCONF_database_DBimport
-              value: {{ .Values.pihole.ftl.database.DBimport | quote }}
+              value: {{ .DBimport | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.database "maxDBdays" }}
+            {{- if hasKey . "maxDBdays" }}
             - name: FTLCONF_database_maxDBdays
-              value: {{ .Values.pihole.ftl.database.maxDBdays | quote }}
+              value: {{ .maxDBdays | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.database "DBinterval" }}
+            {{- if hasKey . "DBinterval" }}
             - name: FTLCONF_database_DBinterval
-              value: {{ .Values.pihole.ftl.database.DBinterval | quote }}
+              value: {{ .DBinterval | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.database "useWAL" }}
+            {{- if hasKey . "useWAL" }}
             - name: FTLCONF_database_useWAL
-              value: {{ .Values.pihole.ftl.database.useWAL | quote }}
+              value: {{ .useWAL | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.database.network "parseARPcache" }}
+            {{- with .network }}
+            {{- if hasKey . "parseARPcache" }}
             - name: FTLCONF_database_network_parseARPcache
-              value: {{ .Values.pihole.ftl.database.network.parseARPcache | quote }}
+              value: {{ .parseARPcache | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.database.network "expire" }}
+            {{- if hasKey . "expire" }}
             - name: FTLCONF_database_network_expire
-              value: {{ .Values.pihole.ftl.database.network.expire | quote }}
+              value: {{ .expire | quote }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [webserver]
             # ------------------------------------------------------
-            {{- if .Values.pihole.ftl.webserver.domain }}
+            {{- with .webserver }}
+            {{- if .domain }}
             - name: FTLCONF_webserver_domain
-              value: {{ .Values.pihole.ftl.webserver.domain | quote }}
+              value: {{ .domain | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.acl }}
+            {{- if .acl }}
             - name: FTLCONF_webserver_acl
-              value: {{ .Values.pihole.ftl.webserver.acl | quote }}
+              value: {{ .acl | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver "port" }}
+            {{- if hasKey . "port" }}
             - name: FTLCONF_webserver_port
-              value: {{ .Values.pihole.ftl.webserver.port | quote }}
+              value: {{ .port | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver "threads" }}
+            {{- if hasKey . "threads" }}
             - name: FTLCONF_webserver_threads
-              value: {{ .Values.pihole.ftl.webserver.threads | quote }}
+              value: {{ .threads | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.headers }}
+            {{- if .headers }}
             - name: FTLCONF_webserver_headers
-              value: {{ .Values.pihole.ftl.webserver.headers | join "\n" | quote }}
+              value: {{ .headers | join "\n" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver "serve_all" }}
+            {{- if hasKey . "serve_all" }}
             - name: FTLCONF_webserver_serve_all
-              value: {{ .Values.pihole.ftl.webserver.serve_all | quote }}
+              value: {{ .serve_all | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.advancedOpts }}
+            {{- if .advancedOpts }}
             - name: FTLCONF_webserver_advancedOpts
-              value: {{ .Values.pihole.ftl.webserver.advancedOpts | join "\n" | quote }}
+              value: {{ .advancedOpts | join "\n" | quote }}
             {{- end }}
             
-            {{- if hasKey .Values.pihole.ftl.webserver.session "timeout" }}
+            {{- with .session }}
+            {{- if hasKey . "timeout" }}
             - name: FTLCONF_webserver_session_timeout
-              value: {{ .Values.pihole.ftl.webserver.session.timeout | quote }}
+              value: {{ .timeout | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.session "restore" }}
+            {{- if hasKey . "restore" }}
             - name: FTLCONF_webserver_session_restore
-              value: {{ .Values.pihole.ftl.webserver.session.restore | quote }}
+              value: {{ .restore | quote }}
+            {{- end }}
             {{- end }}
 
-            {{- if .Values.pihole.ftl.webserver.tls.cert }}
+            {{- with .tls }}
+            {{- if .cert }}
             - name: FTLCONF_webserver_tls_cert
-              value: {{ .Values.pihole.ftl.webserver.tls.cert | quote }}
+              value: {{ .cert | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.tls "validity" }}
+            {{- if hasKey . "validity" }}
             - name: FTLCONF_webserver_tls_validity
-              value: {{ .Values.pihole.ftl.webserver.tls.validity | quote }}
+              value: {{ .validity | quote }}
+            {{- end }}
             {{- end }}
 
-            {{- if .Values.pihole.ftl.webserver.paths.webroot }}
+            {{- with .paths }}
+            {{- if .webroot }}
             - name: FTLCONF_webserver_paths_webroot
-              value: {{ .Values.pihole.ftl.webserver.paths.webroot | quote }}
+              value: {{ .webroot | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.paths.webhome }}
+            {{- if .webhome }}
             - name: FTLCONF_webserver_paths_webhome
-              value: {{ .Values.pihole.ftl.webserver.paths.webhome | quote }}
+              value: {{ .webhome | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.paths.prefix }}
+            {{- if .prefix }}
             - name: FTLCONF_webserver_paths_prefix
-              value: {{ .Values.pihole.ftl.webserver.paths.prefix | quote }}
+              value: {{ .prefix | quote }}
+            {{- end }}
             {{- end }}
 
-            {{- if hasKey .Values.pihole.ftl.webserver.interface "boxed" }}
+            {{- with .interface }}
+            {{- if hasKey . "boxed" }}
             - name: FTLCONF_webserver_interface_boxed
-              value: {{ .Values.pihole.ftl.webserver.interface.boxed | quote }}
+              value: {{ .boxed | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.interface.theme }}
+            {{- if .theme }}
             - name: FTLCONF_webserver_interface_theme
-              value: {{ .Values.pihole.ftl.webserver.interface.theme | quote }}
+              value: {{ .theme | quote }}
+            {{- end }}
             {{- end }}
 
             # API
-            {{- if hasKey .Values.pihole.ftl.webserver.api "max_sessions" }}
+            {{- with .api }}
+            {{- if hasKey . "max_sessions" }}
             - name: FTLCONF_webserver_api_max_sessions
-              value: {{ .Values.pihole.ftl.webserver.api.max_sessions | quote }}
+              value: {{ .max_sessions | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "prettyJSON" }}
+            {{- if hasKey . "prettyJSON" }}
             - name: FTLCONF_webserver_api_prettyJSON
-              value: {{ .Values.pihole.ftl.webserver.api.prettyJSON | quote }}
+              value: {{ .prettyJSON | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.pwhash }}
+            {{- if .pwhash }}
             - name: FTLCONF_webserver_api_pwhash
-              value: {{ .Values.pihole.ftl.webserver.api.pwhash | quote }}
+              value: {{ .pwhash | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.totp_secret }}
+            {{- if .totp_secret }}
             - name: FTLCONF_webserver_api_totp_secret
-              value: {{ .Values.pihole.ftl.webserver.api.totp_secret | quote }}
+              value: {{ .totp_secret | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.app_pwhash }}
+            {{- if .app_pwhash }}
             - name: FTLCONF_webserver_api_app_pwhash
-              value: {{ .Values.pihole.ftl.webserver.api.app_pwhash | quote }}
+              value: {{ .app_pwhash | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "app_sudo" }}
+            {{- if hasKey . "app_sudo" }}
             - name: FTLCONF_webserver_api_app_sudo
-              value: {{ .Values.pihole.ftl.webserver.api.app_sudo | quote }}
+              value: {{ .app_sudo | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "cli_pw" }}
+            {{- if hasKey . "cli_pw" }}
             - name: FTLCONF_webserver_api_cli_pw
-              value: {{ .Values.pihole.ftl.webserver.api.cli_pw | quote }}
+              value: {{ .cli_pw | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.excludeClients }}
+            {{- if .excludeClients }}
             - name: FTLCONF_webserver_api_excludeClients
-              value: {{ .Values.pihole.ftl.webserver.api.excludeClients | join "\n" | quote }}
+              value: {{ .excludeClients | join "\n" | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.excludeDomains }}
+            {{- if .excludeDomains }}
             - name: FTLCONF_webserver_api_excludeDomains
-              value: {{ .Values.pihole.ftl.webserver.api.excludeDomains | join "\n" | quote }}
+              value: {{ .excludeDomains | join "\n" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "maxHistory" }}
+            {{- if hasKey . "maxHistory" }}
             - name: FTLCONF_webserver_api_maxHistory
-              value: {{ .Values.pihole.ftl.webserver.api.maxHistory | quote }}
+              value: {{ .maxHistory | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "maxClients" }}
+            {{- if hasKey . "maxClients" }}
             - name: FTLCONF_webserver_api_maxClients
-              value: {{ .Values.pihole.ftl.webserver.api.maxClients | quote }}
+              value: {{ .maxClients | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "client_history_global_max" }}
+            {{- if hasKey . "client_history_global_max" }}
             - name: FTLCONF_webserver_api_client_history_global_max
-              value: {{ .Values.pihole.ftl.webserver.api.client_history_global_max | quote }}
+              value: {{ .client_history_global_max | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api "allow_destructive" }}
+            {{- if hasKey . "allow_destructive" }}
             - name: FTLCONF_webserver_api_allow_destructive
-              value: {{ .Values.pihole.ftl.webserver.api.allow_destructive | quote }}
+              value: {{ .allow_destructive | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.webserver.api.temp "limit" }}
+            {{- with .temp }}
+            {{- if hasKey . "limit" }}
             - name: FTLCONF_webserver_api_temp_limit
-              value: {{ .Values.pihole.ftl.webserver.api.temp.limit | quote }}
+              value: {{ .limit | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.webserver.api.temp.unit }}
+            {{- if .unit }}
             - name: FTLCONF_webserver_api_temp_unit
-              value: {{ .Values.pihole.ftl.webserver.api.temp.unit | quote }}
+              value: {{ .unit | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [files]
             # ------------------------------------------------------
-            {{- if .Values.pihole.ftl.files.pid }}
+            {{- with .files }}
+            {{- if .pid }}
             - name: FTLCONF_files_pid
-              value: {{ .Values.pihole.ftl.files.pid | quote }}
+              value: {{ .pid | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.database }}
+            {{- if .database }}
             - name: FTLCONF_files_database
-              value: {{ .Values.pihole.ftl.files.database | quote }}
+              value: {{ .database | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.gravity }}
+            {{- if .gravity }}
             - name: FTLCONF_files_gravity
-              value: {{ .Values.pihole.ftl.files.gravity | quote }}
+              value: {{ .gravity | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.gravity_tmp }}
+            {{- if .gravity_tmp }}
             - name: FTLCONF_files_gravity_tmp
-              value: {{ .Values.pihole.ftl.files.gravity_tmp | quote }}
+              value: {{ .gravity_tmp | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.macvendor }}
+            {{- if .macvendor }}
             - name: FTLCONF_files_macvendor
-              value: {{ .Values.pihole.ftl.files.macvendor | quote }}
+              value: {{ .macvendor | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.pcap }}
+            {{- if .pcap }}
             - name: FTLCONF_files_pcap
-              value: {{ .Values.pihole.ftl.files.pcap | quote }}
+              value: {{ .pcap | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.log.ftl }}
+            {{- with .log }}
+            {{- if .ftl }}
             - name: FTLCONF_files_log_ftl
-              value: {{ .Values.pihole.ftl.files.log.ftl | quote }}
+              value: {{ .ftl | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.log.dnsmasq }}
+            {{- if .dnsmasq }}
             - name: FTLCONF_files_log_dnsmasq
-              value: {{ .Values.pihole.ftl.files.log.dnsmasq | quote }}
+              value: {{ .dnsmasq | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.files.log.webserver }}
+            {{- if .webserver }}
             - name: FTLCONF_files_log_webserver
-              value: {{ .Values.pihole.ftl.files.log.webserver | quote }}
+              value: {{ .webserver | quote }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # ------------------------------------------------------
             # [misc]
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole.ftl.misc "privacylevel" }}
+            {{- with .misc }}
+            {{- if hasKey . "privacylevel" }}
             - name: FTLCONF_misc_privacylevel
-              value: {{ .Values.pihole.ftl.misc.privacylevel | quote }}
+              value: {{ .privacylevel | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "delay_startup" }}
+            {{- if hasKey . "delay_startup" }}
             - name: FTLCONF_misc_delay_startup
-              value: {{ .Values.pihole.ftl.misc.delay_startup | quote }}
+              value: {{ .delay_startup | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "nice" }}
+            {{- if hasKey . "nice" }}
             - name: FTLCONF_misc_nice
-              value: {{ .Values.pihole.ftl.misc.nice | quote }}
+              value: {{ .nice | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "addr2line" }}
+            {{- if hasKey . "addr2line" }}
             - name: FTLCONF_misc_addr2line
-              value: {{ .Values.pihole.ftl.misc.addr2line | quote }}
+              value: {{ .addr2line | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "etc_dnsmasq_d" }}
+            {{- if hasKey . "etc_dnsmasq_d" }}
             - name: FTLCONF_misc_etc_dnsmasq_d
-              value: {{ .Values.pihole.ftl.misc.etc_dnsmasq_d | quote }}
+              value: {{ .etc_dnsmasq_d | quote }}
             {{- end }}
-            {{- if .Values.pihole.ftl.misc.dnsmasq_lines }}
+            {{- if .dnsmasq_lines }}
             - name: FTLCONF_misc_dnsmasq_lines
-              value: {{ .Values.pihole.ftl.misc.dnsmasq_lines | join "\n" | quote }}
+              value: {{ .dnsmasq_lines | join "\n" | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "extraLogging" }}
+            {{- if hasKey . "extraLogging" }}
             - name: FTLCONF_misc_extraLogging
-              value: {{ .Values.pihole.ftl.misc.extraLogging | quote }}
+              value: {{ .extraLogging | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "readOnly" }}
+            {{- if hasKey . "readOnly" }}
             - name: FTLCONF_misc_readOnly
-              value: {{ .Values.pihole.ftl.misc.readOnly | quote }}
+              value: {{ .readOnly | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "normalizeCPU" }}
+            {{- if hasKey . "normalizeCPU" }}
             - name: FTLCONF_misc_normalizeCPU
-              value: {{ .Values.pihole.ftl.misc.normalizeCPU | quote }}
+              value: {{ .normalizeCPU | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc "hide_dnsmasq_warn" }}
+            {{- if hasKey . "hide_dnsmasq_warn" }}
             - name: FTLCONF_misc_hide_dnsmasq_warn
-              value: {{ .Values.pihole.ftl.misc.hide_dnsmasq_warn | quote }}
+              value: {{ .hide_dnsmasq_warn | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc.check "load" }}
+            {{- with .check }}
+            {{- if hasKey . "load" }}
             - name: FTLCONF_misc_check_load
-              value: {{ .Values.pihole.ftl.misc.check.load | quote }}
+              value: {{ .load | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc.check "shmem" }}
+            {{- if hasKey . "shmem" }}
             - name: FTLCONF_misc_check_shmem
-              value: {{ .Values.pihole.ftl.misc.check.shmem | quote }}
+              value: {{ .shmem | quote }}
             {{- end }}
-            {{- if hasKey .Values.pihole.ftl.misc.check "disk" }}
+            {{- if hasKey . "disk" }}
             - name: FTLCONF_misc_check_disk
-              value: {{ .Values.pihole.ftl.misc.check.disk | quote }}
+              value: {{ .disk | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 
             # User/Permission Logic

@@ -77,10 +77,16 @@ Namespace: {{ .Release.Namespace }}
 ------------------------------------------------------------------------------
 📝 Configuration
 ------------------------------------------------------------------------------
-  Upstream DNS: {{ .Values.pihole.ftl.dns.upstreams | join ", " }}
-  Query Logging: {{ .Values.pihole.ftl.dns.queryLogging }}
-  DHCP: {{ if .Values.pihole.ftl.dhcp.active }}✓ Enabled{{ else }}✗ Disabled{{ end }}
-  DNSSEC: {{ if .Values.pihole.ftl.dns.dnssec }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+{{- with .Values.pihole.ftl }}
+{{- with .dns }}
+  Upstream DNS: {{ .upstreams | join ", " }}
+  Query Logging: {{ .queryLogging }}
+  DNSSEC: {{ if .dnssec }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+{{- end }}
+{{- with .dhcp }}
+  DHCP: {{ if .active }}✓ Enabled{{ else }}✗ Disabled{{ end }}
+{{- end }}
+{{- end }}
 
 ------------------------------------------------------------------------------
 📚 Documentation
