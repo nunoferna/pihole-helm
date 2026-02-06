@@ -21,6 +21,14 @@ strategy:
   #   maxSurge: 1
   #   maxUnavailable: 0
 
+# Pod annotations (useful for secret injection like Vault, AWS Secrets Manager, etc.)
+podAnnotations: {}
+
+# Extra environment variables to append to the container
+extraEnv: []
+  # - name: MY_CUSTOM_VAR
+  #   value: "my-value"
+
 # ------------------------------------------------------------------------------
 # PI-HOLE FTL CONFIGURATION (COMPLETE)
 # ------------------------------------------------------------------------------

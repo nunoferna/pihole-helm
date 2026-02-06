@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         {{- include "pihole.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
       hostNetwork: {{ .Values.networking.hostNetwork }}
@@ -721,6 +725,10 @@ spec:
                 secretKeyRef:
                   name: {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }}
                   key: {{ .Values.pihole.web.passwordSecretKey }}
+          
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           
           ports:
             - name: dns-tcp

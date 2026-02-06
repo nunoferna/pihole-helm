@@ -78,6 +78,29 @@
                 }
             }
         },
+        "podAnnotations": {
+            "type": "object",
+            "description": "Annotations to add to the pod. Useful for secret injection like Vault, AWS Secrets Manager, etc."
+        },
+        "extraEnv": {
+            "type": "array",
+            "description": "Extra environment variables to append to the container",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "valueFrom": {
+                        "type": "object"
+                    }
+                },
+                "required": ["name"]
+            }
+        },
         "pihole": {
             "type": "object",
             "properties": {

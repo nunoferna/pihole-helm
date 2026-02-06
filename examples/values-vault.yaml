@@ -1,0 +1,57 @@
+# Example configuration for using HashiCorp Vault Agent Injector
+# This approach uses sidecar injection to mount secrets as files
+#
+# Prerequisites:
+# 1. Vault server configured and accessible
+# 2. Vault Agent Injector installed in the cluster
+#    helm repo add hashicorp https://helm.releases.hashicorp.com
+#    helm install vault hashicorp/vault --set "injector.enabled=true"
+#
+# 3. Vault role and policy configured for Pi-hole
+# 4. Secret stored in Vault at the specified path
+#
+# Example Vault secret:
+#   vault kv put secret/pihole/web-password password="your-secure-password"
+#
+# Example Vault policy (pihole-policy.hcl):
+#   path "secret/data/pihole/web-password" {
+#     capabilities = ["read"]
+#   }
+#
+# Create policy and role:
+#   vault policy write pihole pihole-policy.hcl
+#   vault write auth/kubernetes/role/pihole \
+#     bound_service_account_names=pihole \
+#     bound_service_account_namespaces=default \
+#     policies=pihole \
+#     ttl=24h
+
+# Pod annotations to enable Vault agent injection
+podAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "pihole"
+  # Pre-populate secrets before main container starts
+  vault.hashicorp.com/agent-pre-populate-only: "true"
+  # Inject secret as a file at /vault/secrets/web-password
+  vault.hashicorp.com/agent-inject-secret-web-password: "secret/data/pihole/web-password"
+  vault.hashicorp.com/agent-inject-template-web-password: |
+    {{ with secret "secret/data/pihole/web-password" -}}
+    {{ .Data.data.password }}
+    {{- end }}
+
+# Override the password environment variable to read from the Vault-injected file
+# Pi-hole supports the "file:" prefix to read secrets from files
+# This env var will override the default one from the chart (last definition wins in K8s)
+extraEnv:
+  - name: FTLCONF_webserver_api_password
+    value: "file:/vault/secrets/web-password"
+
+# Note: The chart will still create a default secret with a random password,
+# but it will be ignored since extraEnv overrides the environment variable.
+# This approach is tested and working with Pi-hole.
+
+# Ensure service account is created for Vault authentication
+serviceAccount:
+  create: true
+  name: "pihole"
+  annotations: {}
