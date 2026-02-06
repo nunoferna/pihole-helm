@@ -43,7 +43,7 @@ podAnnotations:
 # This follows the standard HashiCorp Vault Agent Injector pattern
 command: ["/bin/bash", "-c"]
 args:
-  - source /vault/secrets/web-password && exec /s6-init
+  - source /vault/secrets/web-password && exec start.sh
 
 pihole:
   web:
