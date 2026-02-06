@@ -8,7 +8,7 @@ A production-ready Helm chart for Pi-hole, fully compatible with Pi-hole v6 FTL 
 
 ```bash
 # Install from GitHub Container Registry
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.2.4
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.2.5
 ```
 
 ## Features

@@ -32,23 +32,23 @@ podAnnotations:
   vault.hashicorp.com/role: "pihole"
   # Pre-populate secrets before main container starts
   vault.hashicorp.com/agent-pre-populate-only: "true"
-  # Inject secret as a file at /vault/secrets/web-password
+  # Inject secret as environment variable export statement
   vault.hashicorp.com/agent-inject-secret-web-password: "secret/data/pihole/web-password"
   vault.hashicorp.com/agent-inject-template-web-password: |
-    {{ with secret "secret/data/pihole/web-password" -}}
-    {{ .Data.data.password }}
+    {{- with secret "secret/data/pihole/web-password" -}}
+    export FTLCONF_webserver_api_password="{{ .Data.data.password }}"
     {{- end }}
 
-# Override the password environment variable to read from the Vault-injected file
-# Pi-hole supports the "file:" prefix to read secrets from files
-# This env var will override the default one from the chart (last definition wins in K8s)
-extraEnv:
-  - name: FTLCONF_webserver_api_password
-    value: "file:/vault/secrets/web-password"
+# Override the container command to source Vault secrets before starting Pi-hole
+# This follows the standard HashiCorp Vault Agent Injector pattern
+command: ["/bin/bash", "-c"]
+args:
+  - source /vault/secrets/web-password && exec /s6-init
 
-# Note: The chart will still create a default secret with a random password,
-# but it will be ignored since extraEnv overrides the environment variable.
-# This approach is tested and working with Pi-hole.
+pihole:
+  web:
+    # Skip the default password env var since we're setting it in the wrapper script
+    skipPasswordEnv: true
 
 # Ensure service account is created for Vault authentication
 serviceAccount:

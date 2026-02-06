@@ -101,6 +101,27 @@
                 "required": ["name"]
             }
         },
+        "extraInitContainers": {
+            "type": "array",
+            "description": "Extra init containers to run before the main container",
+            "items": {
+                "type": "object"
+            }
+        },
+        "command": {
+            "type": "array",
+            "description": "Override container command",
+            "items": {
+                "type": "string"
+            }
+        },
+        "args": {
+            "type": "array",
+            "description": "Override container args",
+            "items": {
+                "type": "string"
+            }
+        },
         "pihole": {
             "type": "object",
             "properties": {
@@ -220,6 +241,10 @@
                         },
                         "existingSecret": {
                             "type": "string"
+                        },
+                        "skipPasswordEnv": {
+                            "type": "boolean",
+                            "description": "Skip the default password environment variable when using external secret injection"
                         }
                     }
                 },

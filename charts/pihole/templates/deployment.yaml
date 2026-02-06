@@ -32,10 +32,23 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             capabilities:
               add:
@@ -720,11 +733,13 @@ spec:
             {{- end }}
             
             # Web Password (Generated or from Secret)
+            {{- if not .Values.pihole.web.skipPasswordEnv }}
             - name: FTLCONF_webserver_api_password
               valueFrom:
                 secretKeyRef:
                   name: {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }}
                   key: {{ .Values.pihole.web.passwordSecretKey }}
+            {{- end }}
           
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}

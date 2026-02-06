@@ -29,6 +29,17 @@ extraEnv: []
   # - name: MY_CUSTOM_VAR
   #   value: "my-value"
 
+# Extra init containers to run before the main container
+# Useful for transforming secrets from external providers
+extraInitContainers: []
+
+# Override container command (optional)
+command: []
+  # Example: ["/bin/bash", "-c"]
+
+# Override container args (optional)
+args: []
+
 # ------------------------------------------------------------------------------
 # PI-HOLE FTL CONFIGURATION (COMPLETE)
 # ------------------------------------------------------------------------------
@@ -61,6 +72,9 @@ pihole:
     password: ""
     passwordSecretKey: "password"
     existingSecret: ""
+    # Skip the default password env var when using external secret injection
+    # Set to true when defining FTLCONF_webserver_api_password in extraEnv
+    skipPasswordEnv: false
 
   # FTL Configuration
   # Maps directly to pihole-FTL.toml structure
