@@ -786,6 +786,34 @@
                             "type": "object"
                         }
                     }
+                },
+                "command": {
+                    "type": "array",
+                    "description": "Override metrics container command",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "args": {
+                    "type": "array",
+                    "description": "Override metrics container args",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "initContainer": {
+                    "type": "array",
+                    "description": "Init container for metrics (useful for adding shell to scratch-based images)",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "volumeMounts": {
+                    "type": "array",
+                    "description": "Volume mounts for metrics container",
+                    "items": {
+                        "type": "object"
+                    }
                 }
             }
         },
@@ -816,6 +844,13 @@
         },
         "tolerations": {
             "type": "array"
+        },
+        "extraVolumes": {
+            "type": "array",
+            "description": "Extra volumes to add to the pod",
+            "items": {
+                "type": "object"
+            }
         }
     }
 }

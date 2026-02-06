@@ -405,6 +405,14 @@ metrics:
     # Or use API token (WEBPASSWORD from /etc/pihole/setupVars.conf):
     # - name: PIHOLE_API_TOKEN
     #   value: "your-api-token-here"
+  # Override metrics container command (optional, useful for Vault integration)
+  command: []
+  # Override metrics container args (optional)
+  args: []
+  # Init container for metrics (optional, useful for adding shell to scratch-based images)
+  initContainer: []
+  # Volume mounts for metrics container (optional)
+  volumeMounts: []
   resources:
     limits:
       memory: 64Mi
@@ -456,3 +464,6 @@ resources:
 affinity: {}
 nodeSelector: {}
 tolerations: []
+
+# Extra volumes to add to the pod (optional)
+extraVolumes: []

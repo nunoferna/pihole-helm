@@ -32,9 +32,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       
-      {{- with .Values.extraInitContainers }}
+      {{- if or .Values.extraInitContainers (and .Values.metrics.enabled .Values.metrics.initContainer) }}
       initContainers:
+        {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.metrics.enabled .Values.metrics.initContainer }}
+        {{- toYaml .Values.metrics.initContainer | nindent 8 }}
+        {{- end }}
       {{- end }}
       
       containers:
@@ -804,6 +809,14 @@ spec:
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          {{- with .Values.metrics.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.metrics.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             {{- if .Values.metrics.env }}
             {{- toYaml .Values.metrics.env | nindent 12 }}
@@ -812,6 +825,10 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
+          {{- with .Values.metrics.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.metrics.resources | nindent 12 }}
         {{- end }}
@@ -831,6 +848,9 @@ spec:
           configMap:
             name: {{ include "pihole.fullname" . }}-lists
             defaultMode: 0755
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       
       {{- with .Values.nodeSelector }}
       nodeSelector:

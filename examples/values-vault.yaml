@@ -38,6 +38,12 @@ podAnnotations:
     {{- with secret "secret/data/pihole/web-password" -}}
     export FTLCONF_webserver_api_password="{{ .Data.data.password }}"
     {{- end }}
+  # Inject secret as plain password for metrics container (scratch image, no shell)
+  vault.hashicorp.com/agent-inject-secret-metrics-password: "secret/data/pihole/web-password"
+  vault.hashicorp.com/agent-inject-template-metrics-password: |
+    {{- with secret "secret/data/pihole/web-password" -}}
+    {{ .Data.data.password }}
+    {{- end }}
 
 # Override the container command to source Vault secrets before starting Pi-hole
 # This follows the standard HashiCorp Vault Agent Injector pattern
@@ -49,6 +55,49 @@ pihole:
   web:
     # Skip the default password env var since we're setting it in the wrapper script
     skipPasswordEnv: true
+
+# If metrics are enabled, configure them to use the Vault secret
+# Since the exporter runs on a scratch image (no shell), we use an init container  
+# to copy busybox, then use it to read the Vault secret
+# Uncomment if using metrics:
+# metrics:
+#   enabled: true
+#   # Init container to provide shell capability
+#   initContainer:
+#     - name: metrics-shell-provider
+#       image: busybox:latest
+#       command: ["sh", "-c"]
+#       args:
+#         - |
+#           mkdir -p /shared/bin
+#           cp /bin/sh /shared/bin/sh
+#           cp /bin/cat /shared/bin/cat
+#       volumeMounts:
+#         - name: shared-bin
+#           mountPath: /shared
+#   # Override command to use busybox shell and read vault secret
+#   command: ["/shared/bin/sh", "-c"]
+#   args:
+#     - |
+#       PIHOLE_PASSWORD=$(/shared/bin/cat /vault/secrets/metrics-password)
+#       export PIHOLE_PASSWORD
+#       exec /root/pihole-exporter
+#   env:
+#     - name: PIHOLE_HOSTNAME
+#       value: "127.0.0.1"
+#     - name: PIHOLE_PORT
+#       value: "80"
+#     - name: INTERVAL
+#       value: "10s"
+#   volumeMounts:
+#     - name: shared-bin
+#       mountPath: /shared
+
+# Extra volumes for metrics init container shared storage
+# Uncomment if using metrics:
+# extraVolumes:
+#   - name: shared-bin
+#     emptyDir: {}
 
 # Ensure service account is created for Vault authentication
 serviceAccount:
