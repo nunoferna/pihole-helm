@@ -2,7 +2,7 @@ apiVersion: v2
 name: pihole
 description: Enterprise-grade Pi-hole v6 Helm Chart with full FTL configuration support.
 type: application
-version: 0.2.2
+version: 0.2.3
 appVersion: "2025.11.1"
 kubeVersion: ">=1.23.0"
 keywords:
