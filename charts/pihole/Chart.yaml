@@ -1,23 +1,25 @@
 apiVersion: v2
 name: pihole
-description: Enterprise-grade Pi-hole v6 Helm Chart with full FTL configuration support.
+description: Pi-hole v6 Helm Chart with full FTL configuration support.
+icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
 type: application
-version: 0.2.7
+maintainers:
+  - name: Nuno Fernandes
+    email: nuno.o.fernandes@outlook.pt
+    url: https://nunoferna.github.io
+version: 0.3.0
 appVersion: "2025.11.1"
 kubeVersion: ">=1.23.0"
+home: https://nunoferna.github.io/pihole-helm/
 keywords:
   - pihole
   - dns
   - adblock
   - dhcp
   - monitoring
-home: https://nunoferna.github.io/pihole-helm/
-icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
 sources:
-  - https://github.com/pi-hole/docker-pi-hole
-maintainers:
-  - name: Nuno Fernandes
-    email: nuno.o.fernandes@outlook.pt
+  - https://github.com/nunoferna/pihole-helm
+
 annotations:
   artifacthub.io/category: networking
   artifacthub.io/license: MIT
@@ -26,3 +28,12 @@ annotations:
       image: pihole/pihole:2025.11.1
     - name: pihole-exporter
       image: ekofr/pihole-exporter:v1.2.0
+  artifacthub.io/links: |
+    - name: Chart Source
+      url: https://github.com/nunoferna/pihole-helm
+    - name: Upstream Docker Project
+      url: https://github.com/pi-hole/docker-pi-hole
+    - name: Upstream Pi-hole Project
+      url: https://github.com/pi-hole/pi-hole
+    - name: Pi-hole Exporter
+      url: https://github.com/eko/pihole-exporter

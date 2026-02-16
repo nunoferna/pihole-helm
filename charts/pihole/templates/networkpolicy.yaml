@@ -25,9 +25,9 @@ spec:
         - port: 9617 
           protocol: TCP
       from:
-        {{- if .Values.networkPolicy.webAllowFrom }}
+  {{- if .Values.networkPolicy.webAllowFrom }}
         {{- toYaml .Values.networkPolicy.webAllowFrom | nindent 8 }}
-        {{- else }}
+  {{- else }}
         - namespaceSelector: {}
-        {{- end }}
+  {{- end }}
 {{- end }}

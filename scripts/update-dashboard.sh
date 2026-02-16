@@ -23,7 +23,7 @@ fi
 
 echo "Fixing datasource references..."
 # Replace ${DS_PROMETHEUS} with Prometheus to avoid datasource not found errors
-sed -i.bak 's/"\${DS_PROMETHEUS}"/"Prometheus"/g' "${OUTPUT_FILE}" && rm "${OUTPUT_FILE}.bak"
+sed -i.bak "s/\"\\${DS_PROMETHEUS}\"/\"Prometheus\"/g" "${OUTPUT_FILE}" && rm "${OUTPUT_FILE}.bak"
 
 echo "✅ Dashboard downloaded successfully!"
 echo "📍 Location: ${OUTPUT_FILE}"

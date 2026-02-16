@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "pihole.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
 spec:
@@ -15,740 +16,759 @@ spec:
     metadata:
       labels:
         {{- include "pihole.selectorLabels" . | nindent 8 }}
-      {{- with .Values.podAnnotations }}
+{{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
       hostNetwork: {{ .Values.networking.hostNetwork }}
-      {{- if .Values.networking.hostNetwork }}
+{{- if .Values.networking.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
-      {{- else }}
+{{- else }}
       dnsPolicy: ClusterFirst
-      {{- end }}
-      {{- with .Values.imagePullSecrets }}
+{{- end }}
+{{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{- end }}
       
-      {{- if or .Values.extraInitContainers (and .Values.metrics.enabled .Values.metrics.initContainer) }}
+{{- if or .Values.extraInitContainers (and .Values.metrics.enabled .Values.metrics.initContainer) }}
       initContainers:
-        {{- with .Values.extraInitContainers }}
+  {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- if and .Values.metrics.enabled .Values.metrics.initContainer }}
+  {{- end }}
+  {{- if and .Values.metrics.enabled .Values.metrics.initContainer }}
         {{- toYaml .Values.metrics.initContainer | nindent 8 }}
-        {{- end }}
-      {{- end }}
+  {{- end }}
+{{- end }}
       
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.command }}
+{{- with .Values.command }}
           command:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.args }}
+{{- end }}
+{{- with .Values.args }}
           args:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+{{- end }}
           securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: {{ .Values.pihole.uid | default 1000 }} 
+            runAsGroup: {{ .Values.pihole.gid | default 1000 }}
             capabilities:
+              drop:
+                  - ALL
               add:
-                {{- if or .Values.serviceDhcp.enabled .Values.networking.hostNetwork }}
-                - NET_ADMIN
-                {{- end }}
-                {{- range .Values.securityContext.capabilities.add }}
+                # Essential: Bind to port 53 (DNS)
+                - NET_BIND_SERVICE
+                
+                # Recommended by Pi-hole Docs:
+                - SYS_TIME  # For internal NTP time syncing
+                - SYS_NICE  # For process priority (FTL is "important")
+                - CHOWN     # For log/database file ownership changes
+                
+                # Conditional: DHCP & IPv6 Requirements
+                # Only added if DHCP service is enabled or HostNetwork is used
+{{- if or .Values.pihole.ftl.dhcp.service.enabled .Values.networking.hostNetwork }}
+                - NET_ADMIN # Required for DHCP & modifying routing tables
+                - NET_RAW   # Required for DHCPv6 & collision checks
+{{- end }}
+{{- with .Values.securityContext.capabilities.add }}
+  {{- range . }}
                 - {{ . }}
-                {{- end }}
+  {{- end }}
+{{- end }}
           lifecycle:
             postStart:
               exec:
                 command: ["/bin/bash", "/usr/local/bin/import-lists.sh"]
           env:
-            {{- if .Values.timezone }}
+{{- if .Values.timezone }}
             - name: TZ
               value: {{ .Values.timezone | quote }}
-            {{- end }}
+{{- end }}
             
-            {{- with .Values.pihole.ftl }}
+{{- with .Values.pihole.ftl }}
             # ------------------------------------------------------
             # [dns]
             # ------------------------------------------------------
-            {{- with .dns }}
-            {{- if .upstreams }}
+  {{- with .dns }}
+    {{- if .upstreams }}
             - name: FTLCONF_dns_upstreams
               value: {{ .upstreams | join ";" | quote }}
-            {{- end }}
-            {{- if hasKey . "CNAMEdeepInspect" }}
+    {{- end }}
+    {{- if hasKey . "CNAMEdeepInspect" }}
             - name: FTLCONF_dns_CNAMEdeepInspect
               value: {{ .CNAMEdeepInspect | quote }}
-            {{- end }}
-            {{- if hasKey . "blockESNI" }}
+    {{- end }}
+    {{- if hasKey . "blockESNI" }}
             - name: FTLCONF_dns_blockESNI
               value: {{ .blockESNI | quote }}
-            {{- end }}
-            {{- if hasKey . "EDNS0ECS" }}
+    {{- end }}
+    {{- if hasKey . "EDNS0ECS" }}
             - name: FTLCONF_dns_EDNS0ECS
               value: {{ .EDNS0ECS | quote }}
-            {{- end }}
-            {{- if hasKey . "ignoreLocalhost" }}
+    {{- end }}
+    {{- if hasKey . "ignoreLocalhost" }}
             - name: FTLCONF_dns_ignoreLocalhost
               value: {{ .ignoreLocalhost | quote }}
-            {{- end }}
-            {{- if hasKey . "showDNSSEC" }}
+    {{- end }}
+    {{- if hasKey . "showDNSSEC" }}
             - name: FTLCONF_dns_showDNSSEC
               value: {{ .showDNSSEC | quote }}
-            {{- end }}
-            {{- if hasKey . "analyzeOnlyAandAAAA" }}
+    {{- end }}
+    {{- if hasKey . "analyzeOnlyAandAAAA" }}
             - name: FTLCONF_dns_analyzeOnlyAandAAAA
               value: {{ .analyzeOnlyAandAAAA | quote }}
-            {{- end }}
-            {{- if .piholePTR }}
+    {{- end }}
+    {{- if .piholePTR }}
             - name: FTLCONF_dns_piholePTR
               value: {{ .piholePTR | quote }}
-            {{- end }}
-            {{- if .replyWhenBusy }}
+    {{- end }}
+    {{- if .replyWhenBusy }}
             - name: FTLCONF_dns_replyWhenBusy
               value: {{ .replyWhenBusy | quote }}
-            {{- end }}
-            {{- if hasKey . "blockTTL" }}
+    {{- end }}
+    {{- if hasKey . "blockTTL" }}
             - name: FTLCONF_dns_blockTTL
               value: {{ .blockTTL | quote }}
-            {{- end }}
-            {{- if .hosts }}
+    {{- end }}
+    {{- if .hosts }}
             - name: FTLCONF_dns_hosts
               value: {{ .hosts | join "\n" | quote }}
-            {{- end }}
-            {{- if hasKey . "domainNeeded" }}
+    {{- end }}
+    {{- if hasKey . "domainNeeded" }}
             - name: FTLCONF_dns_domainNeeded
               value: {{ .domainNeeded | quote }}
-            {{- end }}
-            {{- if hasKey . "expandHosts" }}
+    {{- end }}
+    {{- if hasKey . "expandHosts" }}
             - name: FTLCONF_dns_expandHosts
               value: {{ .expandHosts | quote }}
-            {{- end }}
-            {{- if hasKey . "bogusPriv" }}
+    {{- end }}
+    {{- if hasKey . "bogusPriv" }}
             - name: FTLCONF_dns_bogusPriv
               value: {{ .bogusPriv | quote }}
-            {{- end }}
-            {{- if hasKey . "dnssec" }}
+    {{- end }}
+    {{- if hasKey . "dnssec" }}
             - name: FTLCONF_dns_dnssec
               value: {{ .dnssec | quote }}
-            {{- end }}
-            {{- if .interface }}
+    {{- end }}
+    {{- if .interface }}
             - name: FTLCONF_dns_interface
               value: {{ .interface | quote }}
-            {{- end }}
-            {{- if .hostRecord }}
+    {{- end }}
+    {{- if .hostRecord }}
             - name: FTLCONF_dns_hostRecord
               value: {{ .hostRecord | quote }}
-            {{- end }}
-            {{- if .listeningMode }}
+    {{- end }}
+    {{- if .listeningMode }}
             - name: FTLCONF_dns_listeningMode
               value: {{ .listeningMode | quote }}
-            {{- end }}
-            {{- if hasKey . "queryLogging" }}
+    {{- end }}
+    {{- if hasKey . "queryLogging" }}
             - name: FTLCONF_dns_queryLogging
               value: {{ .queryLogging | quote }}
-            {{- end }}
-            {{- if .cnameRecords }}
+    {{- end }}
+    {{- if .cnameRecords }}
             - name: FTLCONF_dns_cnameRecords
               value: {{ .cnameRecords | join "\n" | quote }}
-            {{- end }}
-            {{- if hasKey . "port" }}
+    {{- end }}
+    {{- if hasKey . "port" }}
             - name: FTLCONF_dns_port
               value: {{ .port | quote }}
-            {{- end }}
-            {{- if .localise }}
+    {{- end }}
+    {{- if .localise }}
             - name: FTLCONF_dns_localise
               value: {{ .localise | quote }}
-            {{- end }}
-            {{- if .revServers }}
+    {{- end }}
+    {{- if .revServers }}
             - name: FTLCONF_dns_revServers
               value: {{ .revServers | join "\n" | quote }}
-            {{- end }}
+    {{- end }}
 
             # [dns.domain]
-            {{- with .domain }}
-            {{- if .name }}
+    {{- with .domain }}
+      {{- if .name }}
             - name: FTLCONF_dns_domain_name
               value: {{ .name | quote }}
-            {{- end }}
-            {{- if .local }}
+      {{- end }}
+      {{- if .local }}
             - name: FTLCONF_dns_domain_local
               value: {{ .local | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
             # [dns.cache]
-            {{- with .cache }}
-            {{- if hasKey . "size" }}
+    {{- with .cache }}
+      {{- if hasKey . "size" }}
             - name: FTLCONF_dns_cache_size
               value: {{ .size | quote }}
-            {{- end }}
-            {{- if hasKey . "optimizer" }}
+      {{- end }}
+      {{- if hasKey . "optimizer" }}
             - name: FTLCONF_dns_cache_optimizer
               value: {{ .optimizer | quote }}
-            {{- end }}
-            {{- if hasKey . "upstreamBlockedTTL" }}
+      {{- end }}
+      {{- if hasKey . "upstreamBlockedTTL" }}
             - name: FTLCONF_dns_cache_upstreamBlockedTTL
               value: {{ .upstreamBlockedTTL | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
             # [dns.blocking]
-            {{- with .blocking }}
-            {{- if hasKey . "active" }}
+    {{- with .blocking }}
+      {{- if hasKey . "active" }}
             - name: FTLCONF_dns_blocking_active
               value: {{ .active | quote }}
-            {{- end }}
-            {{- if .mode }}
+      {{- end }}
+      {{- if .mode }}
             - name: FTLCONF_dns_blocking_mode
               value: {{ .mode | quote }}
-            {{- end }}
-            {{- if .edns }}
+      {{- end }}
+      {{- if .edns }}
             - name: FTLCONF_dns_blocking_edns
               value: {{ .edns | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
             # [dns.specialDomains]
-            {{- with .specialDomains }}
-            {{- if hasKey . "mozillaCanary" }}
+    {{- with .specialDomains }}
+      {{- if hasKey . "mozillaCanary" }}
             - name: FTLCONF_dns_specialDomains_mozillaCanary
               value: {{ .mozillaCanary | quote }}
-            {{- end }}
-            {{- if hasKey . "iCloudPrivateRelay" }}
+      {{- end }}
+      {{- if hasKey . "iCloudPrivateRelay" }}
             - name: FTLCONF_dns_specialDomains_iCloudPrivateRelay
               value: {{ .iCloudPrivateRelay | quote }}
-            {{- end }}
-            {{- if hasKey . "designatedResolver" }}
+      {{- end }}
+      {{- if hasKey . "designatedResolver" }}
             - name: FTLCONF_dns_specialDomains_designatedResolver
               value: {{ .designatedResolver | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
             # [dns.reply]
-            {{- with .reply }}
-            {{- with .host }}
-            {{- if hasKey . "force4" }}
+    {{- with .reply }}
+      {{- with .host }}
+        {{- if hasKey . "force4" }}
             - name: FTLCONF_dns_reply_host_force4
               value: {{ .force4 | quote }}
-            {{- end }}
-            {{- if .IPv4 }}
+        {{- end }}
+        {{- if .IPv4 }}
             - name: FTLCONF_dns_reply_host_IPv4
               value: {{ .IPv4 | quote }}
-            {{- end }}
-            {{- if hasKey . "force6" }}
+        {{- end }}
+        {{- if hasKey . "force6" }}
             - name: FTLCONF_dns_reply_host_force6
               value: {{ .force6 | quote }}
-            {{- end }}
-            {{- if .IPv6 }}
+        {{- end }}
+        {{- if .IPv6 }}
             - name: FTLCONF_dns_reply_host_IPv6
               value: {{ .IPv6 | quote }}
-            {{- end }}
-            {{- end }}
-            {{- with .blocking }}
-            {{- if hasKey . "force4" }}
+        {{- end }}
+      {{- end }}
+      {{- with .blocking }}
+        {{- if hasKey . "force4" }}
             - name: FTLCONF_dns_reply_blocking_force4
               value: {{ .force4 | quote }}
-            {{- end }}
-            {{- if .IPv4 }}
+        {{- end }}
+        {{- if .IPv4 }}
             - name: FTLCONF_dns_reply_blocking_IPv4
               value: {{ .IPv4 | quote }}
-            {{- end }}
-            {{- if hasKey . "force6" }}
+        {{- end }}
+        {{- if hasKey . "force6" }}
             - name: FTLCONF_dns_reply_blocking_force6
               value: {{ .force6 | quote }}
-            {{- end }}
-            {{- if .IPv6 }}
+        {{- end }}
+        {{- if .IPv6 }}
             - name: FTLCONF_dns_reply_blocking_IPv6
               value: {{ .IPv6 | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
 
             # [dns.rateLimit]
-            {{- with .rateLimit }}
-            {{- if hasKey . "count" }}
+    {{- with .rateLimit }}
+      {{- if hasKey . "count" }}
             - name: FTLCONF_dns_rateLimit_count
               value: {{ .count | quote }}
-            {{- end }}
-            {{- if hasKey . "interval" }}
+      {{- end }}
+      {{- if hasKey . "interval" }}
             - name: FTLCONF_dns_rateLimit_interval
               value: {{ .interval | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [dhcp]
             # ------------------------------------------------------
-            {{- with .dhcp }}
-            {{- if hasKey . "active" }}
+  {{- with .dhcp }}
+    {{- if hasKey . "active" }}
             - name: FTLCONF_dhcp_active
               value: {{ .active | quote }}
-            {{- end }}
-            {{- if .start }}
+    {{- end }}
+    {{- if .start }}
             - name: FTLCONF_dhcp_start
               value: {{ .start | quote }}
-            {{- end }}
-            {{- if .end }}
+    {{- end }}
+    {{- if .end }}
             - name: FTLCONF_dhcp_end
               value: {{ .end | quote }}
-            {{- end }}
-            {{- if .router }}
+    {{- end }}
+    {{- if .router }}
             - name: FTLCONF_dhcp_router
               value: {{ .router | quote }}
-            {{- end }}
-            {{- if .netmask }}
+    {{- end }}
+    {{- if .netmask }}
             - name: FTLCONF_dhcp_netmask
               value: {{ .netmask | quote }}
-            {{- end }}
-            {{- if .leaseTime }}
+    {{- end }}
+    {{- if .leaseTime }}
             - name: FTLCONF_dhcp_leaseTime
               value: {{ .leaseTime | quote }}
-            {{- end }}
-            {{- if hasKey . "ipv6" }}
+    {{- end }}
+    {{- if hasKey . "ipv6" }}
             - name: FTLCONF_dhcp_ipv6
               value: {{ .ipv6 | quote }}
-            {{- end }}
-            {{- if hasKey . "rapidCommit" }}
+    {{- end }}
+    {{- if hasKey . "rapidCommit" }}
             - name: FTLCONF_dhcp_rapidCommit
               value: {{ .rapidCommit | quote }}
-            {{- end }}
-            {{- if hasKey . "multiDNS" }}
+    {{- end }}
+    {{- if hasKey . "multiDNS" }}
             - name: FTLCONF_dhcp_multiDNS
               value: {{ .multiDNS | quote }}
-            {{- end }}
-            {{- if hasKey . "logging" }}
+    {{- end }}
+    {{- if hasKey . "logging" }}
             - name: FTLCONF_dhcp_logging
               value: {{ .logging | quote }}
-            {{- end }}
-            {{- if hasKey . "ignoreUnknownClients" }}
+    {{- end }}
+    {{- if hasKey . "ignoreUnknownClients" }}
             - name: FTLCONF_dhcp_ignoreUnknownClients
               value: {{ .ignoreUnknownClients | quote }}
-            {{- end }}
-            {{- if .hosts }}
+    {{- end }}
+    {{- if .hosts }}
             - name: FTLCONF_dhcp_hosts
               value: {{ .hosts | join "\n" | quote }}
-            {{- end }}
-            {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [ntp]
             # ------------------------------------------------------
-            {{- with .ntp }}
-            {{- with .ipv4 }}
-            {{- if hasKey . "active" }}
+  {{- with .ntp }}
+    {{- with .ipv4 }}
+      {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_ipv4_active
               value: {{ .active | quote }}
-            {{- end }}
-            {{- if .address }}
+      {{- end }}
+      {{- if .address }}
             - name: FTLCONF_ntp_ipv4_address
               value: {{ .address | quote }}
-            {{- end }}
-            {{- end }}
-            {{- with .ipv6 }}
-            {{- if hasKey . "active" }}
+      {{- end }}
+    {{- end }}
+    {{- with .ipv6 }}
+      {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_ipv6_active
               value: {{ .active | quote }}
-            {{- end }}
-            {{- if .address }}
+      {{- end }}
+      {{- if .address }}
             - name: FTLCONF_ntp_ipv6_address
               value: {{ .address | quote }}
-            {{- end }}
-            {{- end }}
-            {{- with .sync }}
-            {{- if hasKey . "active" }}
+      {{- end }}
+    {{- end }}
+    {{- with .sync }}
+      {{- if hasKey . "active" }}
             - name: FTLCONF_ntp_sync_active
               value: {{ .active | quote }}
-            {{- end }}
-            {{- if .server }}
+      {{- end }}
+      {{- if .server }}
             - name: FTLCONF_ntp_sync_server
               value: {{ .server | quote }}
-            {{- end }}
-            {{- if hasKey . "interval" }}
+      {{- end }}
+      {{- if hasKey . "interval" }}
             - name: FTLCONF_ntp_sync_interval
               value: {{ .interval | quote }}
-            {{- end }}
-            {{- if hasKey . "count" }}
+      {{- end }}
+      {{- if hasKey . "count" }}
             - name: FTLCONF_ntp_sync_count
               value: {{ .count | quote }}
-            {{- end }}
-            {{- with .rtc }}
-            {{- if hasKey . "set" }}
+      {{- end }}
+      {{- with .rtc }}
+        {{- if hasKey . "set" }}
             - name: FTLCONF_ntp_sync_rtc_set
               value: {{ .set | quote }}
-            {{- end }}
-            {{- if .device }}
+        {{- end }}
+        {{- if .device }}
             - name: FTLCONF_ntp_sync_rtc_device
               value: {{ .device | quote }}
-            {{- end }}
-            {{- if hasKey . "utc" }}
+        {{- end }}
+        {{- if hasKey . "utc" }}
             - name: FTLCONF_ntp_sync_rtc_utc
               value: {{ .utc | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [resolver]
             # ------------------------------------------------------
-            {{- with .resolver }}
-            {{- if hasKey . "resolveIPv4" }}
+  {{- with .resolver }}
+    {{- if hasKey . "resolveIPv4" }}
             - name: FTLCONF_resolver_resolveIPv4
               value: {{ .resolveIPv4 | quote }}
-            {{- end }}
-            {{- if hasKey . "resolveIPv6" }}
+    {{- end }}
+    {{- if hasKey . "resolveIPv6" }}
             - name: FTLCONF_resolver_resolveIPv6
               value: {{ .resolveIPv6 | quote }}
-            {{- end }}
-            {{- if hasKey . "networkNames" }}
+    {{- end }}
+    {{- if hasKey . "networkNames" }}
             - name: FTLCONF_resolver_networkNames
               value: {{ .networkNames | quote }}
-            {{- end }}
-            {{- if .refreshNames }}
+    {{- end }}
+    {{- if .refreshNames }}
             - name: FTLCONF_resolver_refreshNames
               value: {{ .refreshNames | quote }}
-            {{- end }}
-            {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [database]
             # ------------------------------------------------------
-            {{- with .database }}
-            {{- if hasKey . "DBimport" }}
+  {{- with .database }}
+    {{- if hasKey . "DBimport" }}
             - name: FTLCONF_database_DBimport
               value: {{ .DBimport | quote }}
-            {{- end }}
-            {{- if hasKey . "maxDBdays" }}
+    {{- end }}
+    {{- if hasKey . "maxDBdays" }}
             - name: FTLCONF_database_maxDBdays
               value: {{ .maxDBdays | quote }}
-            {{- end }}
-            {{- if hasKey . "DBinterval" }}
+    {{- end }}
+    {{- if hasKey . "DBinterval" }}
             - name: FTLCONF_database_DBinterval
               value: {{ .DBinterval | quote }}
-            {{- end }}
-            {{- if hasKey . "useWAL" }}
+    {{- end }}
+    {{- if hasKey . "useWAL" }}
             - name: FTLCONF_database_useWAL
               value: {{ .useWAL | quote }}
-            {{- end }}
-            {{- with .network }}
-            {{- if hasKey . "parseARPcache" }}
+    {{- end }}
+    {{- with .network }}
+      {{- if hasKey . "parseARPcache" }}
             - name: FTLCONF_database_network_parseARPcache
               value: {{ .parseARPcache | quote }}
-            {{- end }}
-            {{- if hasKey . "expire" }}
+      {{- end }}
+      {{- if hasKey . "expire" }}
             - name: FTLCONF_database_network_expire
               value: {{ .expire | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [webserver]
             # ------------------------------------------------------
-            {{- with .webserver }}
-            {{- if .domain }}
+  {{- with .webserver }}
+    {{- if .domain }}
             - name: FTLCONF_webserver_domain
               value: {{ .domain | quote }}
-            {{- end }}
-            {{- if .acl }}
+    {{- end }}
+    {{- if .acl }}
             - name: FTLCONF_webserver_acl
               value: {{ .acl | quote }}
-            {{- end }}
-            {{- if hasKey . "port" }}
+    {{- end }}
+    {{- if hasKey . "port" }}
             - name: FTLCONF_webserver_port
               value: {{ .port | quote }}
-            {{- end }}
-            {{- if hasKey . "threads" }}
+    {{- end }}
+    {{- if hasKey . "threads" }}
             - name: FTLCONF_webserver_threads
               value: {{ .threads | quote }}
-            {{- end }}
-            {{- if .headers }}
+    {{- end }}
+    {{- if .headers }}
             - name: FTLCONF_webserver_headers
               value: {{ .headers | join "\n" | quote }}
-            {{- end }}
-            {{- if hasKey . "serve_all" }}
+    {{- end }}
+    {{- if hasKey . "serve_all" }}
             - name: FTLCONF_webserver_serve_all
               value: {{ .serve_all | quote }}
-            {{- end }}
-            {{- if .advancedOpts }}
+    {{- end }}
+    {{- if .advancedOpts }}
             - name: FTLCONF_webserver_advancedOpts
               value: {{ .advancedOpts | join "\n" | quote }}
-            {{- end }}
+    {{- end }}
             
-            {{- with .session }}
-            {{- if hasKey . "timeout" }}
+    {{- with .session }}
+      {{- if hasKey . "timeout" }}
             - name: FTLCONF_webserver_session_timeout
               value: {{ .timeout | quote }}
-            {{- end }}
-            {{- if hasKey . "restore" }}
+      {{- end }}
+      {{- if hasKey . "restore" }}
             - name: FTLCONF_webserver_session_restore
               value: {{ .restore | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
-            {{- with .tls }}
-            {{- if .cert }}
+    {{- with .tls }}
+      {{- if .cert }}
             - name: FTLCONF_webserver_tls_cert
               value: {{ .cert | quote }}
-            {{- end }}
-            {{- if hasKey . "validity" }}
+      {{- end }}
+      {{- if hasKey . "validity" }}
             - name: FTLCONF_webserver_tls_validity
               value: {{ .validity | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
-            {{- with .paths }}
-            {{- if .webroot }}
+    {{- with .paths }}
+      {{- if .webroot }}
             - name: FTLCONF_webserver_paths_webroot
               value: {{ .webroot | quote }}
-            {{- end }}
-            {{- if .webhome }}
+      {{- end }}
+      {{- if .webhome }}
             - name: FTLCONF_webserver_paths_webhome
               value: {{ .webhome | quote }}
-            {{- end }}
-            {{- if .prefix }}
+      {{- end }}
+      {{- if .prefix }}
             - name: FTLCONF_webserver_paths_prefix
               value: {{ .prefix | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
-            {{- with .interface }}
-            {{- if hasKey . "boxed" }}
+    {{- with .interface }}
+      {{- if hasKey . "boxed" }}
             - name: FTLCONF_webserver_interface_boxed
               value: {{ .boxed | quote }}
-            {{- end }}
-            {{- if .theme }}
+      {{- end }}
+      {{- if .theme }}
             - name: FTLCONF_webserver_interface_theme
               value: {{ .theme | quote }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
 
             # API
-            {{- with .api }}
-            {{- if hasKey . "max_sessions" }}
+    {{- with .api }}
+      {{- if hasKey . "max_sessions" }}
             - name: FTLCONF_webserver_api_max_sessions
               value: {{ .max_sessions | quote }}
-            {{- end }}
-            {{- if hasKey . "prettyJSON" }}
+      {{- end }}
+      {{- if hasKey . "prettyJSON" }}
             - name: FTLCONF_webserver_api_prettyJSON
               value: {{ .prettyJSON | quote }}
-            {{- end }}
-            {{- if .pwhash }}
+      {{- end }}
+      {{- if .pwhash }}
             - name: FTLCONF_webserver_api_pwhash
               value: {{ .pwhash | quote }}
-            {{- end }}
-            {{- if .totp_secret }}
+      {{- end }}
+      {{- if .totp_secret }}
             - name: FTLCONF_webserver_api_totp_secret
               value: {{ .totp_secret | quote }}
-            {{- end }}
-            {{- if .app_pwhash }}
+      {{- end }}
+      {{- if .app_pwhash }}
             - name: FTLCONF_webserver_api_app_pwhash
               value: {{ .app_pwhash | quote }}
-            {{- end }}
-            {{- if hasKey . "app_sudo" }}
+      {{- end }}
+      {{- if hasKey . "app_sudo" }}
             - name: FTLCONF_webserver_api_app_sudo
               value: {{ .app_sudo | quote }}
-            {{- end }}
-            {{- if hasKey . "cli_pw" }}
+      {{- end }}
+      {{- if hasKey . "cli_pw" }}
             - name: FTLCONF_webserver_api_cli_pw
               value: {{ .cli_pw | quote }}
-            {{- end }}
-            {{- if .excludeClients }}
+      {{- end }}
+      {{- if .excludeClients }}
             - name: FTLCONF_webserver_api_excludeClients
               value: {{ .excludeClients | join "\n" | quote }}
-            {{- end }}
-            {{- if .excludeDomains }}
+      {{- end }}
+      {{- if .excludeDomains }}
             - name: FTLCONF_webserver_api_excludeDomains
               value: {{ .excludeDomains | join "\n" | quote }}
-            {{- end }}
-            {{- if hasKey . "maxHistory" }}
+      {{- end }}
+      {{- if hasKey . "maxHistory" }}
             - name: FTLCONF_webserver_api_maxHistory
               value: {{ .maxHistory | quote }}
-            {{- end }}
-            {{- if hasKey . "maxClients" }}
+      {{- end }}
+      {{- if hasKey . "maxClients" }}
             - name: FTLCONF_webserver_api_maxClients
               value: {{ .maxClients | quote }}
-            {{- end }}
-            {{- if hasKey . "client_history_global_max" }}
+      {{- end }}
+      {{- if hasKey . "client_history_global_max" }}
             - name: FTLCONF_webserver_api_client_history_global_max
               value: {{ .client_history_global_max | quote }}
-            {{- end }}
-            {{- if hasKey . "allow_destructive" }}
+      {{- end }}
+      {{- if hasKey . "allow_destructive" }}
             - name: FTLCONF_webserver_api_allow_destructive
               value: {{ .allow_destructive | quote }}
-            {{- end }}
-            {{- with .temp }}
-            {{- if hasKey . "limit" }}
+      {{- end }}
+      {{- with .temp }}
+        {{- if hasKey . "limit" }}
             - name: FTLCONF_webserver_api_temp_limit
               value: {{ .limit | quote }}
-            {{- end }}
-            {{- if .unit }}
+        {{- end }}
+        {{- if .unit }}
             - name: FTLCONF_webserver_api_temp_unit
               value: {{ .unit | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [files]
             # ------------------------------------------------------
-            {{- with .files }}
-            {{- if .pid }}
+  {{- with .files }}
+    {{- if .pid }}
             - name: FTLCONF_files_pid
               value: {{ .pid | quote }}
-            {{- end }}
-            {{- if .database }}
+    {{- end }}
+    {{- if .database }}
             - name: FTLCONF_files_database
               value: {{ .database | quote }}
-            {{- end }}
-            {{- if .gravity }}
+    {{- end }}
+    {{- if .gravity }}
             - name: FTLCONF_files_gravity
               value: {{ .gravity | quote }}
-            {{- end }}
-            {{- if .gravity_tmp }}
+    {{- end }}
+    {{- if .gravity_tmp }}
             - name: FTLCONF_files_gravity_tmp
               value: {{ .gravity_tmp | quote }}
-            {{- end }}
-            {{- if .macvendor }}
+    {{- end }}
+    {{- if .macvendor }}
             - name: FTLCONF_files_macvendor
               value: {{ .macvendor | quote }}
-            {{- end }}
-            {{- if .pcap }}
+    {{- end }}
+    {{- if .pcap }}
             - name: FTLCONF_files_pcap
               value: {{ .pcap | quote }}
-            {{- end }}
-            {{- with .log }}
-            {{- if .ftl }}
+    {{- end }}
+    {{- with .log }}
+      {{- if .ftl }}
             - name: FTLCONF_files_log_ftl
               value: {{ .ftl | quote }}
-            {{- end }}
-            {{- if .dnsmasq }}
+      {{- end }}
+      {{- if .dnsmasq }}
             - name: FTLCONF_files_log_dnsmasq
               value: {{ .dnsmasq | quote }}
-            {{- end }}
-            {{- if .webserver }}
+      {{- end }}
+      {{- if .webserver }}
             - name: FTLCONF_files_log_webserver
               value: {{ .webserver | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 
             # ------------------------------------------------------
             # [misc]
             # ------------------------------------------------------
-            {{- with .misc }}
-            {{- if hasKey . "privacylevel" }}
+  {{- with .misc }}
+    {{- if hasKey . "privacylevel" }}
             - name: FTLCONF_misc_privacylevel
               value: {{ .privacylevel | quote }}
-            {{- end }}
-            {{- if hasKey . "delay_startup" }}
+    {{- end }}
+    {{- if hasKey . "delay_startup" }}
             - name: FTLCONF_misc_delay_startup
               value: {{ .delay_startup | quote }}
-            {{- end }}
-            {{- if hasKey . "nice" }}
+    {{- end }}
+    {{- if hasKey . "nice" }}
             - name: FTLCONF_misc_nice
               value: {{ .nice | quote }}
-            {{- end }}
-            {{- if hasKey . "addr2line" }}
+    {{- end }}
+    {{- if hasKey . "addr2line" }}
             - name: FTLCONF_misc_addr2line
               value: {{ .addr2line | quote }}
-            {{- end }}
-            {{- if hasKey . "etc_dnsmasq_d" }}
+    {{- end }}
+    {{- if hasKey . "etc_dnsmasq_d" }}
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: {{ .etc_dnsmasq_d | quote }}
-            {{- end }}
-            {{- if .dnsmasq_lines }}
+    {{- end }}
+    {{- if .dnsmasq_lines }}
             - name: FTLCONF_misc_dnsmasq_lines
               value: {{ .dnsmasq_lines | join "\n" | quote }}
-            {{- end }}
-            {{- if hasKey . "extraLogging" }}
+    {{- end }}
+    {{- if hasKey . "extraLogging" }}
             - name: FTLCONF_misc_extraLogging
               value: {{ .extraLogging | quote }}
-            {{- end }}
-            {{- if hasKey . "readOnly" }}
+    {{- end }}
+    {{- if hasKey . "readOnly" }}
             - name: FTLCONF_misc_readOnly
               value: {{ .readOnly | quote }}
-            {{- end }}
-            {{- if hasKey . "normalizeCPU" }}
+    {{- end }}
+    {{- if hasKey . "normalizeCPU" }}
             - name: FTLCONF_misc_normalizeCPU
               value: {{ .normalizeCPU | quote }}
-            {{- end }}
-            {{- if hasKey . "hide_dnsmasq_warn" }}
+    {{- end }}
+    {{- if hasKey . "hide_dnsmasq_warn" }}
             - name: FTLCONF_misc_hide_dnsmasq_warn
               value: {{ .hide_dnsmasq_warn | quote }}
-            {{- end }}
-            {{- with .check }}
-            {{- if hasKey . "load" }}
+    {{- end }}
+    {{- with .check }}
+      {{- if hasKey . "load" }}
             - name: FTLCONF_misc_check_load
               value: {{ .load | quote }}
-            {{- end }}
-            {{- if hasKey . "shmem" }}
+      {{- end }}
+      {{- if hasKey . "shmem" }}
             - name: FTLCONF_misc_check_shmem
               value: {{ .shmem | quote }}
-            {{- end }}
-            {{- if hasKey . "disk" }}
+      {{- end }}
+      {{- if hasKey . "disk" }}
             - name: FTLCONF_misc_check_disk
               value: {{ .disk | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 
             # User/Permission Logic
-            {{- if hasKey .Values.pihole "uid" }}
+{{- if hasKey .Values.pihole "uid" }}
             - name: PIHOLE_UID
               value: {{ .Values.pihole.uid | quote }}
-            {{- end }}
-            {{- if hasKey .Values.pihole "gid" }}
+{{- end }}
+{{- if hasKey .Values.pihole "gid" }}
             - name: PIHOLE_GID
               value: {{ .Values.pihole.gid | quote }}
-            {{- end }}
+{{- end }}
             
             # ------------------------------------------------------
             # Other Pi-hole Variables
             # ------------------------------------------------------
-            {{- if hasKey .Values.pihole "tailFtlLog" }}
+{{- if hasKey .Values.pihole "tailFtlLog" }}
             - name: TAIL_FTL_LOG
               value: {{ .Values.pihole.tailFtlLog | quote }}
-            {{- end }}
-            {{- if .Values.pihole.ftlCmd }}
+{{- end }}
+{{- if .Values.pihole.ftlCmd }}
             - name: FTL_CMD
               value: {{ .Values.pihole.ftlCmd | quote }}
-            {{- end }}
-            {{- if .Values.pihole.dnsmasqUser }}
+{{- end }}
+{{- if .Values.pihole.dnsmasqUser }}
             - name: DNSMASQ_USER
               value: {{ .Values.pihole.dnsmasqUser | quote }}
-            {{- end }}
-            {{- if .Values.pihole.additionalPackages }}
+{{- end }}
+{{- if .Values.pihole.additionalPackages }}
             - name: ADDITIONAL_PACKAGES
               value: {{ .Values.pihole.additionalPackages | quote }}
-            {{- end }}
-            {{- if hasKey .Values.pihole "verbose" }}
+{{- end }}
+{{- if hasKey .Values.pihole "verbose" }}
             - name: PH_VERBOSE
               value: {{ .Values.pihole.verbose | quote }}
-            {{- end }}
+{{- end }}
             
             # Web Password (Generated or from Secret)
-            {{- if not .Values.pihole.web.skipPasswordEnv }}
+{{- if not .Values.pihole.web.skipPasswordEnv }}
             - name: FTLCONF_webserver_api_password
               valueFrom:
                 secretKeyRef:
                   name: {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }}
                   key: {{ .Values.pihole.web.passwordSecretKey }}
-            {{- end }}
+{{- end }}
           
-            {{- with .Values.extraEnv }}
+{{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
-            {{- end }}
+{{- end }}
           
           ports:
             - name: dns-tcp
@@ -765,6 +785,12 @@ spec:
               protocol: TCP
             - name: dhcp
               containerPort: 67
+              protocol: UDP
+            - name: dhcpv6
+              containerPort: 547
+              protocol: UDP
+            - name: ntp
+              containerPort: 123
               protocol: UDP
 
           livenessProbe:
@@ -789,14 +815,18 @@ spec:
             periodSeconds: 10
           
           volumeMounts:
-            {{- if .Values.persistence.etcPihole.enabled }}
+            - name: run-dir
+              mountPath: /run
+            - name: log-dir
+              mountPath: /var/log/pihole
+{{- if .Values.persistence.etcPihole.enabled }}
             - name: etc-pihole
               mountPath: /etc/pihole
-            {{- end }}
-            {{- if .Values.persistence.etcDnsmasq.enabled }}
+{{- end }}
+{{- if .Values.persistence.etcDnsmasq.enabled }}
             - name: etc-dnsmasq
               mountPath: /etc/dnsmasq.d
-            {{- end }}
+{{- end }}
             - name: lists
               mountPath: /usr/local/bin/import-lists.sh
               subPath: import-lists.sh
@@ -805,62 +835,66 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
 
         # METRICS SIDECAR (ekofr/pihole-exporter)
-        {{- if .Values.metrics.enabled }}
+{{- if .Values.metrics.enabled }}
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
-          {{- with .Values.metrics.command }}
+  {{- with .Values.metrics.command }}
           command:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.metrics.args }}
+  {{- end }}
+  {{- with .Values.metrics.args }}
           args:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+  {{- end }}
           env:
-            {{- if .Values.metrics.env }}
+  {{- if .Values.metrics.env }}
             {{- toYaml .Values.metrics.env | nindent 12 }}
-            {{- end }}
+  {{- end }}
           ports:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
-          {{- with .Values.metrics.volumeMounts }}
+  {{- with .Values.metrics.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+  {{- end }}
           resources:
             {{- toYaml .Values.metrics.resources | nindent 12 }}
-        {{- end }}
+{{- end }}
 
       volumes:
-        {{- if .Values.persistence.etcPihole.enabled }}
+        - name: run-dir
+          emptyDir: {}
+        - name: log-dir
+          emptyDir: {}
+{{- if .Values.persistence.etcPihole.enabled }}
         - name: etc-pihole
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-pihole
-        {{- end }}
-        {{- if .Values.persistence.etcDnsmasq.enabled }}
+{{- end }}
+{{- if .Values.persistence.etcDnsmasq.enabled }}
         - name: etc-dnsmasq
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
-        {{- end }}
+{{- end }}
         - name: lists
           configMap:
             name: {{ include "pihole.fullname" . }}-lists
             defaultMode: 0755
-        {{- with .Values.extraVolumes }}
+{{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
+{{- end }}
       
-      {{- with .Values.nodeSelector }}
+{{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
+{{- end }}
+{{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
+{{- end }}
+{{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{- end }}

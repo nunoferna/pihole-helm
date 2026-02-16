@@ -6,56 +6,56 @@ metadata:
     {{- include "pihole.labels" . | nindent 4 }}
 data:
   import-lists.sh: |
-    #!/bin/bash
-    set +e
-    
-    GRAVITY_DB="/etc/pihole/gravity.db"
-    
-    # Dynamic binary detection
-    if command -v pihole-FTL >/dev/null 2>&1; then
-      FTL_CMD=$(command -v pihole-FTL)
-    else
-      FTL_CMD="/usr/bin/pihole-FTL"
-    fi
+  #!/bin/bash
+   set +e
 
-    echo "[Helm] Waiting for gravity.db to be initialized..."
-    
-    timeout=90
-    
-    while [ ! -f "$GRAVITY_DB" ]; do
+   GRAVITY_DB="/etc/pihole/gravity.db"
+
+   # Dynamic binary detection
+   if command -v pihole-FTL >/dev/null 2>&1; then
+      FTL_CMD=$(command -v pihole-FTL)
+   else
+      FTL_CMD="/usr/bin/pihole-FTL"
+   fi
+
+   echo "[Helm] Waiting for gravity.db to be initialized..."
+
+   timeout=90
+
+   while [ ! -f "$GRAVITY_DB" ]; do
       sleep 2
       timeout=$((timeout-2))
       if [ $timeout -le 0 ]; then
          echo "[Helm Hook] ERROR: gravity.db never appeared. Skipping import to allow Pod startup."
          exit 0
       fi
-    done
-    echo "[Helm] gravity.db found."
+   done
+   echo "[Helm] gravity.db found."
 
-    echo "[Helm Hook] Checking FTL process status..."
-    
-    FTL_READY=false
-    wait_timer=60
-    
-    while [ $wait_timer -gt 0 ]; do
-       if pidof pihole-FTL > /dev/null; then
-          FTL_READY=true
-          break
-       fi
-       sleep 2
-       wait_timer=$((wait_timer-2))
-    done
-    
-    echo "[Helm] Starting Custom List Configuration..."
+   echo "[Helm Hook] Checking FTL process status..."
 
-    function add_to_db() {
-       local retries=0
-       local max_retries=30
-       
-       while true; do
+   FTL_READY=false
+   wait_timer=60
+
+   while [ $wait_timer -gt 0 ]; do
+      if pidof pihole-FTL > /dev/null; then
+         FTL_READY=true
+         break
+      fi
+      sleep 2
+      wait_timer=$((wait_timer-2))
+   done
+
+   echo "[Helm] Starting Custom List Configuration..."
+
+   function add_to_db() {
+      local retries=0
+      local max_retries=30
+      
+      while true; do
          # Attempt the SQL command
          if $FTL_CMD sqlite3 -ni "$GRAVITY_DB" "$1"; then
-            return 0
+         return 0
          fi
          
          # If failed, wait 1s and retry
@@ -63,49 +63,49 @@ data:
          sleep 1
          retries=$((retries+1))
          if [ $retries -ge $max_retries ]; then
-            echo "[Helm Hook] ERROR: Timed out waiting for database lock."
-            exit 1
+         echo "[Helm Hook] ERROR: Timed out waiting for database lock."
+         exit 1
          fi
-       done
-    }
-    
-    # 1. Adlists (Blocklists)
-    {{- range .Values.pihole.lists.adlists }}
-    # Default enabled to 1 (true) unless explicitly set to false
-    add_to_db "INSERT OR IGNORE INTO adlist (address, enabled, comment) VALUES ('{{ .address }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
-    {{- end }}
+      done
+   }
 
-    # 2. Exact Whitelist (Type 0)
-    {{- range .Values.pihole.lists.whitelist }}
-    add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (0, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
-    {{- end }}
+   # 1. Adlists (Blocklists)
+   {{- range .Values.pihole.lists.adlists }}
+   # Default enabled to 1 (true) unless explicitly set to false
+   add_to_db "INSERT OR IGNORE INTO adlist (address, enabled, comment) VALUES ('{{ .address }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
+   {{- end }}
 
-    # 3. Exact Blacklist (Type 1)
-    {{- range .Values.pihole.lists.blacklist }}
-    add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (1, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
-    {{- end }}
+   # 2. Exact Whitelist (Type 0)
+   {{- range .Values.pihole.lists.whitelist }}
+   add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (0, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
+   {{- end }}
 
-    # 4. Regex Whitelist (Type 2)
-    {{- range .Values.pihole.lists.regex_whitelist }}
-    add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (2, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
-    {{- end }}
+   # 3. Exact Blacklist (Type 1)
+   {{- range .Values.pihole.lists.blacklist }}
+   add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (1, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
+   {{- end }}
 
-    # 5. Regex Blacklist (Type 3)
-    {{- range .Values.pihole.lists.regex_blacklist }}
-    add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
-    {{- end }}
+   # 4. Regex Whitelist (Type 2)
+   {{- range .Values.pihole.lists.regex_whitelist }}
+   add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (2, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
+   {{- end }}
 
-    if [ "$FTL_READY" = true ]; then
-        echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
-        if pihole -g; then
-           echo "[Helm Hook] Gravity updated successfully."
-        else
-           echo "[Helm Hook] WARNING: 'pihole -g' failed (likely busy). Lists are in DB and will update tonight."
-        fi
-    else
-        echo "[Helm Hook] WARNING: FTL process did not start within 60s. Skipping Gravity update."
-        echo "[Helm Hook] Your lists were imported to DB successfully. No further action needed."
-    fi
-    
-    echo "[Helm Hook] Finished."
-    exit 0
+   # 5. Regex Blacklist (Type 3)
+   {{- range .Values.pihole.lists.regex_blacklist }}
+   add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
+   {{- end }}
+
+   if [ "$FTL_READY" = true ]; then
+      echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
+      if pihole -g; then
+         echo "[Helm Hook] Gravity updated successfully."
+      else
+         echo "[Helm Hook] WARNING: 'pihole -g' failed (likely busy). Lists are in DB and will update tonight."
+      fi
+   else
+      echo "[Helm Hook] WARNING: FTL process did not start within 60s. Skipping Gravity update."
+      echo "[Helm Hook] Your lists were imported to DB successfully. No further action needed."
+   fi
+
+   echo "[Helm Hook] Finished."
+   exit 0

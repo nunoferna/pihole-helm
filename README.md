@@ -37,7 +37,7 @@ helm install pihole pihole-helm/pihole
 # Installation with custom values
 helm install pihole pihole-helm/pihole \
   --set pihole.web.password=yourpassword \
-  --set serviceDns.type=LoadBalancer \
+  --set pihole.ftl.dns.service.type=LoadBalancer \
   --set persistence.etcPihole.enabled=true
 ```
 
@@ -45,7 +45,7 @@ helm install pihole pihole-helm/pihole \
 
 ```bash
 # Install from GitHub Container Registry
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --version 0.2.7
+helm install pihole oci://ghcr.io/nunoferna/charts/pihole
 ```
 
 ## Configuration
@@ -59,8 +59,8 @@ pihole:
   ftl:
     dns:
       upstreams:
-        - "8.8.8.8"
-        - "1.1.1.1"
+        - 8.8.8.8
+        - 8.8.4.4
       dnssec: false
       queryLogging: true
       cache:
@@ -81,14 +81,18 @@ pihole:
 ### Services
 
 ```yaml
-serviceDns:
-  enabled: true
-  type: LoadBalancer
-  externalTrafficPolicy: Local
+pihole:
+  ftl:
+    dns:
+      service:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
 
-serviceWeb:
-  enabled: true
-  type: ClusterIP
+web:
+  service:
+    enabled: true
+    type: ClusterIP
 ```
 
 ### Metrics & Monitoring
@@ -178,32 +182,13 @@ The exporter provides comprehensive metrics including DNS queries, blocked ads, 
 
 This chart follows [Semantic Versioning](https://semver.org/):
 
-- **Chart Version**: Version of the Helm chart itself (e.g., `0.2.7`)
+- **Chart Version**: Version of the Helm chart itself (e.g., `0.1.0`)
 - **App Version**: Version of Pi-hole container (e.g., `2025.11.1`)
 
 ## Requirements
 
 - Kubernetes: `>=1.23.0`
 - Helm: `>=3.0.0`
-
-## Security
-
-### Chart Signing
-
-All chart releases are automatically signed using GPG. This ensures chart authenticity and integrity.
-
-The GPG public key is available at: https://nunoferna.github.io/pihole-helm/pubkey.gpg
-
-To verify a chart signature:
-
-```bash
-# Import the public key
-curl -L https://nunoferna.github.io/pihole-helm/pubkey.gpg | gpg --import
-
-# Download and verify a chart
-helm pull pihole-helm/pihole --version 0.2.7
-helm verify pihole-0.2.7.tgz
-```
 
 ### NetworkPolicy
 

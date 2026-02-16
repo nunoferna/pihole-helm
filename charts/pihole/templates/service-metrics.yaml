@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "pihole.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   {{- with .Values.metrics.service.annotations }}
@@ -26,9 +27,9 @@ spec:
       targetPort: metrics
       protocol: TCP
       name: metrics
-      {{- if and (eq .Values.metrics.service.type "NodePort") .Values.metrics.service.nodePort }}
+  {{- if and (eq .Values.metrics.service.type "NodePort") .Values.metrics.service.nodePort }}
       nodePort: {{ .Values.metrics.service.nodePort }}
-      {{- end }}
+  {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
 {{- end }}

@@ -18,11 +18,11 @@ Namespace: {{ .Release.Namespace }}
 ------------------------------------------------------------------------------
 🌐 Web Interface Access
 ------------------------------------------------------------------------------
-{{- if eq .Values.serviceWeb.type "LoadBalancer" }}
+{{- if eq .Values.pihole.web.service.type "LoadBalancer" }}
   Run this to get the LoadBalancer IP:
   export WEB_IP=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   echo "http://$WEB_IP/admin/"
-{{- else if eq .Values.serviceWeb.type "NodePort" }}
+{{- else if eq .Values.pihole.web.service.type "NodePort" }}
   export NODE_PORT=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
   export NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
   echo "http://$NODE_IP:$NODE_PORT/admin/"
@@ -36,12 +36,12 @@ Namespace: {{ .Release.Namespace }}
 ------------------------------------------------------------------------------
 🔍 DNS Service Access
 ------------------------------------------------------------------------------
-{{- if .Values.serviceDns.enabled }}
-{{- if eq .Values.serviceDns.type "LoadBalancer" }}
+{{- if .Values.pihole.ftl.dns.service.enabled }}
+{{- if eq .Values.pihole.ftl.dns.service.type "LoadBalancer" }}
   DNS Server IP (LoadBalancer):
   kubectl get svc {{ include "pihole.fullname" . }}-dns -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 {{- else }}
-  Service Type: {{ .Values.serviceDns.type }}
+  Service Type: {{ .Values.pihole.ftl.dns.service.type }}
   Service Name: {{ include "pihole.fullname" . }}-dns
 {{- end }}
 {{- end }}
