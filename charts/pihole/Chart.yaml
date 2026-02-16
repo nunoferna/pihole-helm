@@ -7,7 +7,7 @@ maintainers:
   - name: Nuno Fernandes
     email: nuno.o.fernandes@outlook.pt
     url: https://nunoferna.github.io
-version: 0.3.1
+version: 0.3.2
 appVersion: "2025.11.1"
 kubeVersion: ">=1.23.0"
 home: https://nunoferna.github.io/pihole-helm/
@@ -19,15 +19,9 @@ keywords:
   - monitoring
 sources:
   - https://github.com/nunoferna/pihole-helm
-
 annotations:
   artifacthub.io/category: networking
-  artifacthub.io/license: MIT
-  artifacthub.io/images: |
-    - name: pihole
-      image: pihole/pihole:2025.11.1
-    - name: pihole-exporter
-      image: ekofr/pihole-exporter:v1.2.0
+  artifacthub.io/license: Apache-2.0
   artifacthub.io/links: |
     - name: Chart Source
       url: https://github.com/nunoferna/pihole-helm
