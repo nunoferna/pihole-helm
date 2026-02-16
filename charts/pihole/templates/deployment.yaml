@@ -22,6 +22,9 @@ spec:
 {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
+      securityContext:
+        fsGroup: {{ .Values.pihole.gid | default 1000 }}
+        fsGroupChangePolicy: "OnRootMismatch"
       hostNetwork: {{ .Values.networking.hostNetwork }}
 {{- if .Values.networking.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
@@ -71,6 +74,7 @@ spec:
                 - SYS_TIME  # For internal NTP time syncing
                 - SYS_NICE  # For process priority (FTL is "important")
                 - CHOWN     # For log/database file ownership changes
+                - IPC_LOCK  # For locking memory (FTL can use mlock to prevent swapping)
                 
                 # Conditional: DHCP & IPv6 Requirements
                 # Only added if DHCP service is enabled or HostNetwork is used
@@ -819,14 +823,12 @@ spec:
               mountPath: /run
             - name: log-dir
               mountPath: /var/log/pihole
-{{- if .Values.persistence.etcPihole.enabled }}
+            - name: cron-d
+              mountPath: /etc/cron.d
             - name: etc-pihole
               mountPath: /etc/pihole
-{{- end }}
-{{- if .Values.persistence.etcDnsmasq.enabled }}
             - name: etc-dnsmasq
               mountPath: /etc/dnsmasq.d
-{{- end }}
             - name: lists
               mountPath: /usr/local/bin/import-lists.sh
               subPath: import-lists.sh
@@ -868,15 +870,22 @@ spec:
           emptyDir: {}
         - name: log-dir
           emptyDir: {}
-{{- if .Values.persistence.etcPihole.enabled }}
+        - name: cron-d
+          emptyDir: {}
         - name: etc-pihole
+{{- if .Values.persistence.etcPihole.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-pihole
+{{- else }}
+          emptyDir: {}
 {{- end }}
-{{- if .Values.persistence.etcDnsmasq.enabled }}
+
         - name: etc-dnsmasq
+{{- if .Values.persistence.etcDnsmasq.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
+{{- else }}
+          emptyDir: {}
 {{- end }}
         - name: lists
           configMap:
