@@ -1,33 +1,34 @@
-{{- if and .Values.serviceDns.enabled .Values.serviceDns.splitTcpUdp .Values.serviceDns.udp.enabled }}
+{{- if and .Values.pihole.ftl.dns.service.enabled .Values.pihole.ftl.dns.service.splitTcpUdp .Values.pihole.ftl.dns.service.udp.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "pihole.fullname" . }}-dns-udp
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
     app.kubernetes.io/component: dns-udp
   annotations:
-    {{- toYaml .Values.serviceDns.udp.annotations | nindent 4 }}
+    {{- toYaml .Values.pihole.ftl.dns.service.udp.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.serviceDns.udp.type }}
-  {{- if or (eq .Values.serviceDns.udp.type "LoadBalancer") (eq .Values.serviceDns.udp.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.serviceDns.udp.externalTrafficPolicy }}
+  type: {{ .Values.pihole.ftl.dns.service.udp.type }}
+  {{- if or (eq .Values.pihole.ftl.dns.service.udp.type "LoadBalancer") (eq .Values.pihole.ftl.dns.service.udp.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.pihole.ftl.dns.service.udp.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.serviceDns.udp.loadBalancerIP }}
+  {{- with .Values.pihole.ftl.dns.service.udp.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.serviceDns.udp.externalIPs }}
+  {{- with .Values.pihole.ftl.dns.service.udp.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.serviceDns.udp.port }}
+    - port: {{ .Values.pihole.ftl.dns.service.udp.port }}
       targetPort: dns-udp
       protocol: UDP
       name: dns-udp
-      {{- if and (eq .Values.serviceDns.udp.type "NodePort") .Values.serviceDns.udp.nodePort }}
-      nodePort: {{ .Values.serviceDns.udp.nodePort }}
-      {{- end }}
+  {{- if and (eq .Values.pihole.ftl.dns.service.udp.type "NodePort") .Values.pihole.ftl.dns.service.udp.nodePort }}
+      nodePort: {{ .Values.pihole.ftl.dns.service.udp.nodePort }}
+  {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
 {{- end }}

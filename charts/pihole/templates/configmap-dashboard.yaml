@@ -1,8 +1,7 @@
 {{- if and .Values.metrics.enabled .Values.metrics.dashboards.enabled }}
-{{- $files := .Files.Glob "files/dashboards/*.json" }}
-{{- range $path, $fileContents := $files }}
-{{- $dashboardName := regexReplaceAll "(^.*/)(.*)\\.json$" $path "${2}" }}
----
+  {{- $files := .Files.Glob "files/dashboards/*.json" }}
+  {{- range $path, $fileContents := $files }}
+  {{- $dashboardName := regexReplaceAll "(^.*/)(.*)\\.json$" $path "${2}" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,9 +9,9 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "pihole.labels" $ | nindent 4 }}
-    {{- if $.Values.metrics.dashboards.label }}
+  {{- if $.Values.metrics.dashboards.label }}
     {{ $.Values.metrics.dashboards.label }}: {{ ternary $.Values.metrics.dashboards.labelValue "1" (not (empty $.Values.metrics.dashboards.labelValue)) | quote }}
-    {{- end }}
+  {{- end }}
   {{- if $.Values.metrics.dashboards.annotations }}
   annotations:
     {{- with $.Values.metrics.dashboards.annotations }}

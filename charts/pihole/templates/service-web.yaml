@@ -1,39 +1,40 @@
-{{- if .Values.serviceWeb.enabled }}
+{{- if .Values.pihole.web.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "pihole.fullname" . }}-web
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.serviceWeb.annotations | nindent 4 }}
+    {{- toYaml .Values.pihole.web.service.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.serviceWeb.type }}
-  {{- if or (eq .Values.serviceWeb.type "LoadBalancer") (eq .Values.serviceWeb.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.serviceWeb.externalTrafficPolicy }}
+  type: {{ .Values.pihole.web.service.type }}
+  {{- if or (eq .Values.pihole.web.service.type "LoadBalancer") (eq .Values.pihole.web.service.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.pihole.web.service.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.serviceWeb.loadBalancerIP }}
+  {{- with .Values.pihole.web.service.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.serviceWeb.externalIPs }}
+  {{- with .Values.pihole.web.service.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.serviceWeb.ports.http }}
+    - port: {{ .Values.pihole.web.service.ports.http }}
       targetPort: http
       protocol: TCP
       name: http
-      {{- if and (eq .Values.serviceWeb.type "NodePort") .Values.serviceWeb.nodePorts.http }}
-      nodePort: {{ .Values.serviceWeb.nodePorts.http }}
-      {{- end }}
-    - port: {{ .Values.serviceWeb.ports.https }}
+  {{- if and (eq .Values.pihole.web.service.type "NodePort") .Values.pihole.web.service.nodePorts.http }}
+      nodePort: {{ .Values.pihole.web.service.nodePorts.http }}
+  {{- end }}
+    - port: {{ .Values.pihole.web.service.ports.https }}
       targetPort: https
       protocol: TCP
       name: https
-      {{- if and (eq .Values.serviceWeb.type "NodePort") .Values.serviceWeb.nodePorts.https }}
-      nodePort: {{ .Values.serviceWeb.nodePorts.https }}
-      {{- end }}
+  {{- if and (eq .Values.pihole.web.service.type "NodePort") .Values.pihole.web.service.nodePorts.https }}
+      nodePort: {{ .Values.pihole.web.service.nodePorts.https }}
+  {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
 {{- end }}

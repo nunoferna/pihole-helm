@@ -56,48 +56,8 @@ pihole:
     # Skip the default password env var since we're setting it in the wrapper script
     skipPasswordEnv: true
 
-# If metrics are enabled, configure them to use the Vault secret
-# Since the exporter runs on a scratch image (no shell), we use an init container  
-# to copy busybox, then use it to read the Vault secret
-# Uncomment if using metrics:
-# metrics:
-#   enabled: true
-#   # Init container to provide shell capability
-#   initContainer:
-#     - name: metrics-shell-provider
-#       image: busybox:latest
-#       command: ["sh", "-c"]
-#       args:
-#         - |
-#           mkdir -p /shared/bin
-#           cp /bin/sh /shared/bin/sh
-#           cp /bin/cat /shared/bin/cat
-#       volumeMounts:
-#         - name: shared-bin
-#           mountPath: /shared
-#   # Override command to use busybox shell and read vault secret
-#   command: ["/shared/bin/sh", "-c"]
-#   args:
-#     - |
-#       PIHOLE_PASSWORD=$(/shared/bin/cat /vault/secrets/metrics-password)
-#       export PIHOLE_PASSWORD
-#       exec /root/pihole-exporter
-#   env:
-#     - name: PIHOLE_HOSTNAME
-#       value: "127.0.0.1"
-#     - name: PIHOLE_PORT
-#       value: "80"
-#     - name: INTERVAL
-#       value: "10s"
-#   volumeMounts:
-#     - name: shared-bin
-#       mountPath: /shared
-
-# Extra volumes for metrics init container shared storage
-# Uncomment if using metrics:
-# extraVolumes:
-#   - name: shared-bin
-#     emptyDir: {}
+# Note: Metrics (pihole-exporter) cannot read passwords from files
+# as it uses a scratch image (no shell/utilities). Use direct env vars instead through secrets.
 
 # Ensure service account is created for Vault authentication
 serviceAccount:

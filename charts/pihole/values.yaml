@@ -1,6 +1,3 @@
-# ------------------------------------------------------------------------------
-# GLOBAL & IMAGE SETTINGS
-# ------------------------------------------------------------------------------
 image:
   repository: pihole/pihole
   pullPolicy: IfNotPresent
@@ -10,9 +7,6 @@ imagePullSecrets: []
 
 timezone: "UTC"
 
-# ------------------------------------------------------------------------------
-# DEPLOYMENT SETTINGS
-# ------------------------------------------------------------------------------
 replicas: 1
 
 strategy:
@@ -40,9 +34,6 @@ command: []
 # Override container args (optional)
 args: []
 
-# ------------------------------------------------------------------------------
-# PI-HOLE FTL CONFIGURATION (COMPLETE)
-# ------------------------------------------------------------------------------
 pihole:
   lists:
     adlists:
@@ -67,299 +58,880 @@ pihole:
 
     regex_blacklist: []
 
-  # Web Password logic (Kubernetes specific helper)
+  # Web logic (Kubernetes specific helper)
   web:
+    # @schema type:string,null
+    # -- (string) Web interface password. Set to empty string to disable password protection. Ignored if using external secret injection.
+    # @section -- Web
     password: ""
+    # @schema type:string,null
+    # -- (string) Key in the Kubernetes secret that contains the web interface password. Ignored if using external secret injection.
+    # @section -- Web
     passwordSecretKey: "password"
+    # @schema type:string,null
+    # -- (string) Name of an existing Kubernetes Secret in the same namespace that contains the web interface password. If set, this secret will be used instead of creating a new one. Ignored if using external secret injection.
+    # @section -- Web
     existingSecret: ""
-    # Skip the default password env var when using external secret injection
-    # Set to true when defining FTLCONF_webserver_api_password in extraEnv
+    # @schema type:boolean,null
+    # -- (boolean) Whether to skip setting the default web password environment variable when using external secret injection. Set to true if you are defining the FTLCONF_webserver_api_password variable in extraEnv with a value sourced from an external secret.
+    # @section -- Web
     skipPasswordEnv: false
+
+    # WEB K8S SERVICE #
+    service:
+      # @schema type:boolean,null
+      # -- (boolean) Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)
+      # @section -- K8S Services
+      enabled: true
+      type: ClusterIP
+      externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+      annotations: {}
+      ports:
+        http: 80
+        https: 443
+      # loadBalancerIP: ""
+      # externalIPs: []
+      # nodePorts:
+      #   http: 30080
+      #   https: 30443
 
   # FTL Configuration
   # Maps directly to pihole-FTL.toml structure
   # Reference: https://docs.pi-hole.net/ftldns/configfile/
-  # ftl:
-    # dns:
-      # upstreams: []
-      # CNAMEdeepInspect: true
-      # blockESNI: true
-      # EDNS0ECS: true
-      # ignoreLocalhost: false
-      # showDNSSEC: true
-      # analyzeOnlyAandAAAA: false
-      # piholePTR: "PI.HOLE" # Options: https://docs.pi-hole.net/ftldns/configfile/#piholeptr
-      # replyWhenBusy: "ALLOW" # Options: https://docs.pi-hole.net/ftldns/configfile/#replywhenbusy
-      # blockTTL: 2
-      # hosts: []
-      # domainNeeded: false
-      # expandHosts: false
-      # bogusPriv: true
-      # dnssec: false
-      # interface: ""
-      # hostRecord: ""
-      # listeningMode: "LOCAL" # Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode
-      # queryLogging: true
-      # cnameRecords: []
-      # port: 53
-      # localise: true
-      # revServers: []
+  ftl:
+    dns:
+      # @schema type:array,null
+      # -- (array) List of upstream DNS servers.
+      # @section -- DNS
+      # @default -- [8.8.8.8, 8.8.4.4]
+      upstreams: []
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      CNAMEdeepInspect: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      blockESNI: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      EDNS0ECS: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- false
+      ignoreLocalhost: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      showDNSSEC: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- false
+      analyzeOnlyAandAAAA: null
+      # @schema type:string,null
+      # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#piholeptr
+      # @section -- DNS
+      # @default -- "PI.HOLE"
+      piholePTR: null
+      # @schema type:string,null
+      # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#replywhenbusy
+      # @section -- DNS
+      # @default -- "ALLOW"
+      replyWhenBusy: null
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- DNS
+      # @default -- 2
+      blockTTL: null
+      # @schema type:array,null
+      # -- (array) No description provided.
+      # @section -- DNS
+      # @default -- []
+      hosts: []
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- false
+      domainNeeded: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- false
+      expandHosts: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      bogusPriv: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- false
+      dnssec: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DNS
+      # @default -- ""
+      interface: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DNS
+      # @default -- ""
+      hostRecord: null
+      # @schema type:string,null
+      # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode
+      # @section -- DNS
+      # @default -- "LOCAL"
+      listeningMode: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      queryLogging: null
+      # @schema type:array,null
+      # -- (array) No description provided.
+      # @section -- DNS
+      # @default -- []
+      cnameRecords: null
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- DNS
+      # @default -- 53
+      port: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DNS
+      # @default -- true
+      localise: null
+      # @schema type:array,null
+      # -- (array) No description provided.
+      # @section -- DNS
+      # @default -- []
+      revServers: []
 
-      # domain:
-        # name: "lan"
-        # local: true
+      domain:
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- DNS
+        # @default -- "lan"
+        name: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- DNS
+        # @default -- true
+        local: null
 
-      # cache:
-        # size: 10000
-        # optimizer: 3600
-        # upstreamBlockedTTL: 86400
+      cache:
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- DNS
+        # @default -- 10000
+        size: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- DNS
+        # @default -- 3600
+        optimizer: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- DNS
+        # @default -- 86400
+        upstreamBlockedTTL: null
 
-      # blocking:
-        # active: true
-        # mode: "NULL" # Options: https://docs.pi-hole.net/ftldns/configfile/#mode
-        # edns: "TEXT" # Options: https://docs.pi-hole.net/ftldns/configfile/#edns
+      blocking:
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- DNS
+        # @default -- true
+        active: null
+        # @schema type:string,null
+        # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#mode
+        # @section -- DNS
+        # @default -- "NULL"
+        mode: null
+        # @schema type:string,null
+        # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#edns
+        # @section -- DNS
+        # @default -- "TEXT"
+        edns: null
       
-      # specialDomains:
-        # mozillaCanary: true
-        # iCloudPrivateRelay: true
-        # designatedResolver: true
+      specialDomains:
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- DNS
+        # @default -- true
+        mozillaCanary: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- DNS
+        # @default -- true
+        iCloudPrivateRelay: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- DNS
+        # @default -- true
+        designatedResolver: null
       
-      # reply:
-        # host:
-          # force4: false
-          # IPv4: ""
-          # force6: false
-          # IPv6: ""
-        # blocking:
-          # force4: false
-          # IPv4: ""
-          # force6: false
-          # IPv6: ""
+      reply:
+        host:
+          # @schema type:boolean,null
+          # -- (boolean) No description provided.
+          # @section -- DNS
+          # @default -- false
+          force4: null
+          # @schema type:string,null
+          # -- (string) No description provided.
+          # @section -- DNS
+          # @default -- ""
+          IPv4: null
+          # @schema type:boolean,null
+          # -- (boolean) No description provided.
+          # @section -- DNS
+          # @default -- false
+          force6: null
+          # @schema type:string,null
+          # -- (string) No description provided.
+          # @section -- DNS
+          # @default -- ""
+          IPv6: null
+        blocking:
+          # @schema type:boolean,null
+          # -- (boolean) No description provided.
+          # @section -- DNS
+          # @default -- false
+          force4: null
+          # @schema type:string,null
+          # -- (string) No description provided.
+          # @section -- DNS
+          # @default -- ""
+          IPv4: null
+          # @schema type:boolean,null
+          # -- (boolean) No description provided.
+          # @section -- DNS
+          # @default -- false
+          force6: null
+          # @schema type:string,null
+          # -- (string) No description provided.
+          # @section -- DNS
+          # @default -- ""
+          IPv6: null
 
-      # rateLimit:
-        # count: 1000
-        # interval: 60
+      rateLimit:
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- DNS
+        # @default -- 1000
+        count: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- DNS
+        # @default -- 60
+        interval: null
+      
+      # DNS K8S SERVICE #
+      service:
+        # @schema type:boolean,null
+        # -- (boolean) DNS Kubernetes Service. Required for external access to DNS functionality (port 53).
+        # @section -- K8S Services
+        # @default -- true
+        enabled: true
+        # Split mode creates separate services for TCP and UDP
+        # Set to true for advanced use cases (different IPs, types per protocol)
+        # Default false keeps both protocols in one service (standard DNS behavior)
+        # @schema type:boolean,null
+        # -- (boolean) Whether to create separate Kubernetes Services for TCP and UDP DNS ports.
+        # @section -- K8S Services
+        # @default -- false
+        splitTcpUdp: false
+        
+        # Combined service configuration (used when splitTcpUdp: false)
+        type: LoadBalancer
+        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        annotations: {}
+        ports:
+          tcp: 53
+          udp: 53
+        # loadBalancerIP: ""
+        # externalIPs: []
+        # nodePorts:
+        #   tcp: 30053
+        #   udp: 30054
+        
+        # TCP-specific service (used when splitTcpUdp: true)
+        tcp:
+          enabled: true
+          type: LoadBalancer
+          externalTrafficPolicy: Local
+          annotations: {}
+          port: 53
+          # loadBalancerIP: ""
+          # externalIPs: []
+        
+        # UDP-specific service (used when splitTcpUdp: true)
+        udp:
+          enabled: true
+          type: LoadBalancer
+          externalTrafficPolicy: Local
+          annotations: {}
+          port: 53
+          # loadBalancerIP: ""
+          # externalIPs: []
 
-    # dhcp:
-      # active: false
-      # start: ""
-      # end: ""
-      # router: ""
-      # netmask: ""
-      # leaseTime: ""
-      # ipv6: false
-      # rapidCommit: false
-      # multiDNS: false
-      # logging: false
-      # ignoreUnknownClients: false
-      # hosts: []
+    dhcp:
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DHCP
+      # @default -- false
+      active: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DHCP
+      # @default -- ""
+      start: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DHCP
+      # @default -- ""
+      end: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DHCP
+      # @default -- ""
+      router: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DHCP
+      # @default -- ""
+      netmask: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- DHCP
+      # @default -- ""
+      leaseTime: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DHCP
+      # @default -- false
+      rapidCommit: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DHCP
+      # @default -- false
+      multiDNS: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DHCP
+      # @default -- false
+      logging: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- DHCP
+      # @default -- false
+      ignoreUnknownClients: null
+      # @schema type:array,null
+      # -- (array) No description provided.
+      # @section -- DHCP
+      # @default -- []
+      hosts: []
 
-    # ntp:
-      # ipv4:
-        # active: true
-        # address: ""
-      # ipv6:
-        # active: true
-        # address: ""
-      # sync:
-        # active: true
-        # server: "pool.ntp.org"
-        # interval: 3600
-        # count: 8
-        # rtc:
-          # set: false
-          # device: "/dev/rtc0"
-          # utc: true
+      # DHCP K8S SERVICE #
+      # Optional: Required only if using Pi-hole's DHCP functions (port 67)
+      service:
+        # @schema type:boolean,null
+        # -- (boolean) DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).
+        # @section -- K8S Services
+        # @default -- false
+        enabled: false
+        type: LoadBalancer
+        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        annotations: {}
+        ports:
+          dhcp: 67
+        # loadBalancerIP: ""
+        # externalIPs: []
+        # nodePort: 30067
+
+      # DHCPv6 K8S SERVICE #
+      # Optional: Required only when pihole.ftl.dhcp.ipv6 is enabled (port 547)
+      ipv6:
+        # @schema type:boolean,null
+        # -- (boolean) DHCPv6 functionality.
+        # @section -- DHCP
+        # @default -- false
+        active: false
+        service:
+          # @schema type:boolean,null
+          # -- (boolean) DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).
+          # @section -- K8S Services
+          # @default -- false
+          enabled: false
+          type: LoadBalancer
+          externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+          annotations: {}
+          ports:
+            dhcpv6: 547
+          # loadBalancerIP: ""
+          # externalIPs: []
+          # nodePort: 30547
+
+    ntp:
+      ipv4:
+        # @schema type:boolean,null
+        # -- (boolean) NTP functionality on IPv4.
+        # @section -- NTP
+        # @default -- true
+        active: null
+        # @schema type:string,null
+        # -- (string) NTP address on IPv4.
+        # @section -- NTP
+        # @default -- ""
+        address: null
+      ipv6:
+        # @schema type:boolean,null
+        # -- (boolean) NTP functionality on IPv6.
+        # @section -- NTP
+        # @default -- true
+        active: null
+        # @schema type:string,null
+        # -- (string) NTP address on IPv6.
+        # @section -- NTP
+        # @default -- ""
+        address: null
+      sync:
+        # @schema type:boolean,null
+        # -- (boolean) Whether to enable NTP time synchronization.
+        # @section -- NTP
+        # @default -- true
+        active: null
+        # @schema type:string,null
+        # -- (string) NTP server to sync with. Can be an IP address or hostname. Set to empty string to disable syncing.
+        # @section -- NTP
+        # @default -- "pool.ntp.org"
+        server: null
+        # @schema type:integer,null
+        # -- (integer) NTP sync interval in seconds.
+        # @section -- NTP
+        # @default -- 3600
+        interval: null
+        # @schema type:integer,null
+        # -- (integer) NTP sync count.
+        # @section -- NTP
+        # @default -- 8
+        count: null
+        rtc:
+          # @schema type:boolean,null
+          # -- (boolean) Whether to set the RTC (Real-Time Clock) to the current time.
+          # @section -- NTP
+          # @default -- false
+          set: null
+          # @schema type:string,null
+          # -- (string) RTC device to use when setting the clock.
+          # @section -- NTP
+          # @default -- "/dev/rtc0"
+          device: null
+          # @schema type:boolean,null
+          # -- (boolean) Whether to use UTC time when setting the RTC.
+          # @section -- NTP
+          # @default -- true
+          utc: null
+
+      # NTP K8S SERVICE #
+      # Optional: Required only when using pihole-FTL as NTP-Server (port 123)
+      service:
+        # @schema type:boolean,null
+        # -- (boolean) NTP Kubernetes Service. Required for external access to NTP functionality (port 123).
+        # @section -- K8S Services
+        # @default -- false
+        enabled: false
+        type: LoadBalancer
+        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        annotations: {}
+        ports:
+          ntp: 123
+        # loadBalancerIP: ""
+        # externalIPs: []
+        # nodePort: 30123
     
-    # resolver:
-      # resolveIPv4: true
-      # resolveIPv6: true
-      # networkNames: true
-      # refreshNames: "IPV4_ONLY" # Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames
+    resolver:
+      # @schema type:boolean,null
+      # -- (boolean) Whether to resolve IPv4 addresses to hostnames in the query log and other outputs.
+      # @default -- true
+      resolveIPv4: null
+      # @schema type:boolean,null
+      # -- (boolean) Whether to resolve IPv6 addresses to hostnames in the query log and other outputs.
+      # @default -- true
+      resolveIPv6: null
+      # @schema type:boolean,null
+      # -- (boolean) Control whether FTL should use the fallback option to try to obtain client names from checking the network table.
+      # @default -- true
+      networkNames: null
+      # @schema type:string,null
+      # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames
+      # @default -- "IPV4_ONLY"
+      refreshNames: null
 
-    # database:
-      # DBimport: true
-      # maxDBdays: 91
-      # DBinterval: 60
-      # useWAL: true
-      # network:
-        # parseARPcache: true
-        # expire: 91
+    database:
+      # @schema type:boolean,null
+      # -- (boolean) Should FTL load information from the database on startup to be aware of the most recent history?
+      # @section -- Database
+      # @default -- true
+      DBimport: null
+      # @schema type:integer,null
+      # -- (integer) Maximum number of days to keep database entries.
+      # @section -- Database
+      # @default -- 91
+      maxDBdays: null
+      # @schema type:integer,null
+      # -- (integer) Database update interval in seconds.
+      # @section -- Database
+      # @default -- 60
+      DBinterval: null
+      # @schema type:boolean,null
+      # -- (boolean) Whether to use WAL (Write-Ahead Logging) for the database.
+      # @section -- Database
+      # @default -- true
+      useWAL: null
+      network:
+        # @schema type:boolean,null
+        # -- (boolean) Whether to parse the ARP cache.
+        # @section -- Database
+        # @default -- true
+        parseARPcache: null
+        # @schema type:integer,null
+        # -- (integer) Number of days after which an entry in the ARP cache is considered stale.
+        # @section -- Database
+        # @default -- 91
+        expire: null
 
-    # webserver:
-      # domain: "pi.hole"
-      # acl: ""
-      # port: "80o,443os,[::]:80o,[::]:443os"
-      # threads: 50
-      # headers:
-        # - "X-DNS-Prefetch-Control: off"
-        # - "Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
-        # - "X-Frame-Options: DENY"
-        # - "X-XSS-Protection: 0"
-        # - "X-Content-Type-Options: nosniff"
-        # - "Referrer-Policy: strict-origin-when-cross-origin"
-      # serve_all: false
-      # advancedOpts: []
+    webserver:
+      # @schema type:string,null
+      # -- (string) Domain to use for the Pi-hole web interface. Set to empty string to disable.
+      # @section -- Webserver
+      # @default -- "pi.hole"
+      domain: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Webserver
+      # @default -- ""
+      acl: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Webserver
+      # @default -- "80o,443os,[::]:80o,[::]:443os"
+      port: null
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- Webserver
+      # @default -- 50
+      threads: null
+      # @schema type:array,null
+      # -- (array) Headers to be set on all webserver responses. Check default value in pihole-FTL.toml for format.
+      headers: []
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Webserver
+      # @default -- false
+      serve_all: null
+      # @schema type:array,null
+      # -- (array) Additional options to be passed to the webserver. Can be used to set custom options like TLS configuration, etc.
+      # @section -- Webserver
+      # @default -- []
+      advancedOpts: []
 
-      # session:
-        # timeout: 1800
-        # restore: true
+      session:
+        # @schema type:integer,null
+        # -- (integer) Session timeout in seconds.
+        # @section -- Webserver
+        # @default -- 1800
+        timeout: null
+        # @schema type:boolean,null
+        # -- (boolean) Whether to restore sessions after a restart. If false, all sessions will be lost on restart.
+        # @section -- Webserver
+        # @default -- true
+        restore: null
 
-      # tls:
-        # cert: "/etc/pihole/tls.pem"
-        # validity: 47
+      tls:
+        # @schema type:string,null
+        # -- (string) Path to TLS certificate file. Set to empty string to disable TLS.
+        # @section -- Webserver
+        # @default -- "/etc/pihole/tls.pem"
+        cert: null
+        # @schema type:integer,null
+        # -- (integer) TLS validity period in days.
+        # @section -- Webserver
+        # @default -- 47
+        validity: null
 
-      # paths:
-        # webroot: "/var/www/html"
-        # webhome: "/admin/"
-        # prefix: ""
+      paths:
+        # @schema type:string,null
+        # -- (string) Web root directory for the Pi-hole web interface.
+        # @section -- Webserver
+        # @default -- "/var/www/html"
+        webroot: null
+        # @schema type:string,null
+        # -- (string) URL path prefix for the Pi-hole web interface. Set to empty string for no prefix (root).
+        # @section -- Webserver
+        # @default -- "/admin/"
+        webhome: null
+        # @schema type:string,null
+        # -- (string) URL prefix for the Pi-hole API. Set to empty string for no prefix (root).
+        # @section -- Webserver
+        # @default -- ""
+        prefix: null
 
-      # interface:
-        # boxed: true
-        # theme: "default-auto" # Options: https://docs.pi-hole.net/ftldns/configfile/#theme
+      interface:
+        # @schema type:boolean,null
+        # -- (boolean) Should the web interface use the boxed layout?
+        # @section -- Webserver
+        # @default -- true
+        boxed: null
+        # @schema type:string,null
+        # -- (string) Theme used by the Pi-hole web interface. Options: https://docs.pi-hole.net/ftldns/configfile/#theme
+        # @section -- Webserver
+        # @default -- "default-auto"
+        theme: null
 
-      # api:
-        # max_sessions: 16
-        # prettyJSON: false
-        # pwhash: ""
-        # totp_secret: ""
-        # app_pwhash: ""
-        # app_sudo: false
-        # cli_pw: true
-        # excludeClients: []
-        # excludeDomains: []
-        # maxHistory: 86400
-        # maxClients: 10
-        # client_history_global_max: true
-        # allow_destructive: true
-        # temp:
-          # limit: 60.000000
-          # unit: "C" # Options: https://docs.pi-hole.net/ftldns/configfile/#unit 
+      api:
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- Webserver
+        # @default -- 16
+        max_sessions: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Webserver
+        # @default -- false
+        prettyJSON: null
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Webserver
+        # @default -- ""
+        pwhash: null
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Webserver
+        # @default -- ""
+        totp_secret: null
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Webserver
+        # @default -- ""
+        app_pwhash: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Webserver
+        # @default -- false
+        app_sudo: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Webserver
+        # @default -- true
+        cli_pw: null
+        # @schema type:array,null
+        # -- (array) No description provided.
+        # @section -- Webserver
+        # @default -- []
+        excludeClients: []
+        # @schema type:array,null
+        # -- (array) No description provided.
+        # @section -- Webserver
+        # @default -- []
+        excludeDomains: []
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- Webserver
+        # @default -- 86400
+        maxHistory: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- Webserver
+        # @default -- 10
+        maxClients: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Webserver
+        # @default -- true
+        client_history_global_max: null
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Webserver
+        # @default -- true
+        allow_destructive: null
+        temp:
+          # @schema type:number,null
+          # -- (number) No description provided.
+          # @section -- Webserver
+          # @default -- 60.000000
+          limit: null
+          # @schema type:string,null
+          # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#unit
+          # @section -- Webserver
+          # @default -- "C"
+          unit: null
 
-    # files:
-      # pid: "/run/pihole-FTL.pid"
-      # database: "/etc/pihole/pihole-FTL.db"
-      # gravity: "/etc/pihole/gravity.db"
-      # gravity_tmp: "/tmp"
-      # macvendor: "/etc/pihole/macvendor.db"
-      # pcap: ""
-      # log:
-        # ftl: "/var/log/pihole/FTL.log"
-        # dnsmasq: "/var/log/pihole/pihole.log"
-        # webserver: "/var/log/pihole/webserver.log"
+    files:
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- "/run/pihole-FTL.pid"
+      pid: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- "/etc/pihole/pihole-FTL.db"
+      database: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- "/etc/pihole/gravity.db"
+      gravity: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- "/tmp"
+      gravity_tmp: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- "/etc/pihole/macvendor.db"
+      macvendor: null
+      # @schema type:string,null
+      # -- (string) No description provided.
+      # @section -- Advanced
+      # @default -- ""
+      pcap: null
+      log:
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Advanced
+        # @default -- "/var/log/pihole/FTL.log"
+        ftl: null
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Advanced
+        # @default -- "/var/log/pihole/pihole.log"
+        dnsmasq: null
+        # @schema type:string,null
+        # -- (string) No description provided.
+        # @section -- Advanced
+        # @default -- "/var/log/pihole/webserver.log"
+        webserver: null
 
-    # misc:
-      # privacylevel: 0
-      # delay_startup: 0
-      # nice: -10
-      # addr2line: true
-      # etc_dnsmasq_d: false
-      # dnsmasq_lines: []
-      # extraLogging: false
-      # readOnly: false
-      # normalizeCPU: true
-      # hide_dnsmasq_warn: false
-      # check:
-        # load: true
-        # shmem: 90
-        # disk: 90
+    misc:
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- Advanced
+      # @default -- 0
+      privacylevel: null
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- Advanced
+      # @default -- 0
+      delay_startup: null
+      # @schema type:integer,null
+      # -- (integer) No description provided.
+      # @section -- Advanced
+      # @default -- -10
+      nice: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- true
+      addr2line: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- false
+      etc_dnsmasq_d: null
+      # @schema type:array,null
+      # -- (array) No description provided.
+      # @section -- Advanced
+      # @default -- []
+      dnsmasq_lines: []
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- false
+      extraLogging: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- false
+      readOnly: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- true
+      normalizeCPU: null
+      # @schema type:boolean,null
+      # -- (boolean) No description provided.
+      # @section -- Advanced
+      # @default -- false
+      hide_dnsmasq_warn: null
+      check:
+        # @schema type:boolean,null
+        # -- (boolean) No description provided.
+        # @section -- Advanced
+        # @default -- true
+        load: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- Advanced
+        # @default -- 90
+        shmem: null
+        # @schema type:integer,null
+        # -- (integer) No description provided.
+        # @section -- Advanced
+        # @default -- 90
+        disk: null
 
   # Custom IDs
-  # uid: 1000
-  # gid: 1000
+  # @schema type:integer,null
+  # -- (integer) No description provided.
+  # @default -- 1000
+  uid: null
+  # @schema type:integer,null
+  # -- (integer) No description provided.
+  # @default -- 1000
+  gid: null
 
   # Other Pi-hole Variables
-  # tailFtlLog: 1                    # Whether to output FTL log (0 or 1)
-  # ftlCmd: "no-daemon"              # Customize dnsmasq startup options
-  # dnsmasqUser: "pihole"            # User that FTLDNS runs as
-  # additionalPackages: ""           # Additional Alpine packages to install
-  # verbose: 0                       # Enable verbose startup scripts (0 or 1)
+  # @schema type:integer,null
+  # -- (integer) Whether to output FTL log (0 or 1)
+  # @default -- 1
+  tailFtlLog: null
+  # @schema type:string,null
+  # -- (string) Customize dnsmasq startup options
+  # @default -- "no-daemon"
+  ftlCmd: null
+  # @schema type:string,null
+  # -- (string) User that FTLDNS runs as
+  # @default -- "pihole"
+  dnsmasqUser: null
+  # @schema type:string,null
+  # -- (string) Additional Alpine packages to install
+  # @default -- ""
+  additionalPackages: null
+  # @schema type:integer,null
+  # -- (integer) Enable verbose startup scripts (0 or 1)
+  # @default -- 0
+  verbose: null
 
-# ------------------------------------------------------------------------------
-# SERVICE ACCOUNT
-# ------------------------------------------------------------------------------
 serviceAccount:
   create: true
   name: "pihole"
   annotations: {}
 
-# ------------------------------------------------------------------------------
-# NETWORKING
-# ------------------------------------------------------------------------------
 networking:
   hostNetwork: false
 
-# ------------------------------------------------------------------------------
-# SERVICES
-# ------------------------------------------------------------------------------
-serviceDns:
-  enabled: true
-  # Split mode creates separate services for TCP and UDP
-  # Set to true for advanced use cases (different IPs, types per protocol)
-  # Default false keeps both protocols in one service (standard DNS behavior)
-  splitTcpUdp: false
-  
-  # Combined service configuration (used when splitTcpUdp: false)
-  type: LoadBalancer
-  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
-  annotations: {}
-  ports:
-    tcp: 53
-    udp: 53
-  # loadBalancerIP: ""
-  # externalIPs: []
-  # nodePorts:
-  #   tcp: 30053
-  #   udp: 30054
-  
-  # TCP-specific service (used when splitTcpUdp: true)
-  tcp:
-    enabled: true
-    type: LoadBalancer
-    externalTrafficPolicy: Local
-    annotations: {}
-    port: 53
-    # loadBalancerIP: ""
-    # externalIPs: []
-  
-  # UDP-specific service (used when splitTcpUdp: true)
-  udp:
-    enabled: true
-    type: LoadBalancer
-    externalTrafficPolicy: Local
-    annotations: {}
-    port: 53
-    # loadBalancerIP: ""
-    # externalIPs: []
-
-serviceWeb:
-  enabled: true
-  type: ClusterIP
-  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
-  annotations: {}
-  ports:
-    http: 80
-    https: 443
-  # loadBalancerIP: ""
-  # externalIPs: []
-  # nodePorts:
-  #   http: 30080
-  #   https: 30443
-
-serviceDhcp:
-  enabled: false
-  type: LoadBalancer
-  externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
-  annotations: {}
-  ports:
-    dhcp: 67
-  # loadBalancerIP: ""
-  # externalIPs: []
-  # nodePort: 30067
-
-# ------------------------------------------------------------------------------
-# PERSISTENCE
-# ------------------------------------------------------------------------------
 persistence:
   etcPihole:
     enabled: true
@@ -371,17 +943,26 @@ persistence:
     accessMode: ReadWriteOnce
     size: 100Mi
 
-# ------------------------------------------------------------------------------
-# METRICS
-# ------------------------------------------------------------------------------
 metrics:
+  # @schema type:boolean,null
+  # -- (boolean) Whether to enable the Pi-hole metrics exporter sidecar container. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).
+  # @section -- Metrics
   enabled: false
   image:
+    # @schema type:string,null
+    # -- (string) Container image for the Pi-hole metrics exporter sidecar.
+    # @section -- Metrics
     repository: ekofr/pihole-exporter
     tag: v1.2.0
     pullPolicy: IfNotPresent
+  # @schema type:integer,null
+  # -- (integer) Port on which the metrics exporter will listen.
+  # @section -- Metrics
   port: 9617
   service:
+    # @schema type:boolean,null
+    # -- (boolean) Metrics Kubernetes Service. Required for external access to metrics endpoint. (port 9617)
+    # @section -- K8S Services
     enabled: true
     type: ClusterIP
     # externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
@@ -389,6 +970,12 @@ metrics:
     # loadBalancerIP: ""
     # externalIPs: []
     # nodePort: 30617
+  # @schema type:array,null
+  # -- (array) Environment variables to pass to the metrics exporter container. Required variables:
+  # - PIHOLE_HOSTNAME: Hostname or IP address of the Pi-hole FTL container (usually "127.0.0.1")
+  # - PIHOLE_PORT: Port on which the Pi-hole FTL container is listening (usually "80")
+  # - INTERVAL: How often the exporter should scrape metrics from the Pi-hole FTL container (e.g., "10s", "30s", etc.)
+  # @section -- Metrics
   env:
     - name: PIHOLE_HOSTNAME
       value: "127.0.0.1"
@@ -421,6 +1008,9 @@ metrics:
       memory: 32Mi
       cpu: 10m
   serviceMonitor:
+    # @schema type:boolean,null
+    # -- (boolean) Whether to create a ServiceMonitor resource for Prometheus Operator integration.
+    # @section -- Metrics
     enabled: false
     interval: 30s
     scrapeTimeout: 10s
@@ -429,6 +1019,9 @@ metrics:
     relabelings: []
     metricRelabelings: []
   dashboards:
+    # @schema type:boolean,null
+    # -- (boolean) Whether to create Grafana dashboard resources for the Pi-hole metrics exporter. Requires metrics.service.enabled to be true.
+    # @section -- Metrics
     enabled: false
     # Label for Grafana dashboard sidecar discovery
     # For kube-prometheus-stack, use: grafana_dashboard
@@ -436,14 +1029,9 @@ metrics:
     labelValue: "1"
     annotations: {}
 
-# ------------------------------------------------------------------------------
-# SECURITY
-# ------------------------------------------------------------------------------
 securityContext:
   capabilities:
-    add:
-      - NET_ADMIN # Required for DHCP functionality
-      - SYS_TIME # Required for NTP functionality
+    add: []
 
 networkPolicy:
   enabled: false

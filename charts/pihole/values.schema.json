@@ -1,27 +1,33 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
-    "required": [
-        "pihole"
-    ],
     "properties": {
+        "affinity": {
+            "type": "object"
+        },
+        "args": {
+            "type": "array"
+        },
+        "command": {
+            "type": "array"
+        },
+        "extraEnv": {
+            "type": "array"
+        },
+        "extraInitContainers": {
+            "type": "array"
+        },
+        "extraVolumes": {
+            "type": "array"
+        },
         "image": {
             "type": "object",
-            "required": [
-                "repository",
-                "pullPolicy"
-            ],
             "properties": {
-                "repository": {
+                "pullPolicy": {
                     "type": "string"
                 },
-                "pullPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "Always",
-                        "IfNotPresent",
-                        "Never"
-                    ]
+                "repository": {
+                    "type": "string"
                 },
                 "tag": {
                     "type": "string"
@@ -29,374 +35,176 @@
             }
         },
         "imagePullSecrets": {
-            "type": "array",
-            "items": {
-                "type": "object"
-            }
+            "type": "array"
         },
-        "timezone": {
-            "type": "string"
-        },
-        "replicas": {
-            "type": "integer",
-            "minimum": 0
-        },
-        "strategy": {
+        "metrics": {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "Recreate",
-                        "RollingUpdate"
+                "args": {
+                    "type": "array"
+                },
+                "command": {
+                    "type": "array"
+                },
+                "dashboards": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "Whether to create Grafana dashboard resources for the Pi-hole metrics exporter. Requires metrics.service.enabled to be true.",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "labelValue": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "enabled": {
+                    "description": "Whether to enable the Pi-hole metrics exporter sidecar container. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).",
+                    "type": [
+                        "boolean",
+                        "null"
                     ]
                 },
-                "rollingUpdate": {
-                    "type": "object",
-                    "properties": {
-                        "maxSurge": {
-                            "oneOf": [
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "maxUnavailable": {
-                            "oneOf": [
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "string"
-                                }
-                            ]
+                "env": {
+                    "description": "Environment variables to pass to the metrics exporter container. Required variables: - PIHOLE_HOSTNAME: Hostname or IP address of the Pi-hole FTL container (usually \"127.0.0.1\") - PIHOLE_PORT: Port on which the Pi-hole FTL container is listening (usually \"80\") - INTERVAL: How often the exporter should scrape metrics from the Pi-hole FTL container (e.g., \"10s\", \"30s\", etc.)",
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
                         }
                     }
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "description": "Container image for the Pi-hole metrics exporter sidecar.",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "initContainer": {
+                    "type": "array"
+                },
+                "port": {
+                    "description": "Port on which the metrics exporter will listen.",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "description": "Metrics Kubernetes Service. Required for external access to metrics endpoint. (port 9617)",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "serviceMonitor": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "Whether to create a ServiceMonitor resource for Prometheus Operator integration.",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "interval": {
+                            "type": "string"
+                        },
+                        "labels": {
+                            "type": "object"
+                        },
+                        "metricRelabelings": {
+                            "type": "array"
+                        },
+                        "relabelings": {
+                            "type": "array"
+                        },
+                        "scrapeTimeout": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "volumeMounts": {
+                    "type": "array"
                 }
             }
         },
-        "podAnnotations": {
-            "type": "object",
-            "description": "Annotations to add to the pod. Useful for secret injection like Vault, AWS Secrets Manager, etc."
-        },
-        "extraEnv": {
-            "type": "array",
-            "description": "Extra environment variables to append to the container",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "type": "string"
-                    },
-                    "valueFrom": {
-                        "type": "object"
-                    }
-                },
-                "required": ["name"]
-            }
-        },
-        "extraInitContainers": {
-            "type": "array",
-            "description": "Extra init containers to run before the main container",
-            "items": {
-                "type": "object"
-            }
-        },
-        "command": {
-            "type": "array",
-            "description": "Override container command",
-            "items": {
-                "type": "string"
-            }
-        },
-        "args": {
-            "type": "array",
-            "description": "Override container args",
-            "items": {
-                "type": "string"
-            }
-        },
-        "pihole": {
+        "networkPolicy": {
             "type": "object",
             "properties": {
-                "lists": {
-                    "type": "object",
-                    "properties": {
-                        "adlists": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "address": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "address"
-                                ]
-                            }
-                        },
-                        "whitelist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "domain": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "domain"
-                                ]
-                            }
-                        },
-                        "blacklist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "domain": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "domain"
-                                ]
-                            }
-                        },
-                        "regex_whitelist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "domain": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "domain"
-                                ]
-                            }
-                        },
-                        "regex_blacklist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "domain": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "domain"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "web": {
-                    "type": "object",
-                    "properties": {
-                        "password": {
-                            "type": "string"
-                        },
-                        "passwordSecretKey": {
-                            "type": "string"
-                        },
-                        "existingSecret": {
-                            "type": "string"
-                        },
-                        "skipPasswordEnv": {
-                            "type": "boolean",
-                            "description": "Skip the default password environment variable when using external secret injection"
-                        }
-                    }
-                },
-                "ftl": {
-                    "type": "object",
-                    "properties": {
-                        "dns": {
-                            "type": "object",
-                            "required": [
-                                "upstreams"
-                            ],
-                            "properties": {
-                                "upstreams": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "minItems": 1
-                                },
-                                "listeningMode": {
-                                    "type": "string",
-                                    "enum": [
-                                        "ALL",
-                                        "LOCAL",
-                                        "SINGLE",
-                                        "BIND"
-                                    ]
-                                },
-                                "port": {
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 65535
-                                },
-                                "queryLogging": {
-                                    "type": "boolean"
-                                },
-                                "dnssec": {
-                                    "type": "boolean"
-                                },
-                                "blocking": {
-                                    "type": "object",
-                                    "properties": {
-                                        "active": {
-                                            "type": "boolean"
-                                        },
-                                        "mode": {
-                                            "type": "string",
-                                            "enum": [
-                                                "NULL",
-                                                "IP",
-                                                "NX",
-                                                "NODATA",
-                                                "IP_NODATA_AAAA"
-                                            ]
-                                        },
-                                        "edns": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "cache": {
-                                    "type": "object",
-                                    "properties": {
-                                        "size": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "ntp": {
-                            "type": "object"
-                        },
-                        "webserver": {
-                            "type": "object",
-                            "properties": {
-                                "port": {
-                                    "type": "string"
-                                },
-                                "domain": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "dhcp": {
-                            "type": "object",
-                            "properties": {
-                                "active": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "database": {
-                            "type": "object"
-                        },
-                        "resolver": {
-                            "type": "object"
-                        },
-                        "files": {
-                            "type": "object"
-                        },
-                        "misc": {
-                            "type": "object",
-                            "properties": {
-                                "privacylevel": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "maximum": 3
-                                }
-                            }
-                        }
-                    }
-                },
-                "uid": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "gid": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "tailFtlLog": {
-                    "type": "integer",
-                    "enum": [0, 1]
-                },
-                "ftlCmd": {
-                    "type": "string"
-                },
-                "dnsmasqUser": {
-                    "type": "string"
-                },
-                "additionalPackages": {
-                    "type": "string"
-                },
-                "verbose": {
-                    "type": "integer",
-                    "enum": [0, 1]
-                }
-            }
-        },
-        "serviceAccount": {
-            "type": "object",
-            "properties": {
-                "create": {
+                "enabled": {
                     "type": "boolean"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "annotations": {
-                    "type": "object"
+                "webAllowFrom": {
+                    "type": "array"
                 }
             }
         },
@@ -408,449 +216,1540 @@
                 }
             }
         },
-        "serviceDns": {
-            "type": "object",
-            "required": [
-                "enabled",
-                "type"
-            ],
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "splitTcpUdp": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "ClusterIP",
-                        "NodePort",
-                        "LoadBalancer"
-                    ]
-                },
-                "externalTrafficPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "Local",
-                        "Cluster"
-                    ]
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "ports": {
-                    "type": "object",
-                    "properties": {
-                        "tcp": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        },
-                        "udp": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        }
-                    }
-                },
-                "loadBalancerIP": {
-                    "type": "string"
-                },
-                "externalIPs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "nodePorts": {
-                    "type": "object",
-                    "properties": {
-                        "tcp": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        },
-                        "udp": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        }
-                    }
-                },
-                "tcp": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "ClusterIP",
-                                "NodePort",
-                                "LoadBalancer"
-                            ]
-                        },
-                        "externalTrafficPolicy": {
-                            "type": "string",
-                            "enum": [
-                                "Local",
-                                "Cluster"
-                            ]
-                        },
-                        "annotations": {
-                            "type": "object"
-                        },
-                        "port": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        },
-                        "loadBalancerIP": {
-                            "type": "string"
-                        },
-                        "externalIPs": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "nodePort": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        }
-                    }
-                },
-                "udp": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "ClusterIP",
-                                "NodePort",
-                                "LoadBalancer"
-                            ]
-                        },
-                        "externalTrafficPolicy": {
-                            "type": "string",
-                            "enum": [
-                                "Local",
-                                "Cluster"
-                            ]
-                        },
-                        "annotations": {
-                            "type": "object"
-                        },
-                        "port": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        },
-                        "loadBalancerIP": {
-                            "type": "string"
-                        },
-                        "externalIPs": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "nodePort": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        }
-                    }
-                }
-            }
-        },
-        "serviceWeb": {
-            "type": "object",
-            "required": [
-                "enabled",
-                "type"
-            ],
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "ClusterIP",
-                        "NodePort",
-                        "LoadBalancer"
-                    ]
-                },
-                "externalTrafficPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "Local",
-                        "Cluster"
-                    ]
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "ports": {
-                    "type": "object",
-                    "properties": {
-                        "http": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        },
-                        "https": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        }
-                    }
-                },
-                "loadBalancerIP": {
-                    "type": "string"
-                },
-                "externalIPs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "nodePorts": {
-                    "type": "object",
-                    "properties": {
-                        "http": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        },
-                        "https": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
-                        }
-                    }
-                }
-            }
-        },
-        "serviceDhcp": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "ClusterIP",
-                        "NodePort",
-                        "LoadBalancer"
-                    ]
-                },
-                "externalTrafficPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "Local",
-                        "Cluster"
-                    ]
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "ports": {
-                    "type": "object",
-                    "properties": {
-                        "dhcp": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 65535
-                        }
-                    }
-                },
-                "loadBalancerIP": {
-                    "type": "string"
-                },
-                "externalIPs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "nodePort": {
-                    "type": "integer",
-                    "minimum": 30000,
-                    "maximum": 32767
-                }
-            }
+        "nodeSelector": {
+            "type": "object"
         },
         "persistence": {
             "type": "object",
             "properties": {
-                "etcPihole": {
+                "etcDnsmasq": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
                         "accessMode": {
                             "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
                         },
                         "size": {
                             "type": "string"
                         }
                     }
                 },
-                "etcDnsmasq": {
+                "etcPihole": {
                     "type": "object",
                     "properties": {
+                        "accessMode": {
+                            "type": "string"
+                        },
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "size": {
+                            "type": "string"
                         }
                     }
                 }
             }
         },
-        "metrics": {
+        "pihole": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean"
+                "additionalPackages": {
+                    "description": "Additional Alpine packages to install",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
-                "service": {
+                "dnsmasqUser": {
+                    "description": "User that FTLDNS runs as",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ftl": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "ClusterIP",
-                                "NodePort",
-                                "LoadBalancer"
-                            ]
-                        },
-                        "externalTrafficPolicy": {
-                            "type": "string",
-                            "enum": [
-                                "Local",
-                                "Cluster"
-                            ]
-                        },
-                        "annotations": {
-                            "type": "object"
-                        },
-                        "loadBalancerIP": {
-                            "type": "string"
-                        },
-                        "externalIPs": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
+                        "database": {
+                            "type": "object",
+                            "properties": {
+                                "DBimport": {
+                                    "description": "Should FTL load information from the database on startup to be aware of the most recent history?",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "DBinterval": {
+                                    "description": "Database update interval in seconds.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "maxDBdays": {
+                                    "description": "Maximum number of days to keep database entries.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "network": {
+                                    "type": "object",
+                                    "properties": {
+                                        "expire": {
+                                            "description": "Number of days after which an entry in the ARP cache is considered stale.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "parseARPcache": {
+                                            "description": "Whether to parse the ARP cache.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "useWAL": {
+                                    "description": "Whether to use WAL (Write-Ahead Logging) for the database.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                }
                             }
                         },
-                        "nodePort": {
-                            "type": "integer",
-                            "minimum": 30000,
-                            "maximum": 32767
+                        "dhcp": {
+                            "type": "object",
+                            "properties": {
+                                "active": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "end": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "hosts": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "ignoreUnknownClients": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "ipv6": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "description": "DHCPv6 functionality.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "service": {
+                                            "type": "object",
+                                            "properties": {
+                                                "annotations": {
+                                                    "type": "object"
+                                                },
+                                                "enabled": {
+                                                    "description": "DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "externalTrafficPolicy": {
+                                                    "type": "string"
+                                                },
+                                                "ports": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "dhcpv6": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "leaseTime": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "logging": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "multiDNS": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "netmask": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "rapidCommit": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "router": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "service": {
+                                    "type": "object",
+                                    "properties": {
+                                        "annotations": {
+                                            "type": "object"
+                                        },
+                                        "enabled": {
+                                            "description": "DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "externalTrafficPolicy": {
+                                            "type": "string"
+                                        },
+                                        "ports": {
+                                            "type": "object",
+                                            "properties": {
+                                                "dhcp": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "start": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "dns": {
+                            "type": "object",
+                            "properties": {
+                                "CNAMEdeepInspect": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "EDNS0ECS": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "analyzeOnlyAandAAAA": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "blockESNI": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "blockTTL": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "blocking": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "edns": {
+                                            "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#edns",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "mode": {
+                                            "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#mode",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "bogusPriv": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "cache": {
+                                    "type": "object",
+                                    "properties": {
+                                        "optimizer": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "size": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "upstreamBlockedTTL": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "cnameRecords": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "dnssec": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "domain": {
+                                    "type": "object",
+                                    "properties": {
+                                        "local": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "domainNeeded": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "expandHosts": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "hostRecord": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "hosts": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "ignoreLocalhost": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "interface": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "listeningMode": {
+                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "localise": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "piholePTR": {
+                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#piholeptr",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "port": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "queryLogging": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "rateLimit": {
+                                    "type": "object",
+                                    "properties": {
+                                        "count": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "interval": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "reply": {
+                                    "type": "object",
+                                    "properties": {
+                                        "blocking": {
+                                            "type": "object",
+                                            "properties": {
+                                                "IPv4": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "IPv6": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "force4": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "force6": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "host": {
+                                            "type": "object",
+                                            "properties": {
+                                                "IPv4": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "IPv6": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "force4": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "force6": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "replyWhenBusy": {
+                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#replywhenbusy",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "revServers": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "service": {
+                                    "type": "object",
+                                    "properties": {
+                                        "annotations": {
+                                            "type": "object"
+                                        },
+                                        "enabled": {
+                                            "description": "DNS Kubernetes Service. Required for external access to DNS functionality (port 53).",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "externalTrafficPolicy": {
+                                            "type": "string"
+                                        },
+                                        "ports": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tcp": {
+                                                    "type": "integer"
+                                                },
+                                                "udp": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "splitTcpUdp": {
+                                            "description": "Whether to create separate Kubernetes Services for TCP and UDP DNS ports.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "tcp": {
+                                            "type": "object",
+                                            "properties": {
+                                                "annotations": {
+                                                    "type": "object"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "externalTrafficPolicy": {
+                                                    "type": "string"
+                                                },
+                                                "port": {
+                                                    "type": "integer"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "udp": {
+                                            "type": "object",
+                                            "properties": {
+                                                "annotations": {
+                                                    "type": "object"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "externalTrafficPolicy": {
+                                                    "type": "string"
+                                                },
+                                                "port": {
+                                                    "type": "integer"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "showDNSSEC": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "specialDomains": {
+                                    "type": "object",
+                                    "properties": {
+                                        "designatedResolver": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "iCloudPrivateRelay": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "mozillaCanary": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "upstreams": {
+                                    "description": "List of upstream DNS servers.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "files": {
+                            "type": "object",
+                            "properties": {
+                                "database": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "gravity": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "gravity_tmp": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "log": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dnsmasq": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "ftl": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "webserver": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "macvendor": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "pcap": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "pid": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "misc": {
+                            "type": "object",
+                            "properties": {
+                                "addr2line": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "check": {
+                                    "type": "object",
+                                    "properties": {
+                                        "disk": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "load": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "shmem": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "delay_startup": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "dnsmasq_lines": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "etc_dnsmasq_d": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "extraLogging": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "hide_dnsmasq_warn": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "nice": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "normalizeCPU": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "privacylevel": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "readOnly": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "ntp": {
+                            "type": "object",
+                            "properties": {
+                                "ipv4": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "description": "NTP functionality on IPv4.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "address": {
+                                            "description": "NTP address on IPv4.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "ipv6": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "description": "NTP functionality on IPv6.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "address": {
+                                            "description": "NTP address on IPv6.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "service": {
+                                    "type": "object",
+                                    "properties": {
+                                        "annotations": {
+                                            "type": "object"
+                                        },
+                                        "enabled": {
+                                            "description": "NTP Kubernetes Service. Required for external access to NTP functionality (port 123).",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "externalTrafficPolicy": {
+                                            "type": "string"
+                                        },
+                                        "ports": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ntp": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "sync": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "description": "Whether to enable NTP time synchronization.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "count": {
+                                            "description": "NTP sync count.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "interval": {
+                                            "description": "NTP sync interval in seconds.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "rtc": {
+                                            "type": "object",
+                                            "properties": {
+                                                "device": {
+                                                    "description": "RTC device to use when setting the clock.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "set": {
+                                                    "description": "Whether to set the RTC (Real-Time Clock) to the current time.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "utc": {
+                                                    "description": "Whether to use UTC time when setting the RTC.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "server": {
+                                            "description": "NTP server to sync with. Can be an IP address or hostname. Set to empty string to disable syncing.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "resolver": {
+                            "type": "object",
+                            "properties": {
+                                "networkNames": {
+                                    "description": "Control whether FTL should use the fallback option to try to obtain client names from checking the network table.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "refreshNames": {
+                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "resolveIPv4": {
+                                    "description": "Whether to resolve IPv4 addresses to hostnames in the query log and other outputs.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "resolveIPv6": {
+                                    "description": "Whether to resolve IPv6 addresses to hostnames in the query log and other outputs.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "webserver": {
+                            "type": "object",
+                            "properties": {
+                                "acl": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "advancedOpts": {
+                                    "description": "Additional options to be passed to the webserver. Can be used to set custom options like TLS configuration, etc.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "api": {
+                                    "type": "object",
+                                    "properties": {
+                                        "allow_destructive": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "app_pwhash": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "app_sudo": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "cli_pw": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "client_history_global_max": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "excludeClients": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "array",
+                                                "null"
+                                            ]
+                                        },
+                                        "excludeDomains": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "array",
+                                                "null"
+                                            ]
+                                        },
+                                        "maxClients": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "maxHistory": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "max_sessions": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "prettyJSON": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "pwhash": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "temp": {
+                                            "type": "object",
+                                            "properties": {
+                                                "limit": {
+                                                    "description": "No description provided.",
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "unit": {
+                                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#unit",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "totp_secret": {
+                                            "description": "No description provided.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "domain": {
+                                    "description": "Domain to use for the Pi-hole web interface. Set to empty string to disable.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "headers": {
+                                    "description": "Headers to be set on all webserver responses. Check default value in pihole-FTL.toml for format.",
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                },
+                                "interface": {
+                                    "type": "object",
+                                    "properties": {
+                                        "boxed": {
+                                            "description": "Should the web interface use the boxed layout?",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "theme": {
+                                            "description": "Theme used by the Pi-hole web interface. Options: https://docs.pi-hole.net/ftldns/configfile/#theme",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "paths": {
+                                    "type": "object",
+                                    "properties": {
+                                        "prefix": {
+                                            "description": "URL prefix for the Pi-hole API. Set to empty string for no prefix (root).",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "webhome": {
+                                            "description": "URL path prefix for the Pi-hole web interface. Set to empty string for no prefix (root).",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "webroot": {
+                                            "description": "Web root directory for the Pi-hole web interface.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "port": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "serve_all": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "session": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restore": {
+                                            "description": "Whether to restore sessions after a restart. If false, all sessions will be lost on restart.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeout": {
+                                            "description": "Session timeout in seconds.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "threads": {
+                                    "description": "No description provided.",
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "tls": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cert": {
+                                            "description": "Path to TLS certificate file. Set to empty string to disable TLS.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "validity": {
+                                            "description": "TLS validity period in days.",
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
-                "serviceMonitor": {
+                "ftlCmd": {
+                    "description": "Customize dnsmasq startup options",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "gid": {
+                    "description": "No description provided.",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "lists": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
+                        "adlists": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "comment": {
+                                        "type": "string"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        },
+                        "blacklist": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "comment": {
+                                        "type": "string"
+                                    },
+                                    "domain": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "regex_blacklist": {
+                            "type": "array"
+                        },
+                        "regex_whitelist": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "comment": {
+                                        "type": "string"
+                                    },
+                                    "domain": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "whitelist": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "domain": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
                         }
                     }
                 },
-                "dashboards": {
+                "tailFtlLog": {
+                    "description": "Whether to output FTL log (0 or 1)",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "uid": {
+                    "description": "No description provided.",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "verbose": {
+                    "description": "Enable verbose startup scripts (0 or 1)",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "web": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
+                        "existingSecret": {
+                            "description": "Name of an existing Kubernetes Secret in the same namespace that contains the web interface password. If set, this secret will be used instead of creating a new one. Ignored if using external secret injection.",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
-                        "label": {
-                            "type": "string"
+                        "password": {
+                            "description": "Web interface password. Set to empty string to disable password protection. Ignored if using external secret injection.",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
-                        "labelValue": {
-                            "type": "string"
+                        "passwordSecretKey": {
+                            "description": "Key in the Kubernetes secret that contains the web interface password. Ignored if using external secret injection.",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
-                        "annotations": {
-                            "type": "object"
+                        "service": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "type": "object"
+                                },
+                                "enabled": {
+                                    "description": "Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "externalTrafficPolicy": {
+                                    "type": "string"
+                                },
+                                "ports": {
+                                    "type": "object",
+                                    "properties": {
+                                        "http": {
+                                            "type": "integer"
+                                        },
+                                        "https": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "skipPasswordEnv": {
+                            "description": "Whether to skip setting the default web password environment variable when using external secret injection. Set to true if you are defining the FTLCONF_webserver_api_password variable in extraEnv with a value sourced from an external secret.",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
                         }
-                    }
-                },
-                "command": {
-                    "type": "array",
-                    "description": "Override metrics container command",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "args": {
-                    "type": "array",
-                    "description": "Override metrics container args",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "initContainer": {
-                    "type": "array",
-                    "description": "Init container for metrics (useful for adding shell to scratch-based images)",
-                    "items": {
-                        "type": "object"
-                    }
-                },
-                "volumeMounts": {
-                    "type": "array",
-                    "description": "Volume mounts for metrics container",
-                    "items": {
-                        "type": "object"
                     }
                 }
             }
         },
-        "networkPolicy": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                }
-            }
+        "podAnnotations": {
+            "type": "object"
         },
         "podDisruptionBudget": {
             "type": "object",
             "properties": {
                 "enabled": {
                     "type": "boolean"
+                },
+                "minAvailable": {
+                    "type": "integer"
                 }
             }
         },
+        "replicas": {
+            "type": "integer"
+        },
         "resources": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "limits": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "string"
+                        },
+                        "memory": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "requests": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "string"
+                        },
+                        "memory": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         },
-        "affinity": {
-            "type": "object"
+        "securityContext": {
+            "type": "object",
+            "properties": {
+                "capabilities": {
+                    "type": "object",
+                    "properties": {
+                        "add": {
+                            "type": "array"
+                        }
+                    }
+                }
+            }
         },
-        "nodeSelector": {
-            "type": "object"
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "annotations": {
+                    "type": "object"
+                },
+                "create": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "strategy": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "timezone": {
+            "type": "string"
         },
         "tolerations": {
             "type": "array"
-        },
-        "extraVolumes": {
-            "type": "array",
-            "description": "Extra volumes to add to the pod",
-            "items": {
-                "type": "object"
-            }
         }
     }
 }
