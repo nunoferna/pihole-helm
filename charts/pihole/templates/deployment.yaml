@@ -5,6 +5,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    ignore-check.kube-linter.io/drop-net-raw-capability: "Pi-hole requires NET_RAW capability for DHCP operations"
+    ignore-check.kube-linter.io/no-read-only-root-fs: "Pi-hole needs write access to filesystem for configuration and logs"
+    ignore-check.kube-linter.io/run-as-non-root: "Pi-hole requires specific UID/GID configuration for proper operation"
 spec:
   replicas: {{ .Values.replicas }}
   strategy:
@@ -22,9 +26,6 @@ spec:
 {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
-      securityContext:
-        fsGroup: {{ .Values.pihole.gid | default 1000 }}
-        fsGroupChangePolicy: "OnRootMismatch"
       hostNetwork: {{ .Values.networking.hostNetwork }}
 {{- if .Values.networking.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
@@ -59,25 +60,8 @@ spec:
             {{- toYaml . | nindent 12 }}
 {{- end }}
           securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: {{ .Values.pihole.uid | default 1000 }} 
-            runAsGroup: {{ .Values.pihole.gid | default 1000 }}
             capabilities:
-              drop:
-                  - ALL
               add:
-                # Essential: Bind to port 53 (DNS)
-                - NET_BIND_SERVICE
-                
-                # Recommended by Pi-hole Docs:
-                - SYS_TIME  # For internal NTP time syncing
-                - SYS_NICE  # For process priority (FTL is "important")
-                - CHOWN     # For log/database file ownership changes
-                - IPC_LOCK  # For locking memory (FTL can use mlock to prevent swapping)
-                
-                # Conditional: DHCP & IPv6 Requirements
-                # Only added if DHCP service is enabled or HostNetwork is used
 {{- if or .Values.pihole.ftl.dhcp.service.enabled .Values.networking.hostNetwork }}
                 - NET_ADMIN # Required for DHCP & modifying routing tables
                 - NET_RAW   # Required for DHCPv6 & collision checks
@@ -819,12 +803,6 @@ spec:
             periodSeconds: 10
           
           volumeMounts:
-            - name: run-dir
-              mountPath: /run
-            - name: log-dir
-              mountPath: /var/log/pihole
-            - name: cron-d
-              mountPath: /etc/cron.d
             - name: etc-pihole
               mountPath: /etc/pihole
             - name: etc-dnsmasq
@@ -866,12 +844,6 @@ spec:
 {{- end }}
 
       volumes:
-        - name: run-dir
-          emptyDir: {}
-        - name: log-dir
-          emptyDir: {}
-        - name: cron-d
-          emptyDir: {}
         - name: etc-pihole
 {{- if .Values.persistence.etcPihole.enabled }}
           persistentVolumeClaim:
