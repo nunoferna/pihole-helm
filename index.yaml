@@ -20,6 +20,48 @@ entries:
           url: https://github.com/eko/pihole-exporter
     apiVersion: v2
     appVersion: 2025.11.1
+    created: "2026-02-16T15:27:34.900734875Z"
+    description: Pi-hole v6 Helm Chart with full FTL configuration support.
+    digest: f3aa76ea6f8e50ab2951b6113c4bb822ad69accce0113e9736980e880ab8b0aa
+    home: https://nunoferna.github.io/pihole-helm/
+    icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
+    keywords:
+    - pihole
+    - dns
+    - adblock
+    - dhcp
+    - monitoring
+    kubeVersion: '>=1.23.0'
+    maintainers:
+    - email: nuno.o.fernandes@outlook.pt
+      name: Nuno Fernandes
+      url: https://nunoferna.github.io
+    name: pihole
+    sources:
+    - https://github.com/nunoferna/pihole-helm
+    type: application
+    urls:
+    - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.3.1/pihole-0.3.1.tgz
+    version: 0.3.1
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/images: |
+        - name: pihole
+          image: pihole/pihole:2025.11.1
+        - name: pihole-exporter
+          image: ekofr/pihole-exporter:v1.2.0
+      artifacthub.io/license: MIT
+      artifacthub.io/links: |
+        - name: Chart Source
+          url: https://github.com/nunoferna/pihole-helm
+        - name: Upstream Docker Project
+          url: https://github.com/pi-hole/docker-pi-hole
+        - name: Upstream Pi-hole Project
+          url: https://github.com/pi-hole/pi-hole
+        - name: Pi-hole Exporter
+          url: https://github.com/eko/pihole-exporter
+    apiVersion: v2
+    appVersion: 2025.11.1
     created: "2026-02-16T15:23:32.464963986Z"
     description: Pi-hole v6 Helm Chart with full FTL configuration support.
     digest: 189d3cdde435b5b6d4ebd637a45887bee0fd10bc4311fd68e55f9fdbdf5a2515
@@ -538,4 +580,4 @@ entries:
     urls:
     - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.1.0/pihole-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-16T15:23:32.465106593Z"
+generated: "2026-02-16T15:27:34.900873033Z"
