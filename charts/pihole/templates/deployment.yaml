@@ -320,9 +320,9 @@ spec:
             - name: FTLCONF_dhcp_leaseTime
               value: {{ .leaseTime | quote }}
     {{- end }}
-    {{- if not (kindIs "invalid" .ipv6) }}
+    {{- if and .ipv6 (not (kindIs "invalid" .ipv6.active)) }}
             - name: FTLCONF_dhcp_ipv6
-              value: {{ .ipv6 | quote }}
+              value: {{ .ipv6.active | quote }}
     {{- end }}
     {{- if not (kindIs "invalid" .rapidCommit) }}
             - name: FTLCONF_dhcp_rapidCommit
