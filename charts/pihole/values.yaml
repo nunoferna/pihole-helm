@@ -465,7 +465,7 @@ pihole:
         # -- (boolean) DHCPv6 functionality.
         # @section -- DHCP
         # @default -- false
-        active: false
+        active: null
         service:
           # @schema type:boolean,null
           # -- (boolean) DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).
