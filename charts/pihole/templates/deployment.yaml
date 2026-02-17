@@ -90,27 +90,27 @@ spec:
             - name: FTLCONF_dns_upstreams
               value: {{ .upstreams | join ";" | quote }}
     {{- end }}
-    {{- if hasKey . "CNAMEdeepInspect" }}
+    {{- if not (kindIs "invalid" .CNAMEdeepInspect) }}
             - name: FTLCONF_dns_CNAMEdeepInspect
               value: {{ .CNAMEdeepInspect | quote }}
     {{- end }}
-    {{- if hasKey . "blockESNI" }}
+    {{- if not (kindIs "invalid" .blockESNI) }}
             - name: FTLCONF_dns_blockESNI
               value: {{ .blockESNI | quote }}
     {{- end }}
-    {{- if hasKey . "EDNS0ECS" }}
+    {{- if not (kindIs "invalid" .EDNS0ECS) }}
             - name: FTLCONF_dns_EDNS0ECS
               value: {{ .EDNS0ECS | quote }}
     {{- end }}
-    {{- if hasKey . "ignoreLocalhost" }}
+    {{- if not (kindIs "invalid" .ignoreLocalhost) }}
             - name: FTLCONF_dns_ignoreLocalhost
               value: {{ .ignoreLocalhost | quote }}
     {{- end }}
-    {{- if hasKey . "showDNSSEC" }}
+    {{- if not (kindIs "invalid" .showDNSSEC) }}
             - name: FTLCONF_dns_showDNSSEC
               value: {{ .showDNSSEC | quote }}
     {{- end }}
-    {{- if hasKey . "analyzeOnlyAandAAAA" }}
+    {{- if not (kindIs "invalid" .analyzeOnlyAandAAAA) }}
             - name: FTLCONF_dns_analyzeOnlyAandAAAA
               value: {{ .analyzeOnlyAandAAAA | quote }}
     {{- end }}
@@ -122,7 +122,7 @@ spec:
             - name: FTLCONF_dns_replyWhenBusy
               value: {{ .replyWhenBusy | quote }}
     {{- end }}
-    {{- if hasKey . "blockTTL" }}
+    {{- if not (kindIs "invalid" .blockTTL) }}
             - name: FTLCONF_dns_blockTTL
               value: {{ .blockTTL | quote }}
     {{- end }}
@@ -130,19 +130,19 @@ spec:
             - name: FTLCONF_dns_hosts
               value: {{ .hosts | join "\n" | quote }}
     {{- end }}
-    {{- if hasKey . "domainNeeded" }}
+    {{- if not (kindIs "invalid" .domainNeeded) }}
             - name: FTLCONF_dns_domainNeeded
               value: {{ .domainNeeded | quote }}
     {{- end }}
-    {{- if hasKey . "expandHosts" }}
+    {{- if not (kindIs "invalid" .expandHosts) }}
             - name: FTLCONF_dns_expandHosts
               value: {{ .expandHosts | quote }}
     {{- end }}
-    {{- if hasKey . "bogusPriv" }}
+    {{- if not (kindIs "invalid" .bogusPriv) }}
             - name: FTLCONF_dns_bogusPriv
               value: {{ .bogusPriv | quote }}
     {{- end }}
-    {{- if hasKey . "dnssec" }}
+    {{- if not (kindIs "invalid" .dnssec) }}
             - name: FTLCONF_dns_dnssec
               value: {{ .dnssec | quote }}
     {{- end }}
@@ -158,7 +158,7 @@ spec:
             - name: FTLCONF_dns_listeningMode
               value: {{ .listeningMode | quote }}
     {{- end }}
-    {{- if hasKey . "queryLogging" }}
+    {{- if not (kindIs "invalid" .queryLogging) }}
             - name: FTLCONF_dns_queryLogging
               value: {{ .queryLogging | quote }}
     {{- end }}
@@ -166,7 +166,7 @@ spec:
             - name: FTLCONF_dns_cnameRecords
               value: {{ .cnameRecords | join "\n" | quote }}
     {{- end }}
-    {{- if hasKey . "port" }}
+    {{- if not (kindIs "invalid" .port) }}
             - name: FTLCONF_dns_port
               value: {{ .port | quote }}
     {{- end }}
@@ -193,15 +193,15 @@ spec:
 
             # [dns.cache]
     {{- with .cache }}
-      {{- if hasKey . "size" }}
+      {{- if not (kindIs "invalid" .size) }}
             - name: FTLCONF_dns_cache_size
               value: {{ .size | quote }}
       {{- end }}
-      {{- if hasKey . "optimizer" }}
+      {{- if not (kindIs "invalid" .optimizer) }}
             - name: FTLCONF_dns_cache_optimizer
               value: {{ .optimizer | quote }}
       {{- end }}
-      {{- if hasKey . "upstreamBlockedTTL" }}
+      {{- if not (kindIs "invalid" .upstreamBlockedTTL) }}
             - name: FTLCONF_dns_cache_upstreamBlockedTTL
               value: {{ .upstreamBlockedTTL | quote }}
       {{- end }}
@@ -209,7 +209,7 @@ spec:
 
             # [dns.blocking]
     {{- with .blocking }}
-      {{- if hasKey . "active" }}
+      {{- if not (kindIs "invalid" .active) }}
             - name: FTLCONF_dns_blocking_active
               value: {{ .active | quote }}
       {{- end }}
@@ -225,15 +225,15 @@ spec:
 
             # [dns.specialDomains]
     {{- with .specialDomains }}
-      {{- if hasKey . "mozillaCanary" }}
+      {{- if not (kindIs "invalid" .mozillaCanary) }}
             - name: FTLCONF_dns_specialDomains_mozillaCanary
               value: {{ .mozillaCanary | quote }}
       {{- end }}
-      {{- if hasKey . "iCloudPrivateRelay" }}
+      {{- if not (kindIs "invalid" .iCloudPrivateRelay) }}
             - name: FTLCONF_dns_specialDomains_iCloudPrivateRelay
               value: {{ .iCloudPrivateRelay | quote }}
       {{- end }}
-      {{- if hasKey . "designatedResolver" }}
+      {{- if not (kindIs "invalid" .designatedResolver) }}
             - name: FTLCONF_dns_specialDomains_designatedResolver
               value: {{ .designatedResolver | quote }}
       {{- end }}
@@ -242,7 +242,7 @@ spec:
             # [dns.reply]
     {{- with .reply }}
       {{- with .host }}
-        {{- if hasKey . "force4" }}
+        {{- if not (kindIs "invalid" .force4) }}
             - name: FTLCONF_dns_reply_host_force4
               value: {{ .force4 | quote }}
         {{- end }}
@@ -250,7 +250,7 @@ spec:
             - name: FTLCONF_dns_reply_host_IPv4
               value: {{ .IPv4 | quote }}
         {{- end }}
-        {{- if hasKey . "force6" }}
+        {{- if not (kindIs "invalid" .force6) }}
             - name: FTLCONF_dns_reply_host_force6
               value: {{ .force6 | quote }}
         {{- end }}
@@ -260,7 +260,7 @@ spec:
         {{- end }}
       {{- end }}
       {{- with .blocking }}
-        {{- if hasKey . "force4" }}
+        {{- if not (kindIs "invalid" .force4) }}
             - name: FTLCONF_dns_reply_blocking_force4
               value: {{ .force4 | quote }}
         {{- end }}
@@ -268,7 +268,7 @@ spec:
             - name: FTLCONF_dns_reply_blocking_IPv4
               value: {{ .IPv4 | quote }}
         {{- end }}
-        {{- if hasKey . "force6" }}
+        {{- if not (kindIs "invalid" .force6) }}
             - name: FTLCONF_dns_reply_blocking_force6
               value: {{ .force6 | quote }}
         {{- end }}
@@ -281,11 +281,11 @@ spec:
 
             # [dns.rateLimit]
     {{- with .rateLimit }}
-      {{- if hasKey . "count" }}
+      {{- if not (kindIs "invalid" .count) }}
             - name: FTLCONF_dns_rateLimit_count
               value: {{ .count | quote }}
       {{- end }}
-      {{- if hasKey . "interval" }}
+      {{- if not (kindIs "invalid" .interval) }}
             - name: FTLCONF_dns_rateLimit_interval
               value: {{ .interval | quote }}
       {{- end }}
@@ -296,7 +296,7 @@ spec:
             # [dhcp]
             # ------------------------------------------------------
   {{- with .dhcp }}
-    {{- if hasKey . "active" }}
+    {{- if not (kindIs "invalid" .active) }}
             - name: FTLCONF_dhcp_active
               value: {{ .active | quote }}
     {{- end }}
@@ -320,23 +320,23 @@ spec:
             - name: FTLCONF_dhcp_leaseTime
               value: {{ .leaseTime | quote }}
     {{- end }}
-    {{- if hasKey . "ipv6" }}
+    {{- if not (kindIs "invalid" .ipv6) }}
             - name: FTLCONF_dhcp_ipv6
               value: {{ .ipv6 | quote }}
     {{- end }}
-    {{- if hasKey . "rapidCommit" }}
+    {{- if not (kindIs "invalid" .rapidCommit) }}
             - name: FTLCONF_dhcp_rapidCommit
               value: {{ .rapidCommit | quote }}
     {{- end }}
-    {{- if hasKey . "multiDNS" }}
+    {{- if not (kindIs "invalid" .multiDNS) }}
             - name: FTLCONF_dhcp_multiDNS
               value: {{ .multiDNS | quote }}
     {{- end }}
-    {{- if hasKey . "logging" }}
+    {{- if not (kindIs "invalid" .logging) }}
             - name: FTLCONF_dhcp_logging
               value: {{ .logging | quote }}
     {{- end }}
-    {{- if hasKey . "ignoreUnknownClients" }}
+    {{- if not (kindIs "invalid" .ignoreUnknownClients) }}
             - name: FTLCONF_dhcp_ignoreUnknownClients
               value: {{ .ignoreUnknownClients | quote }}
     {{- end }}
@@ -351,7 +351,7 @@ spec:
             # ------------------------------------------------------
   {{- with .ntp }}
     {{- with .ipv4 }}
-      {{- if hasKey . "active" }}
+      {{- if not (kindIs "invalid" .active) }}
             - name: FTLCONF_ntp_ipv4_active
               value: {{ .active | quote }}
       {{- end }}
@@ -361,7 +361,7 @@ spec:
       {{- end }}
     {{- end }}
     {{- with .ipv6 }}
-      {{- if hasKey . "active" }}
+      {{- if not (kindIs "invalid" .active) }}
             - name: FTLCONF_ntp_ipv6_active
               value: {{ .active | quote }}
       {{- end }}
@@ -371,7 +371,7 @@ spec:
       {{- end }}
     {{- end }}
     {{- with .sync }}
-      {{- if hasKey . "active" }}
+      {{- if not (kindIs "invalid" .active) }}
             - name: FTLCONF_ntp_sync_active
               value: {{ .active | quote }}
       {{- end }}
@@ -379,16 +379,16 @@ spec:
             - name: FTLCONF_ntp_sync_server
               value: {{ .server | quote }}
       {{- end }}
-      {{- if hasKey . "interval" }}
+      {{- if not (kindIs "invalid" .interval) }}
             - name: FTLCONF_ntp_sync_interval
               value: {{ .interval | quote }}
       {{- end }}
-      {{- if hasKey . "count" }}
+      {{- if not (kindIs "invalid" .count) }}
             - name: FTLCONF_ntp_sync_count
               value: {{ .count | quote }}
       {{- end }}
       {{- with .rtc }}
-        {{- if hasKey . "set" }}
+        {{- if not (kindIs "invalid" .set) }}
             - name: FTLCONF_ntp_sync_rtc_set
               value: {{ .set | quote }}
         {{- end }}
@@ -396,7 +396,7 @@ spec:
             - name: FTLCONF_ntp_sync_rtc_device
               value: {{ .device | quote }}
         {{- end }}
-        {{- if hasKey . "utc" }}
+        {{- if not (kindIs "invalid" .utc) }}
             - name: FTLCONF_ntp_sync_rtc_utc
               value: {{ .utc | quote }}
         {{- end }}
@@ -408,15 +408,15 @@ spec:
             # [resolver]
             # ------------------------------------------------------
   {{- with .resolver }}
-    {{- if hasKey . "resolveIPv4" }}
+    {{- if not (kindIs "invalid" .resolveIPv4) }}
             - name: FTLCONF_resolver_resolveIPv4
               value: {{ .resolveIPv4 | quote }}
     {{- end }}
-    {{- if hasKey . "resolveIPv6" }}
+    {{- if not (kindIs "invalid" .resolveIPv6) }}
             - name: FTLCONF_resolver_resolveIPv6
               value: {{ .resolveIPv6 | quote }}
     {{- end }}
-    {{- if hasKey . "networkNames" }}
+    {{- if not (kindIs "invalid" .networkNames) }}
             - name: FTLCONF_resolver_networkNames
               value: {{ .networkNames | quote }}
     {{- end }}
@@ -430,28 +430,28 @@ spec:
             # [database]
             # ------------------------------------------------------
   {{- with .database }}
-    {{- if hasKey . "DBimport" }}
+    {{- if not (kindIs "invalid" .DBimport) }}
             - name: FTLCONF_database_DBimport
               value: {{ .DBimport | quote }}
     {{- end }}
-    {{- if hasKey . "maxDBdays" }}
+    {{- if not (kindIs "invalid" .maxDBdays) }}
             - name: FTLCONF_database_maxDBdays
               value: {{ .maxDBdays | quote }}
     {{- end }}
-    {{- if hasKey . "DBinterval" }}
+    {{- if not (kindIs "invalid" .DBinterval) }}
             - name: FTLCONF_database_DBinterval
               value: {{ .DBinterval | quote }}
     {{- end }}
-    {{- if hasKey . "useWAL" }}
+    {{- if not (kindIs "invalid" .useWAL) }}
             - name: FTLCONF_database_useWAL
               value: {{ .useWAL | quote }}
     {{- end }}
     {{- with .network }}
-      {{- if hasKey . "parseARPcache" }}
+      {{- if not (kindIs "invalid" .parseARPcache) }}
             - name: FTLCONF_database_network_parseARPcache
               value: {{ .parseARPcache | quote }}
       {{- end }}
-      {{- if hasKey . "expire" }}
+      {{- if not (kindIs "invalid" .expire) }}
             - name: FTLCONF_database_network_expire
               value: {{ .expire | quote }}
       {{- end }}
@@ -470,11 +470,11 @@ spec:
             - name: FTLCONF_webserver_acl
               value: {{ .acl | quote }}
     {{- end }}
-    {{- if hasKey . "port" }}
+    {{- if not (kindIs "invalid" .port) }}
             - name: FTLCONF_webserver_port
               value: {{ .port | quote }}
     {{- end }}
-    {{- if hasKey . "threads" }}
+    {{- if not (kindIs "invalid" .threads) }}
             - name: FTLCONF_webserver_threads
               value: {{ .threads | quote }}
     {{- end }}
@@ -482,7 +482,7 @@ spec:
             - name: FTLCONF_webserver_headers
               value: {{ .headers | join "\n" | quote }}
     {{- end }}
-    {{- if hasKey . "serve_all" }}
+    {{- if not (kindIs "invalid" .serve_all) }}
             - name: FTLCONF_webserver_serve_all
               value: {{ .serve_all | quote }}
     {{- end }}
@@ -492,11 +492,11 @@ spec:
     {{- end }}
             
     {{- with .session }}
-      {{- if hasKey . "timeout" }}
+      {{- if not (kindIs "invalid" .timeout) }}
             - name: FTLCONF_webserver_session_timeout
               value: {{ .timeout | quote }}
       {{- end }}
-      {{- if hasKey . "restore" }}
+      {{- if not (kindIs "invalid" .restore) }}
             - name: FTLCONF_webserver_session_restore
               value: {{ .restore | quote }}
       {{- end }}
@@ -507,7 +507,7 @@ spec:
             - name: FTLCONF_webserver_tls_cert
               value: {{ .cert | quote }}
       {{- end }}
-      {{- if hasKey . "validity" }}
+      {{- if not (kindIs "invalid" .validity) }}
             - name: FTLCONF_webserver_tls_validity
               value: {{ .validity | quote }}
       {{- end }}
@@ -529,7 +529,7 @@ spec:
     {{- end }}
 
     {{- with .interface }}
-      {{- if hasKey . "boxed" }}
+      {{- if not (kindIs "invalid" .boxed) }}
             - name: FTLCONF_webserver_interface_boxed
               value: {{ .boxed | quote }}
       {{- end }}
@@ -541,11 +541,11 @@ spec:
 
             # API
     {{- with .api }}
-      {{- if hasKey . "max_sessions" }}
+      {{- if not (kindIs "invalid" .max_sessions) }}
             - name: FTLCONF_webserver_api_max_sessions
               value: {{ .max_sessions | quote }}
       {{- end }}
-      {{- if hasKey . "prettyJSON" }}
+      {{- if not (kindIs "invalid" .prettyJSON) }}
             - name: FTLCONF_webserver_api_prettyJSON
               value: {{ .prettyJSON | quote }}
       {{- end }}
@@ -561,11 +561,11 @@ spec:
             - name: FTLCONF_webserver_api_app_pwhash
               value: {{ .app_pwhash | quote }}
       {{- end }}
-      {{- if hasKey . "app_sudo" }}
+      {{- if not (kindIs "invalid" .app_sudo) }}
             - name: FTLCONF_webserver_api_app_sudo
               value: {{ .app_sudo | quote }}
       {{- end }}
-      {{- if hasKey . "cli_pw" }}
+      {{- if not (kindIs "invalid" .cli_pw) }}
             - name: FTLCONF_webserver_api_cli_pw
               value: {{ .cli_pw | quote }}
       {{- end }}
@@ -577,24 +577,24 @@ spec:
             - name: FTLCONF_webserver_api_excludeDomains
               value: {{ .excludeDomains | join "\n" | quote }}
       {{- end }}
-      {{- if hasKey . "maxHistory" }}
+      {{- if not (kindIs "invalid" .maxHistory) }}
             - name: FTLCONF_webserver_api_maxHistory
               value: {{ .maxHistory | quote }}
       {{- end }}
-      {{- if hasKey . "maxClients" }}
+      {{- if not (kindIs "invalid" .maxClients) }}
             - name: FTLCONF_webserver_api_maxClients
               value: {{ .maxClients | quote }}
       {{- end }}
-      {{- if hasKey . "client_history_global_max" }}
+      {{- if not (kindIs "invalid" .client_history_global_max) }}
             - name: FTLCONF_webserver_api_client_history_global_max
               value: {{ .client_history_global_max | quote }}
       {{- end }}
-      {{- if hasKey . "allow_destructive" }}
+      {{- if not (kindIs "invalid" .allow_destructive) }}
             - name: FTLCONF_webserver_api_allow_destructive
               value: {{ .allow_destructive | quote }}
       {{- end }}
       {{- with .temp }}
-        {{- if hasKey . "limit" }}
+        {{- if not (kindIs "invalid" .limit) }}
             - name: FTLCONF_webserver_api_temp_limit
               value: {{ .limit | quote }}
         {{- end }}
@@ -654,23 +654,23 @@ spec:
             # [misc]
             # ------------------------------------------------------
   {{- with .misc }}
-    {{- if hasKey . "privacylevel" }}
+    {{- if not (kindIs "invalid" .privacylevel) }}
             - name: FTLCONF_misc_privacylevel
               value: {{ .privacylevel | quote }}
     {{- end }}
-    {{- if hasKey . "delay_startup" }}
+    {{- if not (kindIs "invalid" .delay_startup) }}
             - name: FTLCONF_misc_delay_startup
               value: {{ .delay_startup | quote }}
     {{- end }}
-    {{- if hasKey . "nice" }}
+    {{- if not (kindIs "invalid" .nice) }}
             - name: FTLCONF_misc_nice
               value: {{ .nice | quote }}
     {{- end }}
-    {{- if hasKey . "addr2line" }}
+    {{- if not (kindIs "invalid" .addr2line) }}
             - name: FTLCONF_misc_addr2line
               value: {{ .addr2line | quote }}
     {{- end }}
-    {{- if hasKey . "etc_dnsmasq_d" }}
+    {{- if not (kindIs "invalid" .etc_dnsmasq_d) }}
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: {{ .etc_dnsmasq_d | quote }}
     {{- end }}
@@ -678,32 +678,32 @@ spec:
             - name: FTLCONF_misc_dnsmasq_lines
               value: {{ .dnsmasq_lines | join "\n" | quote }}
     {{- end }}
-    {{- if hasKey . "extraLogging" }}
+    {{- if not (kindIs "invalid" .extraLogging) }}
             - name: FTLCONF_misc_extraLogging
               value: {{ .extraLogging | quote }}
     {{- end }}
-    {{- if hasKey . "readOnly" }}
+    {{- if not (kindIs "invalid" .readOnly) }}
             - name: FTLCONF_misc_readOnly
               value: {{ .readOnly | quote }}
     {{- end }}
-    {{- if hasKey . "normalizeCPU" }}
+    {{- if not (kindIs "invalid" .normalizeCPU) }}
             - name: FTLCONF_misc_normalizeCPU
               value: {{ .normalizeCPU | quote }}
     {{- end }}
-    {{- if hasKey . "hide_dnsmasq_warn" }}
+    {{- if not (kindIs "invalid" .hide_dnsmasq_warn) }}
             - name: FTLCONF_misc_hide_dnsmasq_warn
               value: {{ .hide_dnsmasq_warn | quote }}
     {{- end }}
     {{- with .check }}
-      {{- if hasKey . "load" }}
+      {{- if not (kindIs "invalid" .load) }}
             - name: FTLCONF_misc_check_load
               value: {{ .load | quote }}
       {{- end }}
-      {{- if hasKey . "shmem" }}
+      {{- if not (kindIs "invalid" .shmem) }}
             - name: FTLCONF_misc_check_shmem
               value: {{ .shmem | quote }}
       {{- end }}
-      {{- if hasKey . "disk" }}
+      {{- if not (kindIs "invalid" .disk) }}
             - name: FTLCONF_misc_check_disk
               value: {{ .disk | quote }}
       {{- end }}
@@ -712,11 +712,11 @@ spec:
 {{- end }}
 
             # User/Permission Logic
-{{- if hasKey .Values.pihole "uid" }}
+{{- if not (kindIs "invalid" .Values.pihole.uid) }}
             - name: PIHOLE_UID
               value: {{ .Values.pihole.uid | quote }}
 {{- end }}
-{{- if hasKey .Values.pihole "gid" }}
+{{- if not (kindIs "invalid" .Values.pihole.gid) }}
             - name: PIHOLE_GID
               value: {{ .Values.pihole.gid | quote }}
 {{- end }}
@@ -724,7 +724,7 @@ spec:
             # ------------------------------------------------------
             # Other Pi-hole Variables
             # ------------------------------------------------------
-{{- if hasKey .Values.pihole "tailFtlLog" }}
+{{- if not (kindIs "invalid" .Values.pihole.tailFtlLog) }}
             - name: TAIL_FTL_LOG
               value: {{ .Values.pihole.tailFtlLog | quote }}
 {{- end }}
@@ -740,7 +740,7 @@ spec:
             - name: ADDITIONAL_PACKAGES
               value: {{ .Values.pihole.additionalPackages | quote }}
 {{- end }}
-{{- if hasKey .Values.pihole "verbose" }}
+{{- if not (kindIs "invalid" .Values.pihole.verbose) }}
             - name: PH_VERBOSE
               value: {{ .Values.pihole.verbose | quote }}
 {{- end }}
