@@ -15,6 +15,43 @@ entries:
           url: https://github.com/eko/pihole-exporter
     apiVersion: v2
     appVersion: 2025.11.1
+    created: "2026-02-17T00:00:26.45095821Z"
+    description: Pi-hole v6 Helm Chart with full FTL configuration support.
+    digest: 893b5398715aecf4d7eb2590c858b5471afd28ce71a89edf428bf552c1cd13c7
+    home: https://nunoferna.github.io/pihole-helm/
+    icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
+    keywords:
+    - pihole
+    - dns
+    - adblock
+    - dhcp
+    - monitoring
+    kubeVersion: '>=1.23.0'
+    maintainers:
+    - email: nuno.o.fernandes@outlook.pt
+      name: Nuno Fernandes
+      url: https://nunoferna.github.io
+    name: pihole
+    sources:
+    - https://github.com/nunoferna/pihole-helm
+    type: application
+    urls:
+    - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.3.5/pihole-0.3.5.tgz
+    version: 0.3.5
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart Source
+          url: https://github.com/nunoferna/pihole-helm
+        - name: Upstream Docker Project
+          url: https://github.com/pi-hole/docker-pi-hole
+        - name: Upstream Pi-hole Project
+          url: https://github.com/pi-hole/pi-hole
+        - name: Pi-hole Exporter
+          url: https://github.com/eko/pihole-exporter
+    apiVersion: v2
+    appVersion: 2025.11.1
     created: "2026-02-16T23:38:56.761441571Z"
     description: Pi-hole v6 Helm Chart with full FTL configuration support.
     digest: 033697c6c435fc26f0f0c871b05576c9687e3797a92751cfe231df9832082103
@@ -691,4 +728,4 @@ entries:
     urls:
     - https://github.com/nunoferna/pihole-helm/releases/download/pihole-0.1.0/pihole-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-16T23:38:56.76159029Z"
+generated: "2026-02-17T00:00:26.451109185Z"
