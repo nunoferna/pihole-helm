@@ -7,6 +7,7 @@ metadata:
 data:
   import-lists.sh: |
     #!/bin/bash
+    exec > /proc/1/fd/1 2>&1
     set +e
 
     GRAVITY_DB="/etc/pihole/gravity.db"
@@ -45,6 +46,29 @@ data:
        sleep 2
        wait_timer=$((wait_timer-2))
     done
+
+    echo "[Helm] pihole-FTL is running. Waiting for Database Schema..."
+    schema_ready=false
+    schema_timer=60
+    
+    while [ $schema_timer -gt 0 ]; do
+       # We attempt to query the 'info' table. 
+       # If this succeeds (exit code 0), the DB is initialized.
+       if $FTL_CMD sqlite3 "$GRAVITY_DB" "SELECT count(*) FROM info;" >/dev/null 2>&1; then
+          schema_ready=true
+          echo "[Helm] Database schema is ready."
+          sleep 10 # Extra wait to ensure FTL is fully ready after schema creation
+          break
+       fi
+       echo "[Helm] Waiting for tables to be created..."
+       sleep 2
+       schema_timer=$((schema_timer-2))
+    done
+
+    if [ "$schema_ready" = false ]; then
+       echo "[Helm] ERROR: Timed out waiting for DB schema. FTL may have failed."
+       exit 1
+    fi
 
     echo "[Helm] Starting Custom List Configuration..."
 
