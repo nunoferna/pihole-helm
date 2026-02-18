@@ -59,6 +59,9 @@ data:
        sleep 2
     done
 
+    echo "[Helm Hook] Waiting 5s for FTL to settle..."
+    sleep 5
+
     # --- STEP 5: Import Lists ---
     echo "[Helm Hook] Database is ready. Starting List Import..."
 
@@ -102,6 +105,18 @@ data:
 {{- end }}
 
     echo "[Helm Hook] Import complete."
+
+    echo "[Helm Hook] Validating database is free for Gravity update..."
+    # We attempt to start a dummy transaction. If FTL is writing, this will fail.
+    # We wait until we get a clean "OK" from the DB.
+    while true; do
+       if $SQL_CMD "BEGIN IMMEDIATE; ROLLBACK;" >/dev/null 2>&1; then
+          echo "[Helm Hook] Database is unlocked and writable."
+          break
+       fi
+       echo "[Helm Hook] Database is currently locked by FTL. Waiting..."
+       sleep 2
+    done
 
     echo "[Helm Hook] Running 'pihole -g' to update gravity..."
     
