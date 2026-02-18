@@ -803,10 +803,14 @@ spec:
             periodSeconds: 10
           
           volumeMounts:
+{{- if .Values.persistence.etcPihole.enabled }}
             - name: etc-pihole
               mountPath: /etc/pihole
+{{- end }}
+{{- if .Values.persistence.etcDnsmasq.enabled }}
             - name: etc-dnsmasq
               mountPath: /etc/dnsmasq.d
+{{- end }}
             - name: lists
               mountPath: /usr/local/bin/import-lists.sh
               subPath: import-lists.sh
@@ -844,20 +848,15 @@ spec:
 {{- end }}
 
       volumes:
-        - name: etc-pihole
 {{- if .Values.persistence.etcPihole.enabled }}
+        - name: etc-pihole
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-pihole
-{{- else }}
-          emptyDir: {}
 {{- end }}
-
-        - name: etc-dnsmasq
 {{- if .Values.persistence.etcDnsmasq.enabled }}
+        - name: etc-dnsmasq
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
-{{- else }}
-          emptyDir: {}
 {{- end }}
         - name: lists
           configMap:
