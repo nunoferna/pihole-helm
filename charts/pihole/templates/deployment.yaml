@@ -71,6 +71,10 @@ spec:
                 - {{ . }}
   {{- end }}
 {{- end }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "/usr/local/bin/import-lists.sh"]
           env:
 {{- if .Values.timezone }}
             - name: TZ

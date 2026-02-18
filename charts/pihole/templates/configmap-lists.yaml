@@ -7,117 +7,99 @@ metadata:
 data:
   import-lists.sh: |
     #!/bin/bash
-    exec > /proc/1/fd/1 2>&1
     set +e
 
-    GRAVITY_DB="/etc/pihole/gravity.db"
+    echo "[Helm Hook] Starting Import Script..."
 
-    # Dynamic binary detection
+    # --- STEP 1: Wait for pihole-FTL Process ---
+    # We wait for the process first. This implies the container's entrypoint 
+    # has finished its pre-flight checks and started the main service.
+    echo "[Helm Hook] Step 1: Waiting for pihole-FTL process to start..."
+    while ! pidof pihole-FTL > /dev/null; do
+       # Wait indefinitely until FTL is up
+       sleep 2
+    done
+    echo "[Helm Hook] pihole-FTL process found."
+
+    # --- STEP 2: pihole-FTL Binary Detection ---
+    echo "[Helm Hook] Step 2: Detecting pihole-FTL binary..."
     if command -v pihole-FTL >/dev/null 2>&1; then
        FTL_CMD=$(command -v pihole-FTL)
     else
        FTL_CMD="/usr/bin/pihole-FTL"
     fi
+    echo "[Helm Hook] Using FTL binary at: $FTL_CMD"
 
-    echo "[Helm] Waiting for gravity.db to be initialized..."
+    # --- STEP 3: Check DB Creation ---
+    GRAVITY_DB="/etc/pihole/gravity.db"
+    # Define our SQL helper command now that we have the binary and path
+    SQL_CMD="$FTL_CMD sqlite3 -ni $GRAVITY_DB"
 
-    timeout=90
-
+    echo "[Helm Hook] Step 3: Checking if gravity.db exists..."
+    # Although FTL is running, we double check the file is accessible
     while [ ! -f "$GRAVITY_DB" ]; do
+       echo "[Helm Hook] gravity.db not found yet. Waiting..."
        sleep 2
-       timeout=$((timeout-2))
-       if [ $timeout -le 0 ]; then
-          echo "[Helm Hook] ERROR: gravity.db never appeared. Skipping import to allow Pod startup."
-          exit 0
-       fi
     done
-    echo "[Helm] gravity.db found."
+    echo "[Helm Hook] gravity.db found."
 
-    echo "[Helm Hook] Checking FTL process status..."
-
-    FTL_READY=false
-    wait_timer=60
-
-    while [ $wait_timer -gt 0 ]; do
-       if pidof pihole-FTL > /dev/null; then
-          FTL_READY=true
-          break
-       fi
-       sleep 2
-       wait_timer=$((wait_timer-2))
-    done
-
-    echo "[Helm] pihole-FTL is running. Waiting for Database Schema..."
-    schema_ready=false
-    schema_timer=60
+    # --- STEP 4: Check abp_domains (Schema Check) ---
+    # FTL might be running, but it could still be performing the initial migration.
+    # We query the 'info' table for 'abp_domains' to confirm the DB is unlocked and valid.
+    echo "[Helm Hook] Step 4: Verifying database schema (abp_domains)..."
     
-    while [ $schema_timer -gt 0 ]; do
-       # We attempt to query the 'info' table. 
-       # If this succeeds (exit code 0), the DB is initialized.
-       if $FTL_CMD sqlite3 "$GRAVITY_DB" "SELECT count(*) FROM info;" >/dev/null 2>&1; then
-          schema_ready=true
-          echo "[Helm] Database schema is ready."
-          sleep 10 # Extra wait to ensure FTL is fully ready after schema creation
+    while true; do
+       if $SQL_CMD "SELECT value FROM info WHERE property = 'abp_domains';" >/dev/null 2>&1; then
+          echo "[Helm Hook] Schema verification passed (abp_domains found)."
           break
        fi
-       echo "[Helm] Waiting for tables to be created..."
+       echo "[Helm Hook] Database locked or schema not ready. Waiting..."
        sleep 2
-       schema_timer=$((schema_timer-2))
     done
 
-    if [ "$schema_ready" = false ]; then
-       echo "[Helm] ERROR: Timed out waiting for DB schema. FTL may have failed."
-       exit 1
-    fi
-
-    echo "[Helm] Starting Custom List Configuration..."
+    # --- STEP 5: Import Lists ---
+    echo "[Helm Hook] Database is ready. Starting List Import..."
 
     function add_to_db() {
        local retries=0
        local max_retries=30
        
        while true; do
-          # Attempt the SQL command
-          if $FTL_CMD sqlite3 -ni "$GRAVITY_DB" "$1"; then
-          return 0
+          if $SQL_CMD "$1"; then
+             return 0
           fi
           
-          # If failed, wait 1s and retry
-          echo "[Helm Hook] Database locked, retrying..."
+          echo "[Helm Hook] Database busy/locked, retrying..."
           sleep 1
           retries=$((retries+1))
           if [ $retries -ge $max_retries ]; then
-          echo "[Helm Hook] ERROR: Timed out waiting for database lock."
-          exit 1
+             echo "[Helm Hook] ERROR: Timed out executing SQL."
+             exit 1
           fi
        done
     }
 
-    # 1. Adlists (Blocklists)
 {{- range .Values.pihole.lists.adlists }}
-    # Default enabled to 1 (true) unless explicitly set to false
     add_to_db "INSERT OR IGNORE INTO adlist (address, enabled, comment) VALUES ('{{ .address }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
 
-    # 2. Exact Whitelist (Type 0)
 {{- range .Values.pihole.lists.whitelist }}
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (0, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
 
-    # 3. Exact Blacklist (Type 1)
 {{- range .Values.pihole.lists.blacklist }}
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (1, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
 
-    # 4. Regex Whitelist (Type 2)
 {{- range .Values.pihole.lists.regex_whitelist }}
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (2, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
 
-    # 5. Regex Blacklist (Type 3)
 {{- range .Values.pihole.lists.regex_blacklist }}
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
+
+    echo "[Helm Hook] Import complete."
 
     if [ "$FTL_READY" = true ]; then
        echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
