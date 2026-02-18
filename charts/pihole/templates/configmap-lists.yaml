@@ -103,16 +103,12 @@ data:
 
     echo "[Helm Hook] Import complete."
 
-    if [ "$FTL_READY" = true ]; then
-       echo "[Helm Hook] FTL Process detected. Running 'pihole -g'..."
-       if pihole -g; then
-          echo "[Helm Hook] Gravity updated successfully."
-       else
-          echo "[Helm Hook] WARNING: 'pihole -g' failed (likely busy). Lists are in DB and will update tonight."
-       fi
+    echo "[Helm Hook] Running 'pihole -g' to update gravity..."
+    
+    if pihole -g; then
+       echo "[Helm Hook] Gravity updated successfully."
     else
-       echo "[Helm Hook] WARNING: FTL process did not start within 60s. Skipping Gravity update."
-       echo "[Helm Hook] Your lists were imported to DB successfully. No further action needed."
+       echo "[Helm Hook] WARNING: 'pihole -g' returned a non-zero exit code."
     fi
 
     echo "[Helm Hook] Finished."
