@@ -183,7 +183,7 @@ The exporter provides comprehensive metrics including DNS queries, blocked ads, 
 This chart follows [Semantic Versioning](https://semver.org/):
 
 - **Chart Version**: Version of the Helm chart itself (e.g., `0.1.0`)
-- **App Version**: Version of Pi-hole container (e.g., `2025.11.1`)
+- **App Version**: Version of Pi-hole container (e.g., `2026.02.0`)
 
 ## Requirements
 
