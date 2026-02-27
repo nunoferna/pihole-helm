@@ -1,0 +1,38 @@
+{{- if and .Values.pihole.ftl.dns.service.enabled (or (not .Values.pihole.ftl.dns.service.splitTcpUdp) .Values.pihole.ftl.dns.service.udp.enabled) }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "pihole.fullname" . }}-test-dns-pihole"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: test-dns-pihole
+      image: busybox:1.36
+      command: ['sh', '-c']
+      args: 
+        - |
+          nslookup pi.hole {{ include "pihole.fullname" . }}-dns{{ if .Values.pihole.ftl.dns.service.splitTcpUdp }}-udp{{ end }}
+          if [ $? -ne 0 ]; then
+            echo "DNS test failed: pi.hole did not resolve"
+            exit 1
+          else
+            echo "DNS test passed"
+            exit 0
+          fi
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1000
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+  restartPolicy: Never
+{{- end }}

@@ -1,4 +1,5 @@
 {{- if .Values.pihole.web.service.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:

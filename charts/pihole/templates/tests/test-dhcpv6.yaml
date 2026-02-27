@@ -1,0 +1,29 @@
+{{- if .Values.pihole.ftl.dhcp.ipv6.service.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "pihole.fullname" . }}-test-dhcpv6"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: test-dhcpv6
+      image: busybox:1.36
+      command: ['sh', '-c']
+      args: ['nc -z -u -w 3 {{ include "pihole.fullname" . }}-dhcpv6 {{ .Values.pihole.ftl.dhcp.ipv6.service.ports.dhcpv6 }}']
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1000
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+  restartPolicy: Never
+{{- end }}

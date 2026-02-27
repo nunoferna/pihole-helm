@@ -1,4 +1,5 @@
 {{- if .Values.persistence.etcPihole.enabled }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -11,9 +12,9 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistence.etcPihole.size }}
----
 {{- end }}
 {{- if .Values.persistence.etcDnsmasq.enabled }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

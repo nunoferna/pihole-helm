@@ -1,0 +1,29 @@
+{{- if .Values.pihole.web.service.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "pihole.fullname" . }}-test-web"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: test-web
+      image: curlimages/curl:8.6.0
+      command: ['curl']
+      args: ['-f', '-s', '-o', '/dev/null', '-w', '%{http_code}', 'http://{{ include "pihole.fullname" . }}-web:{{ .Values.pihole.web.service.ports.http }}']
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1000
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+  restartPolicy: Never
+{{- end }}

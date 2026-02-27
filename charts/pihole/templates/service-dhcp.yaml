@@ -1,4 +1,5 @@
 {{- if .Values.pihole.ftl.dhcp.service.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
