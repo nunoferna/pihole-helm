@@ -9,7 +9,10 @@
   "packageRules": [
     {
       "description": "Disable Docker digest pinning for Helm charts (breaks appVersion and tags)",
-      "matchFiles": ["charts/pihole/Chart.yaml", "charts/pihole/values.yaml"],
+      "matchFileNames": [
+        "charts/pihole/Chart.yaml",
+        "charts/pihole/values.yaml"
+      ],
       "pinDigests": false
     },
     {
