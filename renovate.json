@@ -8,6 +8,11 @@
   "timezone": "Europe/Lisbon",
   "packageRules": [
     {
+      "description": "Disable Docker digest pinning for Helm charts (breaks appVersion and tags)",
+      "matchFiles": ["charts/pihole/Chart.yaml", "charts/pihole/values.yaml"],
+      "pinDigests": false
+    },
+    {
       "description": "Automatically bump Chart version when dependencies update",
       "matchFileNames": [
         "charts/pihole/Chart.yaml",
