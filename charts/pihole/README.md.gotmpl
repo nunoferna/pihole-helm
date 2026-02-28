@@ -13,6 +13,24 @@
 
 {{ template "chart.requirementsSection" . }}
 
+## Examples
+
+The [`examples/`](https://github.com/nunoferna/pihole-helm/tree/main/examples) directory contains ready-to-use values files for common deployment scenarios:
+
+| File | Description |
+|------|-------------|
+| [`values-external-secrets.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-external-secrets.yaml) | Integrate with [External Secrets Operator](https://external-secrets.io) to pull Pi-hole credentials from an external provider (Vault, AWS, GCP, Azure, etc.) |
+| [`values-monitoring.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-monitoring.yaml) | Enable the full monitoring stack: Pi-hole Exporter sidecar, Prometheus `ServiceMonitor`, and a Grafana dashboard `ConfigMap` |
+| [`values-vault.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-vault.yaml) | Mount Pi-hole secrets from [HashiCorp Vault](https://www.vaultproject.io) using the Vault Agent Injector sidecar |
+
+To use an example, pass it alongside your own overrides:
+
+```sh
+helm install pihole nunoferna/pihole \
+  -f examples/values-monitoring.yaml \
+  -f my-values.yaml
+```
+
 {{ template "chart.valuesSection" . }}
 
 {{ template "helm-docs.versionFooter" . }}
