@@ -6,6 +6,7 @@
   ],
   "semanticCommits": "enabled",
   "timezone": "Europe/Lisbon",
+  "dependencyDashboard": false,
   "packageRules": [
     {
       "description": "Disable Docker digest pinning for Helm charts (breaks appVersion and tags)",
