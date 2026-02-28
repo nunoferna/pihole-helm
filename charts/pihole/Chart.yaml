@@ -8,6 +8,7 @@ maintainers:
     email: nuno.o.fernandes@outlook.pt
     url: https://nunoferna.github.io
 version: 0.4.7
+# renovate: image=pihole/pihole
 appVersion: "2026.02.0"
 kubeVersion: ">=1.23.0"
 home: https://nunoferna.github.io/pihole-helm/

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "customManagers:helmChartYamlAppVersions"
+  ],
+  "semanticCommits": "enabled",
+  "timezone": "Europe/Lisbon",
+  "packageRules": [
+    {
+      "description": "Automatically bump Chart version when dependencies update",
+      "matchFiles": ["charts/pihole/Chart.yaml", "charts/pihole/values.yaml"],
+      "bumpVersion": "patch"
+    },
+    {
+      "description": "Group all CI/CD and tooling updates into a single PR",
+      "matchManagers": ["pre-commit", "github-actions"],
+      "groupName": "Tooling & CI dependencies",
+      "schedule": ["before 5am on saturday"]
+    },
+    {
+      "description": "Group minor and patch updates for Helm dependencies",
+      "matchManagers": ["helm-values", "custom.regex"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Helm minor and patch updates"
+    }
+  ]
+}
