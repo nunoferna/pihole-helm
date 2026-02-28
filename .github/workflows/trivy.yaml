@@ -26,6 +26,8 @@ jobs:
 
       - name: Run Trivy vulnerability scanner in IaC mode
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_HELM_KUBE_VERSION: "v1.35.1"
         with:
           scan-type: 'config'
           scan-ref: 'charts/pihole'
