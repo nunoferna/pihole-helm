@@ -1750,6 +1750,14 @@
         },
         "tolerations": {
             "type": "array"
+        },
+        "updateStrategy": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-{{- if .Values.persistence.etcPihole.enabled }}
+{{- if and (not (include "pihole.isStatefulSet" .)) .Values.persistence.etcPihole.enabled }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -9,11 +9,14 @@ metadata:
 spec:
   accessModes:
     - {{ .Values.persistence.etcPihole.accessMode }}
+  {{- if .Values.persistence.etcPihole.storageClassName }}
+  storageClassName: {{ .Values.persistence.etcPihole.storageClassName | quote }}
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.persistence.etcPihole.size }}
 {{- end }}
-{{- if .Values.persistence.etcDnsmasq.enabled }}
+{{- if and (not (include "pihole.isStatefulSet" .)) .Values.persistence.etcDnsmasq.enabled }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,6 +27,9 @@ metadata:
 spec:
   accessModes:
     - {{ .Values.persistence.etcDnsmasq.accessMode }}
+  {{- if .Values.persistence.etcDnsmasq.storageClassName }}
+  storageClassName: {{ .Values.persistence.etcDnsmasq.storageClassName | quote }}
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.persistence.etcDnsmasq.size }}

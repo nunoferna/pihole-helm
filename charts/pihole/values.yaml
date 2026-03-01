@@ -15,6 +15,12 @@ strategy:
   #   maxSurge: 1
   #   maxUnavailable: 0
 
+# Update strategy used when replicas > 1 and the resource is rendered as a StatefulSet
+updateStrategy:
+  type: RollingUpdate
+  # rollingUpdate:
+  #   partition: 0
+
 # Pod annotations (useful for secret injection like Vault, AWS Secrets Manager, etc.)
 podAnnotations: {}
 
@@ -937,11 +943,13 @@ persistence:
     enabled: true
     accessMode: ReadWriteOnce
     size: 500Mi
+    # storageClassName: "" # Leave empty to use the cluster default StorageClass
   # By default, Pi-hole v6 no longer reads configuration files from /etc/dnsmasq.d/. Read: https://docs.pi-hole.net/docker/upgrading/v5-v6/?h=dnsmasq#custom-dnsmasq-config-files
   etcDnsmasq:
     enabled: false
     accessMode: ReadWriteOnce
     size: 100Mi
+    # storageClassName: "" # Leave empty to use the cluster default StorageClass
 
 metrics:
   # @schema type:boolean,null

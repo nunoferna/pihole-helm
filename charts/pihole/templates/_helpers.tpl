@@ -28,3 +28,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "pihole.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/* Returns "true" when replicas > 1, causing the workload to be rendered as a StatefulSet */}}
+{{- define "pihole.isStatefulSet" -}}
+  {{- if gt (int .Values.replicas) 1 -}}true{{- end -}}
+{{- end }}
+
+{{/* Returns the workload kind: StatefulSet when replicas > 1, Deployment otherwise */}}
+{{- define "pihole.workloadKind" -}}
+  {{- if eq (include "pihole.isStatefulSet" .) "true" -}}StatefulSet{{- else -}}Deployment{{- end -}}
+{{- end }}

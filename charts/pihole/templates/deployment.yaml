@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ include "pihole.workloadKind" . }}
 metadata:
   name: {{ include "pihole.fullname" . }}
   namespace: {{ .Release.Namespace }}
@@ -11,8 +11,14 @@ metadata:
     ignore-check.kube-linter.io/run-as-non-root: "Pi-hole requires specific UID/GID configuration for proper operation"
 spec:
   replicas: {{ .Values.replicas }}
+{{- if eq (include "pihole.isStatefulSet" .) "true" }}
+  serviceName: {{ include "pihole.fullname" . }}-headless
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+{{- else }}
   strategy:
     {{- toYaml .Values.strategy | nindent 4 }}
+{{- end }}
   selector:
     matchLabels:
       {{- include "pihole.selectorLabels" . | nindent 6 }}
@@ -848,12 +854,12 @@ spec:
 {{- end }}
 
       volumes:
-{{- if .Values.persistence.etcPihole.enabled }}
+{{- if and (not (include "pihole.isStatefulSet" .)) .Values.persistence.etcPihole.enabled }}
         - name: etc-pihole
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-pihole
 {{- end }}
-{{- if .Values.persistence.etcDnsmasq.enabled }}
+{{- if and (not (include "pihole.isStatefulSet" .)) .Values.persistence.etcDnsmasq.enabled }}
         - name: etc-dnsmasq
           persistentVolumeClaim:
             claimName: {{ include "pihole.fullname" . }}-etc-dnsmasq
@@ -877,4 +883,37 @@ spec:
 {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if eq (include "pihole.isStatefulSet" .) "true" }}
+  volumeClaimTemplates:
+  {{- if .Values.persistence.etcPihole.enabled }}
+    - metadata:
+        name: etc-pihole
+        labels:
+          {{- include "pihole.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.persistence.etcPihole.accessMode }}
+    {{- if .Values.persistence.etcPihole.storageClassName }}
+        storageClassName: {{ .Values.persistence.etcPihole.storageClassName | quote }}
+    {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.etcPihole.size }}
+  {{- end }}
+  {{- if .Values.persistence.etcDnsmasq.enabled }}
+    - metadata:
+        name: etc-dnsmasq
+        labels:
+          {{- include "pihole.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.persistence.etcDnsmasq.accessMode }}
+    {{- if .Values.persistence.etcDnsmasq.storageClassName }}
+        storageClassName: {{ .Values.persistence.etcDnsmasq.storageClassName | quote }}
+    {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.etcDnsmasq.size }}
+  {{- end }}
 {{- end }}
