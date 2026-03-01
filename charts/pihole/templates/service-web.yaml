@@ -38,4 +38,7 @@ spec:
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
+  {{- if eq (include "pihole.isStatefulSet" .) "true" }}
+    statefulset.kubernetes.io/pod-name: {{ include "pihole.fullname" . }}-0
+  {{- end }}
 {{- end }}
