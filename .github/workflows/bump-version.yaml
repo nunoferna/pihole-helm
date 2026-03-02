@@ -1,0 +1,88 @@
+name: Bump Chart Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type (semver)'
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    name: Bump version, run pre-commit, open PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      # Required by the helmlint pre-commit hook
+      - name: Set up Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        with:
+          version: v4.1.0
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Compute and apply new version
+        id: bump
+        run: |
+          CHART_FILE="charts/pihole/Chart.yaml"
+          CURRENT=$(grep '^version:' "$CHART_FILE" | awk '{print $2}')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ inputs.bump }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          sed -i "s/^version: .*/version: ${NEW_VERSION}/" "$CHART_FILE"
+
+          echo "current=${CURRENT}"     >> "$GITHUB_OUTPUT"
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Run pre-commit hooks
+        # Hooks like helm-docs and helm-schema regenerate README/schema and exit 1
+        # on first run because they modified files. The changes are committed below.
+        run: pre-commit run --all-files || true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push branch
+        run: |
+          BRANCH="bump/v${{ steps.bump.outputs.new_version }}"
+          git checkout -b "$BRANCH"
+          git add --all
+          git commit -m "chore: bump chart version to ${{ steps.bump.outputs.new_version }}"
+          git push origin "$BRANCH"
+
+      - name: Open Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ steps.bump.outputs.current }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          gh pr create \
+            --title "chore: bump chart version ${CURRENT} → ${NEW_VERSION}" \
+            --body "$(printf 'Bumps chart version from \`%s\` to \`%s\`.\n\n**Bump type:** \`%s\`\n\n---\nAfter merging, the chart will be automatically linted, tested, and released.' "$CURRENT" "$NEW_VERSION" "$BUMP")" \
+            --base main \
+            --head "bump/v${NEW_VERSION}" \
+            --label release

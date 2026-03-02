@@ -4,15 +4,17 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "charts/**"
+  workflow_run:
+    workflows: ["Lint and Test Charts"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   release:
-    if: github.repository == 'nunoferna/pihole-helm'
+    if: >
+      github.repository == 'nunoferna/pihole-helm' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     permissions:
       contents: write
       packages: write
