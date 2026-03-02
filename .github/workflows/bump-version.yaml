@@ -22,10 +22,18 @@ jobs:
     name: Bump version, run pre-commit, open PR
     runs-on: ubuntu-latest
     steps:
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          token: ${{ steps.generate-token.outputs.token }}
 
       # Required by the helmlint pre-commit hook
       - name: Set up Helm
@@ -62,8 +70,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "pihole-helm[bot]"
+          git config user.email "2991775+pihole-helm[bot]@users.noreply.github.com"
 
       - name: Commit and push branch
         run: |
@@ -75,7 +83,7 @@ jobs:
 
       - name: Open Pull Request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
           CURRENT: ${{ steps.bump.outputs.current }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           BUMP: ${{ inputs.bump }}
