@@ -2,6 +2,7 @@ remote: origin
 target-branch: main
 chart-dirs:
   - charts
+check-version-increment: false
 helm-extra-args: --timeout 600s
 validate-chart-schema: true
 validate-maintainers: true

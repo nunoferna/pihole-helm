@@ -23,7 +23,7 @@ spec:
     - ports:
         - port: 80
           protocol: TCP
-        - port: 9617 
+        - port: 9617
           protocol: TCP
       from:
   {{- if .Values.networkPolicy.webAllowFrom }}

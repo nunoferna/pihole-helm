@@ -42,7 +42,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
 {{- end }}
-      
+
 {{- if or .Values.extraInitContainers (and .Values.metrics.enabled .Values.metrics.initContainer) }}
       initContainers:
   {{- with .Values.extraInitContainers }}
@@ -52,7 +52,7 @@ spec:
         {{- toYaml .Values.metrics.initContainer | nindent 8 }}
   {{- end }}
 {{- end }}
-      
+
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -86,7 +86,7 @@ spec:
             - name: TZ
               value: {{ .Values.timezone | quote }}
 {{- end }}
-            
+
 {{- with .Values.pihole.ftl }}
             # ------------------------------------------------------
             # [dns]
@@ -496,7 +496,7 @@ spec:
             - name: FTLCONF_webserver_advancedOpts
               value: {{ .advancedOpts | join "\n" | quote }}
     {{- end }}
-            
+
     {{- with .session }}
       {{- if not (kindIs "invalid" .timeout) }}
             - name: FTLCONF_webserver_session_timeout
@@ -726,7 +726,7 @@ spec:
             - name: PIHOLE_GID
               value: {{ .Values.pihole.gid | quote }}
 {{- end }}
-            
+
             # ------------------------------------------------------
             # Other Pi-hole Variables
             # ------------------------------------------------------
@@ -750,7 +750,7 @@ spec:
             - name: PH_VERBOSE
               value: {{ .Values.pihole.verbose | quote }}
 {{- end }}
-            
+
             # Web Password (Generated or from Secret)
 {{- if not .Values.pihole.web.skipPasswordEnv }}
             - name: FTLCONF_webserver_api_password
@@ -759,11 +759,11 @@ spec:
                   name: {{ if .Values.pihole.web.existingSecret }}{{ .Values.pihole.web.existingSecret }}{{ else }}{{ include "pihole.fullname" . }}-web-password{{ end }}
                   key: {{ .Values.pihole.web.passwordSecretKey }}
 {{- end }}
-          
+
 {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
 {{- end }}
-          
+
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -799,7 +799,7 @@ spec:
                 - pi.hole
             initialDelaySeconds: 60
             periodSeconds: 30
-          
+
           readinessProbe:
             httpGet:
               path: /admin/
@@ -807,7 +807,7 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10
-          
+
           volumeMounts:
 {{- if .Values.persistence.etcPihole.enabled }}
             - name: etc-pihole
@@ -871,7 +871,7 @@ spec:
 {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
 {{- end }}
-      
+
 {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

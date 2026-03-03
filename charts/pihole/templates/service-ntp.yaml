@@ -31,4 +31,4 @@ spec:
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}
-{{- end }} 
+{{- end }}

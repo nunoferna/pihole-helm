@@ -6,44 +6,54 @@ repos:
       - id: helmfmt
         name: Format Helm Charts
 
-  # 2. Lint Shell Scripts (for scripts/update-dashboard.sh)
+  # 2. Common file fixers — trailing whitespace, EOF newline, mixed line endings
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # 3. Chart Testing lint — runs yamllint + helm lint, mirrors CI exactly
+  - repo: local
+    hooks:
+      - id: ct-lint
+        name: Chart Testing Lint
+        entry: ct lint
+        args: [--config, .github/configs/ct.yaml]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # 4. Lint Shell Scripts (for scripts/update-dashboard.sh)
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0
     hooks:
       - id: shellcheck
         files: \.sh$
-  
-  # 3. Auto-generate README from values.yaml comments
+
+  # 5. Auto-generate README from values.yaml comments
   - repo: https://github.com/norwoodj/helm-docs
     rev: v1.14.2
     hooks:
       - id: helm-docs
         args: ["--chart-search-root=charts"]
 
-  # 4. Auto-generate values.schema.json
+  # 6. Auto-generate values.schema.json
   - repo: https://github.com/losisin/helm-values-schema-json
     rev: v2.3.1
     hooks:
       - id: helm-schema
-        args: 
+        args:
           - "--values=charts/pihole/values.yaml"
           - "--output=charts/pihole/values.schema.json"
           - "--use-helm-docs"
-  
-  # 5. Standard Helm Linting (syntax check)
-  - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.30
-    hooks:
-      - id: helmlint
-        name: Helm Lint
-        args: ["charts/pihole"]
 
-  # 6. KubeLinter (Best practices check)
+  # 7. KubeLinter (Best practices check)
   - repo: https://github.com/stackrox/kube-linter
     rev: v0.8.2
     hooks:
       - id: kube-linter
         args: ["charts/pihole"]
         pass_filenames: false
-  
-  

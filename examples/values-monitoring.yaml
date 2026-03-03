@@ -15,16 +15,16 @@
 metrics:
   # Enable the Pi-hole exporter sidecar container
   enabled: true
-  
+
   # Exporter image configuration
   image:
     repository: ekofr/pihole-exporter
     tag: v1.2.0
     pullPolicy: IfNotPresent
-  
+
   # Metrics port (default: 9617)
   port: 9617
-  
+
   # ----------------------------------------------------------------------------
   # METRICS SERVICE
   # ----------------------------------------------------------------------------
@@ -33,21 +33,21 @@ metrics:
     enabled: true
     type: ClusterIP  # Recommended for Prometheus (cluster-internal scraping)
     annotations: {}
-    
+
     # Alternative configurations:
-    
+
     # Example 1: NodePort (expose metrics externally on specific port)
     # type: NodePort
     # externalTrafficPolicy: Local
     # nodePort: 30617
-    
+
     # Example 2: LoadBalancer (expose with cloud provider LB)
     # type: LoadBalancer
     # externalTrafficPolicy: Local
     # loadBalancerIP: "10.0.0.100"
     # annotations:
     #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-  
+
   # ----------------------------------------------------------------------------
   # EXPORTER CONFIGURATION
   # ----------------------------------------------------------------------------
@@ -58,22 +58,22 @@ metrics:
       value: "80"
     - name: INTERVAL
       value: "10s"  # Scrape interval (faster = more granular data)
-    
+
     # Option 1: Password authentication (reference existing secret)
     # - name: PIHOLE_PASSWORD
     #   valueFrom:
     #     secretKeyRef:
     #       name: pihole-secret
     #       key: password
-    
+
     # Option 2: API token (from /etc/pihole/setupVars.conf WEBPASSWORD)
     # - name: PIHOLE_API_TOKEN
     #   value: "your-api-token-here"
-    
+
     # Option 3: HTTPS configuration (if Pi-hole uses HTTPS)
     # - name: PIHOLE_PROTOCOL
     #   value: "https"
-  
+
   # Resource limits for the exporter sidecar
   resources:
     limits:
@@ -82,7 +82,7 @@ metrics:
     requests:
       memory: 32Mi
       cpu: 10m
-  
+
   # ----------------------------------------------------------------------------
   # PROMETHEUS SERVICEMONITOR
   # ----------------------------------------------------------------------------
@@ -91,16 +91,16 @@ metrics:
     enabled: true
     interval: 30s        # How often Prometheus scrapes
     scrapeTimeout: 10s   # Timeout for each scrape
-    
+
     # Labels for ServiceMonitor selection by Prometheus
     # Must match your Prometheus serviceMonitorSelector
     labels:
       prometheus: kube-prometheus  # Common label for kube-prometheus-stack
       # release: prometheus        # Alternative: match Helm release name
-    
+
     # Additional annotations
     annotations: {}
-    
+
     # Advanced: Relabeling configurations
     # relabelings:
     #   # Add pod name as label
@@ -109,7 +109,7 @@ metrics:
     #   # Add namespace as label
     #   - sourceLabels: [__meta_kubernetes_namespace]
     #     targetLabel: namespace
-    
+
     # Advanced: Metric relabeling (filter/transform metrics)
     # metricRelabelings:
     #   # Keep only Pi-hole metrics
@@ -120,19 +120,19 @@ metrics:
     #   - sourceLabels: [__name__]
     #     regex: 'pihole_top_.*'
     #     action: drop
-  
+
   # ----------------------------------------------------------------------------
   # GRAFANA DASHBOARD
   # ----------------------------------------------------------------------------
   # Auto-discovered by Grafana sidecar when enabled
   dashboards:
     enabled: true
-    
+
     # Label for Grafana dashboard sidecar discovery
     # MUST match your Grafana sidecar configuration
     label: "grafana_dashboard"
     labelValue: "1"
-    
+
     # Optional annotations for dashboard ConfigMap
     annotations: {}
     # annotations:
@@ -146,7 +146,7 @@ metrics:
 # ----------------------------------------------------------------------------
 # 1. INSTALL PREREQUISITES
 # ----------------------------------------------------------------------------
-# 
+#
 # Install kube-prometheus-stack (includes Prometheus + Grafana):
 #
 #   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -190,10 +190,10 @@ metrics:
 #     serviceMonitorSelector:
 #       matchLabels:
 #         prometheus: kube-prometheus
-#     
+#
 #     # Option 2: Discover all ServiceMonitors (not recommended for production)
 #     # serviceMonitorSelectorNilUsesHelmValues: false
-#     
+#
 #     # Optional: Scrape interval override
 #     # evaluationInterval: 30s
 #     # scrapeInterval: 30s

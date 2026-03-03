@@ -1,7 +1,7 @@
 image:
   repository: pihole/pihole
   pullPolicy: IfNotPresent
-  tag: "" # Defaults to appVersion
+  tag: ""  # Defaults to appVersion
 
 imagePullSecrets: []
 
@@ -44,9 +44,9 @@ pihole:
   lists:
     adlists:
       - address: "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-        comment: "StevenBlack Master" # enabled is true by default
+        comment: "StevenBlack Master"  # enabled is true by default
       - address: "https://adaway.org/hosts.txt"
-        enabled: false # Explicitly disabled
+        enabled: false  # Explicitly disabled
         comment: "AdAway"
 
     whitelist:
@@ -90,7 +90,7 @@ pihole:
       # @section -- K8S Services
       enabled: true
       type: ClusterIP
-      externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+      externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
       annotations: {}
       ports:
         http: 80
@@ -267,7 +267,7 @@ pihole:
         # @section -- DNS
         # @default -- "TEXT"
         edns: null
-      
+
       specialDomains:
         # @schema type:boolean,null
         # -- (boolean) No description provided.
@@ -284,7 +284,7 @@ pihole:
         # @section -- DNS
         # @default -- true
         designatedResolver: null
-      
+
       reply:
         host:
           # @schema type:boolean,null
@@ -340,7 +340,7 @@ pihole:
         # @section -- DNS
         # @default -- 60
         interval: null
-      
+
       # DNS K8S SERVICE #
       service:
         # @schema type:boolean,null
@@ -356,10 +356,10 @@ pihole:
         # @section -- K8S Services
         # @default -- false
         splitTcpUdp: false
-        
+
         # Combined service configuration (used when splitTcpUdp: false)
         type: LoadBalancer
-        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
         annotations: {}
         ports:
           tcp: 53
@@ -369,7 +369,7 @@ pihole:
         # nodePorts:
         #   tcp: 30053
         #   udp: 30054
-        
+
         # TCP-specific service (used when splitTcpUdp: true)
         tcp:
           enabled: true
@@ -379,7 +379,7 @@ pihole:
           port: 53
           # loadBalancerIP: ""
           # externalIPs: []
-        
+
         # UDP-specific service (used when splitTcpUdp: true)
         udp:
           enabled: true
@@ -456,7 +456,7 @@ pihole:
         # @default -- false
         enabled: false
         type: LoadBalancer
-        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
         annotations: {}
         ports:
           dhcp: 67
@@ -479,7 +479,7 @@ pihole:
           # @default -- false
           enabled: false
           type: LoadBalancer
-          externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+          externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
           annotations: {}
           ports:
             dhcpv6: 547
@@ -557,14 +557,14 @@ pihole:
         # @default -- false
         enabled: false
         type: LoadBalancer
-        externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
+        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
         annotations: {}
         ports:
           ntp: 123
-        # loadBalancerIP: ""
-        # externalIPs: []
-        # nodePort: 30123
-    
+          # loadBalancerIP: ""
+          # externalIPs: []
+           # nodePort: 30123
+
     resolver:
       # @schema type:boolean,null
       # -- (boolean) Whether to resolve IPv4 addresses to hostnames in the query log and other outputs.

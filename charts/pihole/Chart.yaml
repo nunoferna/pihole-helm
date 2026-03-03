@@ -1,12 +1,13 @@
+---
 apiVersion: v2
 name: pihole
 description: Pi-hole v6 Helm Chart with full FTL configuration support.
 icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2016/12/Vortex-R.png
 type: application
 maintainers:
-  - name: Nuno Fernandes
+  - name: nunoferna
     email: nuno.o.fernandes@outlook.pt
-    url: https://nunoferna.github.io
+    url: https://github.com/nunoferna
 version: 1.0.0
 # renovate: image=pihole/pihole
 appVersion: "2026.02.0"

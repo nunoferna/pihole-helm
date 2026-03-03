@@ -14,7 +14,7 @@ data:
     echo "[Helm Hook] Starting Import Script..."
 
     # --- STEP 1: Wait for pihole-FTL Process ---
-    # We wait for the process first. This implies the container's entrypoint 
+    # We wait for the process first. This implies the container's entrypoint
     # has finished its pre-flight checks and started the main service.
     echo "[Helm Hook] Step 1: Waiting for pihole-FTL process to start..."
     while ! pidof pihole-FTL > /dev/null; do
@@ -49,7 +49,7 @@ data:
     # FTL might be running, but it could still be performing the initial migration.
     # We query the 'info' table for 'abp_domains' to confirm the DB is unlocked and valid.
     echo "[Helm Hook] Step 4: Verifying database schema (abp_domains)..."
-    
+
     while true; do
        if $SQL_CMD "SELECT value FROM info WHERE property = 'abp_domains';" >/dev/null 2>&1; then
           echo "[Helm Hook] Schema verification passed (abp_domains found)."
@@ -68,12 +68,12 @@ data:
     function add_to_db() {
        local retries=0
        local max_retries=30
-       
+
        while true; do
           if $SQL_CMD "$1"; then
              return 0
           fi
-          
+
           echo "[Helm Hook] Database busy/locked, retrying..."
           sleep 1
           retries=$((retries+1))
@@ -119,7 +119,7 @@ data:
     done
 
     echo "[Helm Hook] Running 'pihole -g' to update gravity..."
-    
+
     if pihole -g; then
        echo "[Helm Hook] Gravity updated successfully."
     else

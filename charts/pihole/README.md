@@ -10,7 +10,7 @@ Pi-hole v6 Helm Chart with full FTL configuration support.
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| Nuno Fernandes | <nuno.o.fernandes@outlook.pt> | <https://nunoferna.github.io> |
+| nunoferna | <nuno.o.fernandes@outlook.pt> | <https://github.com/nunoferna> |
 
 ## Source Code
 
