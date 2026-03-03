@@ -11,7 +11,7 @@ metadata:
 spec:
   containers:
     - name: test-dhcpv6
-      image: busybox:1.36
+      image: busybox:1.37
       command: ['sh', '-c']
       args: ['nc -z -u -w 3 {{ include "pihole.fullname" . }}-dhcpv6 {{ .Values.pihole.ftl.dhcp.ipv6.service.ports.dhcpv6 }}']
       securityContext:

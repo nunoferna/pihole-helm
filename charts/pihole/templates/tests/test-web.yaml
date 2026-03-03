@@ -11,9 +11,9 @@ metadata:
 spec:
   containers:
     - name: test-web
-      image: curlimages/curl:8.6.0
+      image: curlimages/curl:8.18.0
       command: ['curl']
-      args: ['-f', '-s', '-o', '/dev/null', '-w', '%{http_code}', 'http://{{ include "pihole.fullname" . }}-web:{{ .Values.pihole.web.service.ports.http }}']
+      args: ['-f', '-s', '-o', '/dev/null', '-w', '%{http_code}', 'http://{{ include "pihole.fullname" . }}-web:{{ .Values.pihole.web.service.ports.http }}/admin/']
       securityContext:
         readOnlyRootFilesystem: true
         runAsNonRoot: true

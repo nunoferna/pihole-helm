@@ -11,7 +11,7 @@ metadata:
 spec:
   containers:
     - name: test-metrics
-      image: curlimages/curl:8.6.0
+      image: curlimages/curl:8.18.0
       command: ['curl']
       args: ['-f', '-s', '-o', '/dev/null', '-w', '%{http_code}', 'http://{{ include "pihole.fullname" . }}-metrics:{{ .Values.metrics.port }}/metrics']
       securityContext:
