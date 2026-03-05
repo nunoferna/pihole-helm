@@ -64,6 +64,18 @@ pihole:
 
     regex_blacklist: []
 
+    groups:
+      - name: "default"
+        enabled: true
+        description: "Default group"
+
+    clients: []
+    # clients:
+    #   - ip: "192.168.1.100"
+    #     comment: "My PC"
+    #     groups:
+    #       - "default"
+
   # Web logic (Kubernetes specific helper)
   web:
     # @schema type:string,null

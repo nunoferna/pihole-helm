@@ -318,6 +318,10 @@ helm install pihole nunoferna/pihole \
 | pihole.lists.regex_whitelist[0].comment | string | `"Allow Google subdomains"` |  |
 | pihole.lists.regex_whitelist[0].domain | string | `".*\\.google\\.com$"` |  |
 | pihole.lists.whitelist[0].domain | string | `"good-site.com"` |  |
+| pihole.lists.groups[0].name | string | `"default"` |  |
+| pihole.lists.groups[0].enabled | bool | `true` |  |
+| pihole.lists.groups[0].description | string | `"Default group"` |  |
+| pihole.lists.clients | list | `[]` |  |
 | pihole.tailFtlLog | integer | 1 | Whether to output FTL log (0 or 1) |
 | pihole.uid | integer | 1000 | No description provided. |
 | pihole.verbose | integer | 0 | Enable verbose startup scripts (0 or 1) |
