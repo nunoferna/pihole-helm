@@ -1548,26 +1548,6 @@
                                 }
                             }
                         },
-                        "clients": {
-                            "type": "array"
-                        },
-                        "groups": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        },
                         "regex_blacklist": {
                             "type": "array"
                         },
