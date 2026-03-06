@@ -1548,6 +1548,43 @@
                                 }
                             }
                         },
+                        "clients": {
+                            "description": "List of Pi-hole clients. Each client can be identified by an IPv4 address, IPv6 address, or MAC address.",
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        },
+                        "groups": {
+                            "description": "List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients.",
+                            "type": [
+                                "array",
+                                "null"
+                            ],
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "description": "Description of the group.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "enabled": {
+                                        "description": "Whether the group is enabled.",
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "name": {
+                                        "description": "Name of the group. Must be unique.",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "regex_blacklist": {
                             "type": "array"
                         },
