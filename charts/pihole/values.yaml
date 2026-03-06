@@ -69,10 +69,7 @@ pihole:
     # @section -- Lists
     # @default -- []
     groups:
-      - # @schema type:string
-        # -- (string) Name of the group. Must be unique.
-        # @section -- Lists
-        name: "default"
+      - name: "default"
         # @schema type:boolean,null
         # -- (boolean) Whether the group is enabled.
         # @section -- Lists
