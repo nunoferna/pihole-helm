@@ -109,10 +109,10 @@ data:
 {{- end }}
 
 {{- range .Values.pihole.lists.clients }}
-{{- $clientIP := replace "'" "''" .ip }}
-    add_to_db "INSERT OR IGNORE INTO client (ip, comment) VALUES ('{{ $clientIP }}', '{{ replace "'" "''" (.comment | default "Helm-Import") }}');"
+{{- $clientId := replace "'" "''" .id }}
+    add_to_db "INSERT OR IGNORE INTO client (ip, comment) VALUES ('{{ $clientId }}', '{{ replace "'" "''" (.comment | default "Helm-Import") }}');"
 {{- range .groups }}
-    add_to_db "INSERT OR IGNORE INTO client_by_group (client_id, group_id) VALUES ((SELECT id FROM client WHERE ip = '{{ $clientIP }}'), (SELECT id FROM \"group\" WHERE name = '{{ replace "'" "''" . }}'));"
+    add_to_db "INSERT OR IGNORE INTO client_by_group (client_id, group_id) VALUES ((SELECT id FROM client WHERE ip = '{{ $clientId }}'), (SELECT id FROM \"group\" WHERE name = '{{ replace "'" "''" . }}'));"
 {{- end }}
 {{- end }}
 

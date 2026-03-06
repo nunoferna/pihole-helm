@@ -71,8 +71,12 @@ pihole:
 
     clients: []
     # clients:
-    #   - ip: "192.168.1.100"
+    #   - id: "192.168.1.100"   # can be an IPv4, IPv6, or MAC address (e.g. "aa:bb:cc:dd:ee:ff")
     #     comment: "My PC"
+    #     groups:
+    #       - "default"
+    #   - id: "aa:bb:cc:dd:ee:ff"
+    #     comment: "My Phone"
     #     groups:
     #       - "default"
 
