@@ -104,11 +104,11 @@ data:
     add_to_db "INSERT OR IGNORE INTO domainlist (type, domain, enabled, comment) VALUES (3, '{{ .domain }}', {{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ .comment | default "Helm-Import" }}');"
 {{- end }}
 
-{{- range .Values.pihole.lists.groups }}
+{{- range .Values.pihole.groups }}
     add_to_db "INSERT OR IGNORE INTO \"group\" (enabled, name, description) VALUES ({{ if eq .enabled false }}0{{ else }}1{{ end }}, '{{ replace "'" "''" .name }}', '{{ replace "'" "''" (.description | default "") }}');"
 {{- end }}
 
-{{- range .Values.pihole.lists.clients }}
+{{- range .Values.pihole.clients }}
   {{- $clientId := replace "'" "''" .id }}
     add_to_db "INSERT OR IGNORE INTO client (ip, comment) VALUES ('{{ $clientId }}', '{{ replace "'" "''" (.comment | default "Helm-Import") }}');"
   {{- range .groups }}
