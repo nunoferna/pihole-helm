@@ -29,7 +29,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "pihole.selectorLabels" . | nindent 6 }}
+      {{- include "pihole.metricsSelectorLabels" . | nindent 6 }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

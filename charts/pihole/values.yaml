@@ -983,12 +983,12 @@ persistence:
 
 metrics:
   # @schema type:boolean,null
-  # -- (boolean) Whether to enable the Pi-hole metrics exporter sidecar container. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).
+  # -- (boolean) Whether to enable the Pi-hole metrics exporter. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).
   # @section -- Metrics
   enabled: false
   image:
     # @schema type:string,null
-    # -- (string) Container image for the Pi-hole metrics exporter sidecar.
+    # -- (string) Container image for the Pi-hole metrics exporter.
     # @section -- Metrics
     repository: ekofr/pihole-exporter
     tag: v1.2.0
@@ -1009,16 +1009,12 @@ metrics:
     # externalIPs: []
     # nodePort: 30617
   # @schema type:array,null
-  # -- (array) Environment variables to pass to the metrics exporter container. Required variables:
-  # - PIHOLE_HOSTNAME: Hostname or IP address of the Pi-hole FTL container (usually "127.0.0.1")
-  # - PIHOLE_PORT: Port on which the Pi-hole FTL container is listening (usually "80")
-  # - INTERVAL: How often the exporter should scrape metrics from the Pi-hole FTL container (e.g., "10s", "30s", etc.)
+  # -- (array) Additional environment variables for the metrics exporter.
+  # PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the
+  # number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment).
+  # Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables.
   # @section -- Metrics
   env:
-    - name: PIHOLE_HOSTNAME
-      value: "127.0.0.1"
-    - name: PIHOLE_PORT
-      value: "80"
     - name: INTERVAL
       value: "10s"
     # Uncomment to use password authentication:
@@ -1030,14 +1026,10 @@ metrics:
     # Or use API token (WEBPASSWORD from /etc/pihole/setupVars.conf):
     # - name: PIHOLE_API_TOKEN
     #   value: "your-api-token-here"
-  # Override metrics container command (optional, useful for Vault integration)
+  # Override metrics container command (optional)
   command: []
   # Override metrics container args (optional)
   args: []
-  # Init container for metrics (optional, useful for adding shell to scratch-based images)
-  initContainer: []
-  # Volume mounts for metrics container (optional)
-  volumeMounts: []
   resources:
     limits:
       memory: 64Mi

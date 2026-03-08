@@ -38,3 +38,54 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "pihole.workloadKind" -}}
   {{- if eq (include "pihole.isStatefulSet" .) "true" -}}StatefulSet{{- else -}}Deployment{{- end -}}
 {{- end }}
+
+{{/* Selector labels for the standalone metrics exporter Deployment */}}
+{{- define "pihole.metricsSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "pihole.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: metrics
+{{- end }}
+
+{{/* Comma-separated PIHOLE_HOSTNAME value for the metrics exporter.
+StatefulSet: one headless DNS entry per replica.
+Deployment:  the ClusterIP service FQDN. */}}
+{{- define "pihole.metricsHostnames" -}}
+  {{- if eq (include "pihole.isStatefulSet" .) "true" -}}
+    {{- $fullname := include "pihole.fullname" . -}}
+    {{- $ns := .Release.Namespace -}}
+    {{- $hostnames := list -}}
+    {{- range $i := until (int .Values.replicas) -}}
+      {{- $hostnames = append $hostnames (printf "%s-%d.%s-headless.%s.svc.cluster.local" $fullname $i $fullname $ns) -}}
+    {{- end -}}
+    {{- join "," $hostnames -}}
+  {{- else -}}
+    {{- printf "%s.%s.svc.cluster.local" (include "pihole.fullname" .) .Release.Namespace -}}
+  {{- end -}}
+{{- end }}
+
+{{/* Comma-separated PIHOLE_PORT value — web port repeated once per replica */}}
+{{- define "pihole.metricsPorts" -}}
+  {{- $port := .Values.pihole.web.service.ports.http | toString -}}
+  {{- if eq (include "pihole.isStatefulSet" .) "true" -}}
+    {{- $ports := list -}}
+    {{- range until (int .Values.replicas) -}}
+      {{- $ports = append $ports $port -}}
+    {{- end -}}
+    {{- join "," $ports -}}
+  {{- else -}}
+    {{- $port -}}
+  {{- end -}}
+{{- end }}
+
+{{/* Comma-separated PIHOLE_PROTOCOL value — "http" repeated once per replica */}}
+{{- define "pihole.metricsProtocols" -}}
+  {{- if eq (include "pihole.isStatefulSet" .) "true" -}}
+    {{- $protocols := list -}}
+    {{- range until (int .Values.replicas) -}}
+      {{- $protocols = append $protocols "http" -}}
+    {{- end -}}
+    {{- join "," $protocols -}}
+  {{- else -}}
+    {{- "http" -}}
+  {{- end -}}
+{{- end }}
