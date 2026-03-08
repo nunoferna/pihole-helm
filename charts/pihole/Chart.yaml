@@ -8,7 +8,7 @@ maintainers:
   - name: nunoferna
     email: nuno.o.fernandes@outlook.pt
     url: https://github.com/nunoferna
-version: 1.2.0
+version: 1.2.1
 # renovate: image=pihole/pihole
 appVersion: "2026.02.0"
 kubeVersion: ">=1.23.0"
