@@ -8,6 +8,9 @@
         "args": {
             "type": "array"
         },
+        "clusterDomain": {
+            "type": "string"
+        },
         "command": {
             "type": "array"
         },

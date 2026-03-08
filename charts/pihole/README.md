@@ -247,6 +247,7 @@ helm install pihole nunoferna/pihole \
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | args | list | `[]` |  |
+| clusterDomain | string | `"cluster.local"` |  |
 | command | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |

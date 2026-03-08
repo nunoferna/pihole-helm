@@ -17,9 +17,25 @@ spec:
     metadata:
       labels:
         {{- include "pihole.metricsSelectorLabels" . | nindent 8 }}
+  {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
     spec:
   {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+      tolerations:
         {{- toYaml . | nindent 8 }}
   {{- end }}
       containers:
@@ -42,7 +58,13 @@ spec:
             - name: PIHOLE_PROTOCOL
               value: {{ include "pihole.metricsProtocols" . | quote }}
   {{- with .Values.metrics.env }}
-            {{- toYaml . | nindent 12 }}
+    {{- $reserved := dict "PIHOLE_HOSTNAME" true "PIHOLE_PORT" true "PIHOLE_PROTOCOL" true }}
+    {{- range . }}
+      {{- if not (hasKey $reserved .name) }}
+            - name: {{ .name }}
+              {{- omit . "name" | toYaml | nindent 14 }}
+      {{- end }}
+    {{- end }}
   {{- end }}
           ports:
             - name: metrics

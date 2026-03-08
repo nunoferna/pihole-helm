@@ -48,32 +48,33 @@ app.kubernetes.io/component: metrics
 
 {{/* Comma-separated PIHOLE_HOSTNAME value for the metrics exporter.
 StatefulSet: one headless DNS entry per replica.
-Deployment:  the ClusterIP service FQDN. */}}
+Deployment:  the web ClusterIP service FQDN. */}}
 {{- define "pihole.metricsHostnames" -}}
+  {{- $clusterDomain := default "cluster.local" .Values.clusterDomain -}}
   {{- if eq (include "pihole.isStatefulSet" .) "true" -}}
     {{- $fullname := include "pihole.fullname" . -}}
     {{- $ns := .Release.Namespace -}}
     {{- $hostnames := list -}}
     {{- range $i := until (int .Values.replicas) -}}
-      {{- $hostnames = append $hostnames (printf "%s-%d.%s-headless.%s.svc.cluster.local" $fullname $i $fullname $ns) -}}
+      {{- $hostnames = append $hostnames (printf "%s-%d.%s-headless.%s.svc.%s" $fullname $i $fullname $ns $clusterDomain) -}}
     {{- end -}}
     {{- join "," $hostnames -}}
   {{- else -}}
-    {{- printf "%s.%s.svc.cluster.local" (include "pihole.fullname" .) .Release.Namespace -}}
+    {{- printf "%s-web.%s.svc.%s" (include "pihole.fullname" .) .Release.Namespace $clusterDomain -}}
   {{- end -}}
 {{- end }}
 
-{{/* Comma-separated PIHOLE_PORT value — web port repeated once per replica */}}
+{{/* Comma-separated PIHOLE_PORT value — container port (80) for StatefulSet pod-direct access;
+web Service port for Deployment ClusterIP access. */}}
 {{- define "pihole.metricsPorts" -}}
-  {{- $port := .Values.pihole.web.service.ports.http | toString -}}
   {{- if eq (include "pihole.isStatefulSet" .) "true" -}}
     {{- $ports := list -}}
     {{- range until (int .Values.replicas) -}}
-      {{- $ports = append $ports $port -}}
+      {{- $ports = append $ports "80" -}}
     {{- end -}}
     {{- join "," $ports -}}
   {{- else -}}
-    {{- $port -}}
+    {{- .Values.pihole.web.service.ports.http | toString -}}
   {{- end -}}
 {{- end }}
 
