@@ -38,6 +38,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
   {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
       containers:
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
@@ -51,20 +52,25 @@ spec:
             {{- toYaml . | nindent 12 }}
   {{- end }}
           env:
+  {{- $userEnvKeys := dict }}
+  {{- range .Values.metrics.env }}
+    {{- $_ := set $userEnvKeys .name true }}
+  {{- end }}
+  {{- if not (hasKey $userEnvKeys "PIHOLE_HOSTNAME") }}
             - name: PIHOLE_HOSTNAME
               value: {{ include "pihole.metricsHostnames" . | quote }}
+  {{- end }}
+  {{- if not (hasKey $userEnvKeys "PIHOLE_PORT") }}
             - name: PIHOLE_PORT
               value: {{ include "pihole.metricsPorts" . | quote }}
+  {{- end }}
+  {{- if not (hasKey $userEnvKeys "PIHOLE_PROTOCOL") }}
             - name: PIHOLE_PROTOCOL
               value: {{ include "pihole.metricsProtocols" . | quote }}
-  {{- with .Values.metrics.env }}
-    {{- $reserved := dict "PIHOLE_HOSTNAME" true "PIHOLE_PORT" true "PIHOLE_PROTOCOL" true }}
-    {{- range . }}
-      {{- if not (hasKey $reserved .name) }}
+  {{- end }}
+  {{- range .Values.metrics.env }}
             - name: {{ .name }}
               {{- omit . "name" | toYaml | nindent 14 }}
-      {{- end }}
-    {{- end }}
   {{- end }}
           ports:
             - name: metrics

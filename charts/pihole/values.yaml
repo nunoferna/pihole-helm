@@ -965,7 +965,9 @@ serviceAccount:
   name: "pihole"
   annotations: {}
 
-# Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain.
+# @schema type:string
+# -- (string) Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain.
+# @default -- "cluster.local"
 clusterDomain: "cluster.local"
 
 networking:

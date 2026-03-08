@@ -247,7 +247,7 @@ helm install pihole nunoferna/pihole \
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | args | list | `[]` |  |
-| clusterDomain | string | `"cluster.local"` |  |
+| clusterDomain | string | "cluster.local" | Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain. |
 | command | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |

@@ -9,6 +9,7 @@
             "type": "array"
         },
         "clusterDomain": {
+            "description": "Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain.",
             "type": "string"
         },
         "command": {
