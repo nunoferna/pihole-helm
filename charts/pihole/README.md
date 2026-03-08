@@ -45,9 +45,9 @@ helm install pihole nunoferna/pihole \
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | metrics.dashboards.enabled | boolean | `false` | Whether to create Grafana dashboard resources for the Pi-hole metrics exporter. Requires metrics.service.enabled to be true. |
-| metrics.enabled | boolean | `false` | Whether to enable the Pi-hole metrics exporter sidecar container. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.). |
-| metrics.env | array | `[{"name":"PIHOLE_HOSTNAME","value":"127.0.0.1"},{"name":"PIHOLE_PORT","value":"80"},{"name":"INTERVAL","value":"10s"}]` | Environment variables to pass to the metrics exporter container. Required variables: - PIHOLE_HOSTNAME: Hostname or IP address of the Pi-hole FTL container (usually "127.0.0.1") - PIHOLE_PORT: Port on which the Pi-hole FTL container is listening (usually "80") - INTERVAL: How often the exporter should scrape metrics from the Pi-hole FTL container (e.g., "10s", "30s", etc.) |
-| metrics.image.repository | string | `"ekofr/pihole-exporter"` | Container image for the Pi-hole metrics exporter sidecar. |
+| metrics.enabled | boolean | `false` | Whether to enable the Pi-hole metrics exporter. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.). |
+| metrics.env | array | `[{"name":"INTERVAL","value":"10s"}]` | Additional environment variables for the metrics exporter. PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment). Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables. |
+| metrics.image.repository | string | `"ekofr/pihole-exporter"` | Container image for the Pi-hole metrics exporter. |
 | metrics.port | integer | `9617` | Port on which the metrics exporter will listen. |
 | metrics.serviceMonitor.enabled | boolean | `false` | Whether to create a ServiceMonitor resource for Prometheus Operator integration. |
 
@@ -247,6 +247,7 @@ helm install pihole nunoferna/pihole \
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | args | list | `[]` |  |
+| clusterDomain | string | "cluster.local" | Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain. |
 | command | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |
@@ -262,7 +263,6 @@ helm install pihole nunoferna/pihole \
 | metrics.dashboards.labelValue | string | `"1"` |  |
 | metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
 | metrics.image.tag | string | `"v1.2.0"` |  |
-| metrics.initContainer | list | `[]` |  |
 | metrics.resources.limits.cpu | string | `"50m"` |  |
 | metrics.resources.limits.memory | string | `"64Mi"` |  |
 | metrics.resources.requests.cpu | string | `"10m"` |  |
@@ -274,7 +274,6 @@ helm install pihole nunoferna/pihole \
 | metrics.serviceMonitor.metricRelabelings | list | `[]` |  |
 | metrics.serviceMonitor.relabelings | list | `[]` |  |
 | metrics.serviceMonitor.scrapeTimeout | string | `"10s"` |  |
-| metrics.volumeMounts | list | `[]` |  |
 | networkPolicy.enabled | bool | `false` |  |
 | networkPolicy.webAllowFrom | list | `[]` |  |
 | networking.hostNetwork | bool | `false` |  |

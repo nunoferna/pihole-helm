@@ -44,14 +44,9 @@ spec:
         {{- toYaml . | nindent 8 }}
 {{- end }}
 
-{{- if or .Values.extraInitContainers (and .Values.metrics.enabled .Values.metrics.initContainer) }}
+{{- with .Values.extraInitContainers }}
       initContainers:
-  {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
-  {{- end }}
-  {{- if and .Values.metrics.enabled .Values.metrics.initContainer }}
-        {{- toYaml .Values.metrics.initContainer | nindent 8 }}
-  {{- end }}
 {{- end }}
 
       containers:
@@ -824,35 +819,6 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
-        # METRICS SIDECAR (ekofr/pihole-exporter)
-{{- if .Values.metrics.enabled }}
-        - name: metrics
-          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
-          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
-  {{- with .Values.metrics.command }}
-          command:
-            {{- toYaml . | nindent 12 }}
-  {{- end }}
-  {{- with .Values.metrics.args }}
-          args:
-            {{- toYaml . | nindent 12 }}
-  {{- end }}
-          env:
-  {{- if .Values.metrics.env }}
-            {{- toYaml .Values.metrics.env | nindent 12 }}
-  {{- end }}
-          ports:
-            - name: metrics
-              containerPort: {{ .Values.metrics.port }}
-              protocol: TCP
-  {{- with .Values.metrics.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-  {{- end }}
-          resources:
-            {{- toYaml .Values.metrics.resources | nindent 12 }}
-{{- end }}
 
       volumes:
 {{- if and (not (include "pihole.isStatefulSet" .)) .Values.persistence.etcPihole.enabled }}

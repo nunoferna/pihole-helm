@@ -8,6 +8,10 @@
         "args": {
             "type": "array"
         },
+        "clusterDomain": {
+            "description": "Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain.",
+            "type": "string"
+        },
         "command": {
             "type": "array"
         },
@@ -68,14 +72,14 @@
                     }
                 },
                 "enabled": {
-                    "description": "Whether to enable the Pi-hole metrics exporter sidecar container. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).",
+                    "description": "Whether to enable the Pi-hole metrics exporter. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.).",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "env": {
-                    "description": "Environment variables to pass to the metrics exporter container. Required variables: - PIHOLE_HOSTNAME: Hostname or IP address of the Pi-hole FTL container (usually \"127.0.0.1\") - PIHOLE_PORT: Port on which the Pi-hole FTL container is listening (usually \"80\") - INTERVAL: How often the exporter should scrape metrics from the Pi-hole FTL container (e.g., \"10s\", \"30s\", etc.)",
+                    "description": "Additional environment variables for the metrics exporter. PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment). Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables.",
                     "type": [
                         "array",
                         "null"
@@ -99,7 +103,7 @@
                             "type": "string"
                         },
                         "repository": {
-                            "description": "Container image for the Pi-hole metrics exporter sidecar.",
+                            "description": "Container image for the Pi-hole metrics exporter.",
                             "type": [
                                 "string",
                                 "null"
@@ -109,9 +113,6 @@
                             "type": "string"
                         }
                     }
-                },
-                "initContainer": {
-                    "type": "array"
                 },
                 "port": {
                     "description": "Port on which the metrics exporter will listen.",
@@ -191,9 +192,6 @@
                             "type": "string"
                         }
                     }
-                },
-                "volumeMounts": {
-                    "type": "array"
                 }
             }
         },
