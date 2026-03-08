@@ -63,6 +63,12 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.ntp.service.enabled | boolean | false | NTP Kubernetes Service. Required for external access to NTP functionality (port 123). |
 | pihole.web.service.enabled | boolean | `true` | Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443) |
 
+### Clients
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| pihole.clients | array | [] | List of Pi-hole clients. Each client can be identified by an IPv4 address, IPv6 address, or MAC address. |
+
 ### Database
 
 | Key | Type | Default | Description |
@@ -217,6 +223,14 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.webserver.threads | integer | 50 | No description provided. |
 | pihole.ftl.webserver.tls.cert | string | "/etc/pihole/tls.pem" | Path to TLS certificate file. Set to empty string to disable TLS. |
 | pihole.ftl.webserver.tls.validity | integer | 47 | TLS validity period in days. |
+
+### Groups
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| pihole.groups | array | [] | List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients. |
+| pihole.groups[0].description | string | `"Default group"` | Description of the group. |
+| pihole.groups[0].enabled | boolean | `true` | Whether the group is enabled. |
 
 ### Web
 

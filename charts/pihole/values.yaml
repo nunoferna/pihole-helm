@@ -64,6 +64,36 @@ pihole:
 
     regex_blacklist: []
 
+  # @schema type:array,null
+  # -- (array) List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients.
+  # @section -- Groups
+  # @default -- []
+  groups:
+    - name: "default"
+      # @schema type:boolean,null
+      # -- (boolean) Whether the group is enabled.
+      # @section -- Groups
+      enabled: true
+      # @schema type:string,null
+      # -- (string) Description of the group.
+      # @section -- Groups
+      description: "Default group"
+
+  # @schema type:array,null
+  # -- (array) List of Pi-hole clients. Each client can be identified by an IPv4 address, IPv6 address, or MAC address.
+  # @section -- Clients
+  # @default -- []
+  clients: []
+  # clients:
+  #   - id: "192.168.1.100"   # can be an IPv4, IPv6, or MAC address (e.g. "aa:bb:cc:dd:ee:ff")
+  #     comment: "My PC"
+  #     groups:
+  #       - "default"
+  #   - id: "aa:bb:cc:dd:ee:ff"
+  #     comment: "My Phone"
+  #     groups:
+  #       - "default"
+
   # Web logic (Kubernetes specific helper)
   web:
     # @schema type:string,null

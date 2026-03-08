@@ -26,8 +26,9 @@ spec:
     metadata:
       labels:
         {{- include "pihole.selectorLabels" . | nindent 8 }}
-{{- with .Values.podAnnotations }}
       annotations:
+        checksum/lists: {{ include (print $.Template.BasePath "/configmap-lists.yaml") . | sha256sum }}
+{{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
 {{- end }}
     spec:
