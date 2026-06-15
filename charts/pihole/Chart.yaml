@@ -10,7 +10,7 @@ maintainers:
     url: https://github.com/nunoferna
 version: 1.4.0
 # renovate: image=pihole/pihole
-appVersion: "2026.05.0"
+appVersion: "2026.06.0"
 kubeVersion: ">=1.23.0"
 home: https://nunoferna.github.io/pihole-helm/
 keywords:
