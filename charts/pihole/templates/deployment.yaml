@@ -39,6 +39,10 @@ spec:
 {{- else }}
       dnsPolicy: ClusterFirst
 {{- end }}
+{{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -61,16 +65,33 @@ spec:
           args:
             {{- toYaml . | nindent 12 }}
 {{- end }}
+{{- $securityContext := .Values.securityContext | default dict }}
+{{- $capabilities := $securityContext.capabilities | default dict }}
+{{- $capAdd := $capabilities.add | default (list) }}
+{{- $capDrop := $capabilities.drop | default (list) }}
+{{- $hasDynamicCaps := or .Values.pihole.ftl.dhcp.service.enabled .Values.networking.hostNetwork }}
+{{- $hasCaps := or $hasDynamicCaps (gt (len $capAdd) 0) (gt (len $capDrop) 0) }}
+{{- if or (omit $securityContext "capabilities") $hasCaps }}
           securityContext:
+  {{- with (omit $securityContext "capabilities") }}
+            {{- toYaml . | nindent 12 }}
+  {{- end }}
+  {{- if $hasCaps }}
             capabilities:
+    {{- with $capDrop }}
+              drop:
+                {{- toYaml . | nindent 16 }}
+    {{- end }}
+    {{- if or $hasDynamicCaps (gt (len $capAdd) 0) }}
               add:
-{{- if or .Values.pihole.ftl.dhcp.service.enabled .Values.networking.hostNetwork }}
+      {{- if or .Values.pihole.ftl.dhcp.service.enabled .Values.networking.hostNetwork }}
                 - NET_ADMIN # Required for DHCP & modifying routing tables
                 - NET_RAW   # Required for DHCPv6 & collision checks
-{{- end }}
-{{- with .Values.securityContext.capabilities.add }}
-  {{- range . }}
+      {{- end }}
+      {{- range $capAdd }}
                 - {{ . }}
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}
           lifecycle:
