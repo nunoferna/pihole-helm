@@ -39,6 +39,10 @@ spec:
         {{- toYaml . | nindent 8 }}
   {{- end }}
       serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
+  {{- with .Values.metrics.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
       containers:
         - name: metrics
           image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
@@ -49,6 +53,10 @@ spec:
   {{- end }}
   {{- with .Values.metrics.args }}
           args:
+            {{- toYaml . | nindent 12 }}
+  {{- end }}
+  {{- with .Values.metrics.securityContext }}
+          securityContext:
             {{- toYaml . | nindent 12 }}
   {{- end }}
           env:

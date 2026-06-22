@@ -1035,6 +1035,25 @@ metrics:
   command: []
   # Override metrics container args (optional)
   args: []
+  # @schema type:object,null
+  # -- (object) Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible.
+  # @section -- Metrics
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  # @schema type:object,null
+  # -- (object) Container security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls.
+  # @section -- Metrics
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
   resources:
     limits:
       memory: 64Mi
@@ -1064,9 +1083,16 @@ metrics:
     labelValue: "1"
     annotations: {}
 
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
 securityContext:
+  allowPrivilegeEscalation: false
   capabilities:
+    drop: []
     add: []
+  readOnlyRootFilesystem: false
 
 networkPolicy:
   enabled: false

@@ -114,6 +114,26 @@
                         }
                     }
                 },
+                "podSecurityContext": {
+                    "description": "Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible.",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "properties": {
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "port": {
                     "description": "Port on which the metrics exporter will listen.",
                     "type": [
@@ -142,6 +162,43 @@
                                     "type": "string"
                                 },
                                 "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "securityContext": {
+                    "description": "Container security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls.",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
                                     "type": "string"
                                 }
                             }
@@ -1714,6 +1771,19 @@
                 }
             }
         },
+        "podSecurityContext": {
+            "type": "object",
+            "properties": {
+                "seccompProfile": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "replicas": {
             "type": "integer"
         },
@@ -1747,13 +1817,22 @@
         "securityContext": {
             "type": "object",
             "properties": {
+                "allowPrivilegeEscalation": {
+                    "type": "boolean"
+                },
                 "capabilities": {
                     "type": "object",
                     "properties": {
                         "add": {
                             "type": "array"
+                        },
+                        "drop": {
+                            "type": "array"
                         }
                     }
+                },
+                "readOnlyRootFilesystem": {
+                    "type": "boolean"
                 }
             }
         },

@@ -48,7 +48,9 @@ helm install pihole nunoferna/pihole \
 | metrics.enabled | boolean | `false` | Whether to enable the Pi-hole metrics exporter. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.). |
 | metrics.env | array | `[{"name":"INTERVAL","value":"10s"}]` | Additional environment variables for the metrics exporter. PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment). Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables. |
 | metrics.image.repository | string | `"ekofr/pihole-exporter"` | Container image for the Pi-hole metrics exporter. |
+| metrics.podSecurityContext | object | `{"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible. |
 | metrics.port | integer | `9617` | Port on which the metrics exporter will listen. |
+| metrics.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` | Container security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls. |
 | metrics.serviceMonitor.enabled | boolean | `false` | Whether to create a ServiceMonitor resource for Prometheus Operator integration. |
 
 ### K8S Services
@@ -342,12 +344,16 @@ helm install pihole nunoferna/pihole \
 | podAnnotations | object | `{}` |  |
 | podDisruptionBudget.enabled | bool | `false` |  |
 | podDisruptionBudget.minAvailable | int | `1` |  |
+| podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | replicas | int | `1` |  |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"128Mi"` |  |
+| securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | securityContext.capabilities.add | list | `[]` |  |
+| securityContext.capabilities.drop | list | `[]` |  |
+| securityContext.readOnlyRootFilesystem | bool | `false` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `"pihole"` |  |
