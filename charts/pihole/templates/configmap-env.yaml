@@ -1,0 +1,538 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pihole.fullname" . }}-env
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+data:
+{{- if .Values.timezone }}
+  TZ: {{ .Values.timezone | quote }}
+{{- end }}
+
+{{- with .Values.pihole.ftl }}
+  # ------------------------------------------------------
+  # [dns]
+  # ------------------------------------------------------
+  {{- with .dns }}
+    {{- if .upstreams }}
+  FTLCONF_dns_upstreams: {{ .upstreams | join ";" | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .CNAMEdeepInspect) }}
+  FTLCONF_dns_CNAMEdeepInspect: {{ .CNAMEdeepInspect | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .blockESNI) }}
+  FTLCONF_dns_blockESNI: {{ .blockESNI | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .EDNS0ECS) }}
+  FTLCONF_dns_EDNS0ECS: {{ .EDNS0ECS | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .ignoreLocalhost) }}
+  FTLCONF_dns_ignoreLocalhost: {{ .ignoreLocalhost | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .showDNSSEC) }}
+  FTLCONF_dns_showDNSSEC: {{ .showDNSSEC | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .analyzeOnlyAandAAAA) }}
+  FTLCONF_dns_analyzeOnlyAandAAAA: {{ .analyzeOnlyAandAAAA | quote }}
+    {{- end }}
+    {{- if .piholePTR }}
+  FTLCONF_dns_piholePTR: {{ .piholePTR | quote }}
+    {{- end }}
+    {{- if .replyWhenBusy }}
+  FTLCONF_dns_replyWhenBusy: {{ .replyWhenBusy | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .blockTTL) }}
+  FTLCONF_dns_blockTTL: {{ .blockTTL | quote }}
+    {{- end }}
+    {{- if .hosts }}
+  FTLCONF_dns_hosts: {{ .hosts | join "\n" | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .domainNeeded) }}
+  FTLCONF_dns_domainNeeded: {{ .domainNeeded | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .expandHosts) }}
+  FTLCONF_dns_expandHosts: {{ .expandHosts | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .bogusPriv) }}
+  FTLCONF_dns_bogusPriv: {{ .bogusPriv | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .dnssec) }}
+  FTLCONF_dns_dnssec: {{ .dnssec | quote }}
+    {{- end }}
+    {{- if .interface }}
+  FTLCONF_dns_interface: {{ .interface | quote }}
+    {{- end }}
+    {{- if .hostRecord }}
+  FTLCONF_dns_hostRecord: {{ .hostRecord | quote }}
+    {{- end }}
+    {{- if .listeningMode }}
+  FTLCONF_dns_listeningMode: {{ .listeningMode | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .queryLogging) }}
+  FTLCONF_dns_queryLogging: {{ .queryLogging | quote }}
+    {{- end }}
+    {{- if .cnameRecords }}
+  FTLCONF_dns_cnameRecords: {{ .cnameRecords | join "\n" | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .port) }}
+  FTLCONF_dns_port: {{ .port | quote }}
+    {{- end }}
+    {{- if .localise }}
+  FTLCONF_dns_localise: {{ .localise | quote }}
+    {{- end }}
+    {{- if .revServers }}
+  FTLCONF_dns_revServers: {{ .revServers | join "\n" | quote }}
+    {{- end }}
+
+  # [dns.domain]
+    {{- with .domain }}
+      {{- if .name }}
+  FTLCONF_dns_domain_name: {{ .name | quote }}
+      {{- end }}
+      {{- if .local }}
+  FTLCONF_dns_domain_local: {{ .local | quote }}
+      {{- end }}
+    {{- end }}
+
+  # [dns.cache]
+    {{- with .cache }}
+      {{- if not (kindIs "invalid" .size) }}
+  FTLCONF_dns_cache_size: {{ .size | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .optimizer) }}
+  FTLCONF_dns_cache_optimizer: {{ .optimizer | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .upstreamBlockedTTL) }}
+  FTLCONF_dns_cache_upstreamBlockedTTL: {{ .upstreamBlockedTTL | quote }}
+      {{- end }}
+    {{- end }}
+
+  # [dns.blocking]
+    {{- with .blocking }}
+      {{- if not (kindIs "invalid" .active) }}
+  FTLCONF_dns_blocking_active: {{ .active | quote }}
+      {{- end }}
+      {{- if .mode }}
+  FTLCONF_dns_blocking_mode: {{ .mode | quote }}
+      {{- end }}
+      {{- if .edns }}
+  FTLCONF_dns_blocking_edns: {{ .edns | quote }}
+      {{- end }}
+    {{- end }}
+
+  # [dns.specialDomains]
+    {{- with .specialDomains }}
+      {{- if not (kindIs "invalid" .mozillaCanary) }}
+  FTLCONF_dns_specialDomains_mozillaCanary: {{ .mozillaCanary | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .iCloudPrivateRelay) }}
+  FTLCONF_dns_specialDomains_iCloudPrivateRelay: {{ .iCloudPrivateRelay | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .designatedResolver) }}
+  FTLCONF_dns_specialDomains_designatedResolver: {{ .designatedResolver | quote }}
+      {{- end }}
+    {{- end }}
+
+  # [dns.reply]
+    {{- with .reply }}
+      {{- with .host }}
+        {{- if not (kindIs "invalid" .force4) }}
+  FTLCONF_dns_reply_host_force4: {{ .force4 | quote }}
+        {{- end }}
+        {{- if .IPv4 }}
+  FTLCONF_dns_reply_host_IPv4: {{ .IPv4 | quote }}
+        {{- end }}
+        {{- if not (kindIs "invalid" .force6) }}
+  FTLCONF_dns_reply_host_force6: {{ .force6 | quote }}
+        {{- end }}
+        {{- if .IPv6 }}
+  FTLCONF_dns_reply_host_IPv6: {{ .IPv6 | quote }}
+        {{- end }}
+      {{- end }}
+      {{- with .blocking }}
+        {{- if not (kindIs "invalid" .force4) }}
+  FTLCONF_dns_reply_blocking_force4: {{ .force4 | quote }}
+        {{- end }}
+        {{- if .IPv4 }}
+  FTLCONF_dns_reply_blocking_IPv4: {{ .IPv4 | quote }}
+        {{- end }}
+        {{- if not (kindIs "invalid" .force6) }}
+  FTLCONF_dns_reply_blocking_force6: {{ .force6 | quote }}
+        {{- end }}
+        {{- if .IPv6 }}
+  FTLCONF_dns_reply_blocking_IPv6: {{ .IPv6 | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+  # [dns.rateLimit]
+    {{- with .rateLimit }}
+      {{- if not (kindIs "invalid" .count) }}
+  FTLCONF_dns_rateLimit_count: {{ .count | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .interval) }}
+  FTLCONF_dns_rateLimit_interval: {{ .interval | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [dhcp]
+  # ------------------------------------------------------
+  {{- with .dhcp }}
+    {{- if not (kindIs "invalid" .active) }}
+  FTLCONF_dhcp_active: {{ .active | quote }}
+    {{- end }}
+    {{- if .start }}
+  FTLCONF_dhcp_start: {{ .start | quote }}
+    {{- end }}
+    {{- if .end }}
+  FTLCONF_dhcp_end: {{ .end | quote }}
+    {{- end }}
+    {{- if .router }}
+  FTLCONF_dhcp_router: {{ .router | quote }}
+    {{- end }}
+    {{- if .netmask }}
+  FTLCONF_dhcp_netmask: {{ .netmask | quote }}
+    {{- end }}
+    {{- if .leaseTime }}
+  FTLCONF_dhcp_leaseTime: {{ .leaseTime | quote }}
+    {{- end }}
+    {{- if and .ipv6 (not (kindIs "invalid" .ipv6.active)) }}
+  FTLCONF_dhcp_ipv6: {{ .ipv6.active | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .rapidCommit) }}
+  FTLCONF_dhcp_rapidCommit: {{ .rapidCommit | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .multiDNS) }}
+  FTLCONF_dhcp_multiDNS: {{ .multiDNS | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .logging) }}
+  FTLCONF_dhcp_logging: {{ .logging | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .ignoreUnknownClients) }}
+  FTLCONF_dhcp_ignoreUnknownClients: {{ .ignoreUnknownClients | quote }}
+    {{- end }}
+    {{- if .hosts }}
+  FTLCONF_dhcp_hosts: {{ .hosts | join "\n" | quote }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [ntp]
+  # ------------------------------------------------------
+  {{- with .ntp }}
+    {{- with .ipv4 }}
+      {{- if not (kindIs "invalid" .active) }}
+  FTLCONF_ntp_ipv4_active: {{ .active | quote }}
+      {{- end }}
+      {{- if .address }}
+  FTLCONF_ntp_ipv4_address: {{ .address | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .ipv6 }}
+      {{- if not (kindIs "invalid" .active) }}
+  FTLCONF_ntp_ipv6_active: {{ .active | quote }}
+      {{- end }}
+      {{- if .address }}
+  FTLCONF_ntp_ipv6_address: {{ .address | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .sync }}
+      {{- if not (kindIs "invalid" .active) }}
+  FTLCONF_ntp_sync_active: {{ .active | quote }}
+      {{- end }}
+      {{- if .server }}
+  FTLCONF_ntp_sync_server: {{ .server | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .interval) }}
+  FTLCONF_ntp_sync_interval: {{ .interval | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .count) }}
+  FTLCONF_ntp_sync_count: {{ .count | quote }}
+      {{- end }}
+      {{- with .rtc }}
+        {{- if not (kindIs "invalid" .set) }}
+  FTLCONF_ntp_sync_rtc_set: {{ .set | quote }}
+        {{- end }}
+        {{- if .device }}
+  FTLCONF_ntp_sync_rtc_device: {{ .device | quote }}
+        {{- end }}
+        {{- if not (kindIs "invalid" .utc) }}
+  FTLCONF_ntp_sync_rtc_utc: {{ .utc | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [resolver]
+  # ------------------------------------------------------
+  {{- with .resolver }}
+    {{- if not (kindIs "invalid" .resolveIPv4) }}
+  FTLCONF_resolver_resolveIPv4: {{ .resolveIPv4 | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .resolveIPv6) }}
+  FTLCONF_resolver_resolveIPv6: {{ .resolveIPv6 | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .networkNames) }}
+  FTLCONF_resolver_networkNames: {{ .networkNames | quote }}
+    {{- end }}
+    {{- if .refreshNames }}
+  FTLCONF_resolver_refreshNames: {{ .refreshNames | quote }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [database]
+  # ------------------------------------------------------
+  {{- with .database }}
+    {{- if not (kindIs "invalid" .DBimport) }}
+  FTLCONF_database_DBimport: {{ .DBimport | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .maxDBdays) }}
+  FTLCONF_database_maxDBdays: {{ .maxDBdays | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .DBinterval) }}
+  FTLCONF_database_DBinterval: {{ .DBinterval | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .useWAL) }}
+  FTLCONF_database_useWAL: {{ .useWAL | quote }}
+    {{- end }}
+    {{- with .network }}
+      {{- if not (kindIs "invalid" .parseARPcache) }}
+  FTLCONF_database_network_parseARPcache: {{ .parseARPcache | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .expire) }}
+  FTLCONF_database_network_expire: {{ .expire | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [webserver]
+  # ------------------------------------------------------
+  {{- with .webserver }}
+    {{- if .domain }}
+  FTLCONF_webserver_domain: {{ .domain | quote }}
+    {{- end }}
+    {{- if .acl }}
+  FTLCONF_webserver_acl: {{ .acl | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .port) }}
+  FTLCONF_webserver_port: {{ .port | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .threads) }}
+  FTLCONF_webserver_threads: {{ .threads | quote }}
+    {{- end }}
+    {{- if .headers }}
+  FTLCONF_webserver_headers: {{ .headers | join "\n" | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .serve_all) }}
+  FTLCONF_webserver_serve_all: {{ .serve_all | quote }}
+    {{- end }}
+    {{- if .advancedOpts }}
+  FTLCONF_webserver_advancedOpts: {{ .advancedOpts | join "\n" | quote }}
+    {{- end }}
+
+    {{- with .session }}
+      {{- if not (kindIs "invalid" .timeout) }}
+  FTLCONF_webserver_session_timeout: {{ .timeout | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .restore) }}
+  FTLCONF_webserver_session_restore: {{ .restore | quote }}
+      {{- end }}
+    {{- end }}
+
+    {{- with .tls }}
+      {{- if .cert }}
+  FTLCONF_webserver_tls_cert: {{ .cert | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .validity) }}
+  FTLCONF_webserver_tls_validity: {{ .validity | quote }}
+      {{- end }}
+    {{- end }}
+
+    {{- with .paths }}
+      {{- if .webroot }}
+  FTLCONF_webserver_paths_webroot: {{ .webroot | quote }}
+      {{- end }}
+      {{- if .webhome }}
+  FTLCONF_webserver_paths_webhome: {{ .webhome | quote }}
+      {{- end }}
+      {{- if .prefix }}
+  FTLCONF_webserver_paths_prefix: {{ .prefix | quote }}
+      {{- end }}
+    {{- end }}
+
+    {{- with .interface }}
+      {{- if not (kindIs "invalid" .boxed) }}
+  FTLCONF_webserver_interface_boxed: {{ .boxed | quote }}
+      {{- end }}
+      {{- if .theme }}
+  FTLCONF_webserver_interface_theme: {{ .theme | quote }}
+      {{- end }}
+    {{- end }}
+
+  # API
+    {{- with .api }}
+      {{- if not (kindIs "invalid" .max_sessions) }}
+  FTLCONF_webserver_api_max_sessions: {{ .max_sessions | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .prettyJSON) }}
+  FTLCONF_webserver_api_prettyJSON: {{ .prettyJSON | quote }}
+      {{- end }}
+      {{- if .pwhash }}
+  FTLCONF_webserver_api_pwhash: {{ .pwhash | quote }}
+      {{- end }}
+      {{- if .totp_secret }}
+  FTLCONF_webserver_api_totp_secret: {{ .totp_secret | quote }}
+      {{- end }}
+      {{- if .app_pwhash }}
+  FTLCONF_webserver_api_app_pwhash: {{ .app_pwhash | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .app_sudo) }}
+  FTLCONF_webserver_api_app_sudo: {{ .app_sudo | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .cli_pw) }}
+  FTLCONF_webserver_api_cli_pw: {{ .cli_pw | quote }}
+      {{- end }}
+      {{- if .excludeClients }}
+  FTLCONF_webserver_api_excludeClients: {{ .excludeClients | join "\n" | quote }}
+      {{- end }}
+      {{- if .excludeDomains }}
+  FTLCONF_webserver_api_excludeDomains: {{ .excludeDomains | join "\n" | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .maxHistory) }}
+  FTLCONF_webserver_api_maxHistory: {{ .maxHistory | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .maxClients) }}
+  FTLCONF_webserver_api_maxClients: {{ .maxClients | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .client_history_global_max) }}
+  FTLCONF_webserver_api_client_history_global_max: {{ .client_history_global_max | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .allow_destructive) }}
+  FTLCONF_webserver_api_allow_destructive: {{ .allow_destructive | quote }}
+      {{- end }}
+      {{- with .temp }}
+        {{- if not (kindIs "invalid" .limit) }}
+  FTLCONF_webserver_api_temp_limit: {{ .limit | quote }}
+        {{- end }}
+        {{- if .unit }}
+  FTLCONF_webserver_api_temp_unit: {{ .unit | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [files]
+  # ------------------------------------------------------
+  {{- with .files }}
+    {{- if .pid }}
+  FTLCONF_files_pid: {{ .pid | quote }}
+    {{- end }}
+    {{- if .database }}
+  FTLCONF_files_database: {{ .database | quote }}
+    {{- end }}
+    {{- if .gravity }}
+  FTLCONF_files_gravity: {{ .gravity | quote }}
+    {{- end }}
+    {{- if .gravity_tmp }}
+  FTLCONF_files_gravity_tmp: {{ .gravity_tmp | quote }}
+    {{- end }}
+    {{- if .macvendor }}
+  FTLCONF_files_macvendor: {{ .macvendor | quote }}
+    {{- end }}
+    {{- if .pcap }}
+  FTLCONF_files_pcap: {{ .pcap | quote }}
+    {{- end }}
+    {{- with .log }}
+      {{- if .ftl }}
+  FTLCONF_files_log_ftl: {{ .ftl | quote }}
+      {{- end }}
+      {{- if .dnsmasq }}
+  FTLCONF_files_log_dnsmasq: {{ .dnsmasq | quote }}
+      {{- end }}
+      {{- if .webserver }}
+  FTLCONF_files_log_webserver: {{ .webserver | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # ------------------------------------------------------
+  # [misc]
+  # ------------------------------------------------------
+  {{- with .misc }}
+    {{- if not (kindIs "invalid" .privacylevel) }}
+  FTLCONF_misc_privacylevel: {{ .privacylevel | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .delay_startup) }}
+  FTLCONF_misc_delay_startup: {{ .delay_startup | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .nice) }}
+  FTLCONF_misc_nice: {{ .nice | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .addr2line) }}
+  FTLCONF_misc_addr2line: {{ .addr2line | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .etc_dnsmasq_d) }}
+  FTLCONF_misc_etc_dnsmasq_d: {{ .etc_dnsmasq_d | quote }}
+    {{- end }}
+    {{- if .dnsmasq_lines }}
+  FTLCONF_misc_dnsmasq_lines: {{ .dnsmasq_lines | join "\n" | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .extraLogging) }}
+  FTLCONF_misc_extraLogging: {{ .extraLogging | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .readOnly) }}
+  FTLCONF_misc_readOnly: {{ .readOnly | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .normalizeCPU) }}
+  FTLCONF_misc_normalizeCPU: {{ .normalizeCPU | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .hide_dnsmasq_warn) }}
+  FTLCONF_misc_hide_dnsmasq_warn: {{ .hide_dnsmasq_warn | quote }}
+    {{- end }}
+    {{- with .check }}
+      {{- if not (kindIs "invalid" .load) }}
+  FTLCONF_misc_check_load: {{ .load | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .shmem) }}
+  FTLCONF_misc_check_shmem: {{ .shmem | quote }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .disk) }}
+  FTLCONF_misc_check_disk: {{ .disk | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+  # User/Permission Logic
+{{- if not (kindIs "invalid" .Values.pihole.uid) }}
+  PIHOLE_UID: {{ .Values.pihole.uid | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .Values.pihole.gid) }}
+  PIHOLE_GID: {{ .Values.pihole.gid | quote }}
+{{- end }}
+
+  # ------------------------------------------------------
+  # Other Pi-hole Variables
+  # ------------------------------------------------------
+{{- if not (kindIs "invalid" .Values.pihole.tailFtlLog) }}
+  TAIL_FTL_LOG: {{ .Values.pihole.tailFtlLog | quote }}
+{{- end }}
+{{- if .Values.pihole.ftlCmd }}
+  FTL_CMD: {{ .Values.pihole.ftlCmd | quote }}
+{{- end }}
+{{- if .Values.pihole.dnsmasqUser }}
+  DNSMASQ_USER: {{ .Values.pihole.dnsmasqUser | quote }}
+{{- end }}
+{{- if .Values.pihole.additionalPackages }}
+  ADDITIONAL_PACKAGES: {{ .Values.pihole.additionalPackages | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .Values.pihole.verbose) }}
+  PH_VERBOSE: {{ .Values.pihole.verbose | quote }}
+{{- end }}
