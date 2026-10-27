@@ -996,7 +996,7 @@ metrics:
     # -- (string) Container image for the Pi-hole metrics exporter.
     # @section -- Metrics
     repository: ekofr/pihole-exporter
-    tag: v1.2.0
+    tag: v1.3.0
     pullPolicy: IfNotPresent
   # @schema type:integer,null
   # -- (integer) Port on which the metrics exporter will listen.
