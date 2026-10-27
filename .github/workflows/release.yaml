@@ -9,6 +9,10 @@ on:
     types: [completed]
     branches: [main]
 
+concurrency:
+  group: release-charts
+  cancel-in-progress: false
+
 jobs:
   release:
     if: >
@@ -24,6 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: Configure Git
@@ -36,10 +41,26 @@ jobs:
         with:
           version: v4.3.1
 
+      - name: Check chart version
+        id: chart-version
+        run: |
+          chart=$(helm show chart charts/pihole)
+          name=$(awk '/^name:/ {print $2}' <<< "$chart")
+          version=$(awk '/^version:/ {print $2}' <<< "$chart")
+          tag="${name}-${version}"
+
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            echo "Chart $tag is already released; skipping publication."
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # The GitHub repository secret `PGP_PRIVATE_KEY` contains the private key
       # in ASCII-armored format. To export a (new) key, run this command:
       # `gpg --armor --export-secret-key <my key>`
       - name: Prepare PGP key
+        if: steps.chart-version.outputs.released != 'true'
         run: |
           IFS=""
           echo "$PGP_PRIVATE_KEY" | gpg --dearmor > $HOME/secring.gpg
@@ -53,6 +74,7 @@ jobs:
           PGP_PASSPHRASE: "${{ secrets.PGP_PASSPHRASE }}"
 
       - name: Run chart-releaser
+        if: steps.chart-version.outputs.released != 'true'
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
           config: "./.github/configs/cr.yaml"
@@ -60,6 +82,7 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Login to GHCR
+        if: steps.chart-version.outputs.released != 'true'
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         with:
           registry: ghcr.io
@@ -67,6 +90,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push charts to GHCR
+        if: steps.chart-version.outputs.released != 'true'
         run: |
           shopt -s nullglob
           for pkg in .cr-release-packages/*.tgz; do

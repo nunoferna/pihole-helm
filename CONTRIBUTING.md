@@ -136,7 +136,9 @@ PRs automatically trigger:
 | `Lint and Test Charts` | `ct lint` + `ct install` in a `kind` cluster |
 | `Trivy IaC Scanner` | Scans templates for security misconfigurations |
 
-The `Release Charts` workflow runs only on `main` after lint/test passes. It packages, GPG-signs, and publishes to GitHub Pages and GHCR.
+The `Release Charts` workflow runs only on `main` after lint/test passes. It checks out the tested commit, then packages, GPG-signs, and publishes to GitHub Pages and GHCR. If the chart version already has a release tag, publication is skipped in both registries.
+
+Renovate automatically bumps the chart patch version when updating image tags in `Chart.yaml` or `values.yaml`. Other chart changes still require a version bump as described above.
 
 ## Adding Values
 

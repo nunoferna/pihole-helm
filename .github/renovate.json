@@ -25,7 +25,14 @@
         "charts/pihole/Chart.yaml",
         "charts/pihole/values.yaml"
       ],
-      "bumpVersion": "patch"
+      "bumpVersions": [
+        {
+          "name": "Bump Pi-hole chart version",
+          "filePatterns": ["charts/pihole/Chart.yaml"],
+          "matchStrings": ["(?:^|\\n)version:[ \\t]*(?<version>\\d+\\.\\d+\\.\\d+)(?:\\r?\\n|$)"],
+          "bumpType": "patch"
+        }
+      ]
     },
     {
       "description": "Group all CI/CD and tooling updates into a single PR",
