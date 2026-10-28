@@ -1,6 +1,6 @@
 # pihole
 
-![Version: 1.6.0](https://img.shields.io/badge/Version-1.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.07.2](https://img.shields.io/badge/AppVersion-2026.07.2-informational?style=flat-square)
+![Version: 1.7.0](https://img.shields.io/badge/Version-1.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.10.0](https://img.shields.io/badge/AppVersion-2026.10.0-informational?style=flat-square)
 
 Pi-hole v6 Helm Chart with full FTL configuration support.
 
@@ -264,7 +264,7 @@ helm install pihole nunoferna/pihole \
 | metrics.dashboards.label | string | `"grafana_dashboard"` |  |
 | metrics.dashboards.labelValue | string | `"1"` |  |
 | metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
-| metrics.image.tag | string | `"v1.2.0"` |  |
+| metrics.image.tag | string | `"v1.3.0"` |  |
 | metrics.resources.limits.cpu | string | `"50m"` |  |
 | metrics.resources.limits.memory | string | `"64Mi"` |  |
 | metrics.resources.requests.cpu | string | `"10m"` |  |
