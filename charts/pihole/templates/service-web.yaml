@@ -1,4 +1,4 @@
-{{- if .Values.pihole.web.service.enabled }}
+{{- if .Values.services.web.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,33 +8,43 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.pihole.web.service.annotations | nindent 4 }}
-spec:
-  type: {{ .Values.pihole.web.service.type }}
-  {{- if or (eq .Values.pihole.web.service.type "LoadBalancer") (eq .Values.pihole.web.service.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.web.service.externalTrafficPolicy }}
+    ignore-check.kube-linter.io/dangling-service: "The StatefulSet controller assigns the pod-name label; this administration Service intentionally selects ordinal 0."
+  {{- with .Values.services.web.annotations }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.pihole.web.service.loadBalancerIP }}
+spec:
+  type: {{ .Values.services.web.type }}
+  {{- include "pihole.loadBalancerFields" .Values.services.web | nindent 2 }}
+  {{- if or (eq .Values.services.web.type "LoadBalancer") (eq .Values.services.web.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.web.externalTrafficPolicy }}
+  {{- end }}
+  {{- with .Values.services.web.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.web.service.externalIPs }}
+  {{- with .Values.services.web.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.web.service.ports.http }}
+    - port: {{ .Values.services.web.ports.http }}
       targetPort: http
       protocol: TCP
       name: http
-  {{- if and (eq .Values.pihole.web.service.type "NodePort") .Values.pihole.web.service.nodePorts.http }}
-      nodePort: {{ .Values.pihole.web.service.nodePorts.http }}
+  {{- with (get (.Values.services.web.nodePorts | default dict) "http") }}
+    {{- if eq $.Values.services.web.type "NodePort" }}
+      nodePort: {{ . }}
+    {{- end }}
   {{- end }}
-    - port: {{ .Values.pihole.web.service.ports.https }}
+  {{- if gt (int .Values.listeners.https) 0 }}
+    - port: {{ .Values.services.web.ports.https }}
       targetPort: https
       protocol: TCP
       name: https
-  {{- if and (eq .Values.pihole.web.service.type "NodePort") .Values.pihole.web.service.nodePorts.https }}
-      nodePort: {{ .Values.pihole.web.service.nodePorts.https }}
+    {{- with (get (.Values.services.web.nodePorts | default dict) "https") }}
+      {{- if eq $.Values.services.web.type "NodePort" }}
+      nodePort: {{ . }}
+      {{- end }}
+    {{- end }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

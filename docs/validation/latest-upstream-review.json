@@ -1,0 +1,189 @@
+{
+  "images": {
+    "pihole/pihole": {
+      "tag": "2026.11.0",
+      "digest": "sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+      "platformDigests": {
+        "linux/386": "sha256:cd9f8021f02a492ee2b77f705197adebb131555351a84c619ba82b8a3cad6120",
+        "linux/arm/v6": "sha256:f68ce903dd1e4c281c8a45446276e34616b7ef0942c67ecfd9e237a57a8db98a",
+        "linux/amd64": "sha256:52762e1620160b1e8cb3e12c585d0d0b0df901395c2bad6b514db379e526a9fb",
+        "linux/arm/v7": "sha256:94f6830278620129df2b0caa8fc10dc05c52e5df127054d702d4460cf9f4d3c0",
+        "linux/riscv64": "sha256:8e600be6e426bc0b6efa0f191f39602cc719e4e340748360e49d72ce085015b3",
+        "linux/arm64": "sha256:13089e5c4d33c5cd8eb7b011949a380145f3ff1405dea24c81dd54dcb255b792"
+      },
+      "labels": {
+        "org.opencontainers.image.created": "2026-11-11T19:39:38.766Z",
+        "org.opencontainers.image.description": "The official Pi-hole Docker image from pi-hole.net",
+        "org.opencontainers.image.licenses": "NOASSERTION",
+        "org.opencontainers.image.revision": "7a8d396946c3925ed63c8eae8722c7a3371700e4",
+        "org.opencontainers.image.source": "https://github.com/pi-hole/docker-pi-hole",
+        "org.opencontainers.image.title": "docker-pi-hole",
+        "org.opencontainers.image.url": "https://github.com/pi-hole/docker-pi-hole",
+        "org.opencontainers.image.version": "2026.11.0"
+      },
+      "versionEnvironment": []
+    },
+    "ekofr/pihole-exporter": {
+      "tag": "v1.3.1",
+      "digest": "sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+      "platformDigests": {
+        "linux/386": "sha256:fb26419a7c181782ee89a04fe796d3482768305fece4d81a432a646c717e8a0c",
+        "linux/amd64": "sha256:765847058068fc32bf9bc18f206b330f404e5de9cf4040baed9659ac2c486e56",
+        "linux/arm/v6": "sha256:a2aa2f60aed6f1eca5639a185917273b464f9b7d40b3395b5fad6e8c612f6949",
+        "linux/arm/v7": "sha256:53744240f3de29dfe346cf01790cd0e61db97b0df97480951ca40460f64be5dd",
+        "linux/arm64": "sha256:a35d69e5af64aed3506404e33cdd31973b04aba8abf0ca1e2a3512980ffe9746"
+      },
+      "labels": {
+        "name": "pihole-exporter"
+      },
+      "versionEnvironment": []
+    }
+  },
+  "source_comparisons": {
+    "pi-hole/docker-pi-hole/src/start.sh": {
+      "old_tag": "2026.10.0",
+      "new_tag": "2026.11.0",
+      "old_sha256": "8341b2dfbfe33848050feee43cd257a09edc3eaca66856bbf1e8e96ea246d113",
+      "new_sha256": "8341b2dfbfe33848050feee43cd257a09edc3eaca66856bbf1e8e96ea246d113",
+      "diff_lines": 0
+    },
+    "pi-hole/docker-pi-hole/src/bash_functions.sh": {
+      "old_tag": "2026.10.0",
+      "new_tag": "2026.11.0",
+      "old_sha256": "205bc67d370d1e7eab0a054c5f2dafd1142a392c646456ce10989c09477dbd49",
+      "new_sha256": "11c484d1f42194d1cc46c201068bbdbbe69c67818207d7d6b20114d837514621",
+      "diff_lines": 11
+    },
+    "pi-hole/docker-pi-hole/src/crontab.txt": {
+      "old_tag": "2026.10.0",
+      "new_tag": "2026.11.0",
+      "old_sha256": "47ac7fd37a0754d5a535b2cd5f4da40ab090dffc04ca76af76200e8377028150",
+      "new_sha256": "0efa24b656581f00f4088b2f074d91d6b35db5ecbd5a7606073f2a597737b208",
+      "diff_lines": 7
+    },
+    "pi-hole/FTL/src/config/config.c": {
+      "old_tag": "v6.8",
+      "new_tag": "v6.9",
+      "old_sha256": "985c0e9dd7a4dad65467ebdf56cd0dd2ad0356310ce70632fb068d38571d1463",
+      "new_sha256": "8592e8b577ade944f620aae51f1d39474c70ba3dd07468cccafcce4f3eabcffd",
+      "diff_lines": 392,
+      "old_config_key_count": 166,
+      "new_config_key_count": 166,
+      "added_keys": [],
+      "removed_keys": []
+    },
+    "pi-hole/FTL/src/api/docs/content/specs/groups.yaml": {
+      "old_tag": "v6.8",
+      "new_tag": "v6.9",
+      "old_sha256": "dbf3d5ba1cb72afce4832f4dd05cec0f87fbccea80e36c332f34c78689fe62c1",
+      "new_sha256": "dbf3d5ba1cb72afce4832f4dd05cec0f87fbccea80e36c332f34c78689fe62c1",
+      "diff_lines": 0
+    },
+    "pi-hole/FTL/src/api/docs/content/specs/clients.yaml": {
+      "old_tag": "v6.8",
+      "new_tag": "v6.9",
+      "old_sha256": "2b2fa562d2ee29102882b10ef3c934e00811585d369ef46b2d6586193877f29c",
+      "new_sha256": "2b2fa562d2ee29102882b10ef3c934e00811585d369ef46b2d6586193877f29c",
+      "diff_lines": 0
+    },
+    "pi-hole/FTL/src/api/docs/content/specs/domains.yaml": {
+      "old_tag": "v6.8",
+      "new_tag": "v6.9",
+      "old_sha256": "47348880a881dbdaae21ed493e2129268227467e17a15aca258c02ffcc0236b7",
+      "new_sha256": "47348880a881dbdaae21ed493e2129268227467e17a15aca258c02ffcc0236b7",
+      "diff_lines": 0
+    },
+    "pi-hole/FTL/src/api/docs/content/specs/lists.yaml": {
+      "old_tag": "v6.8",
+      "new_tag": "v6.9",
+      "old_sha256": "a6536a643b8f93de173af3d1c5c7767b221fcefcb72e8200da3834805bea1d78",
+      "new_sha256": "a6536a643b8f93de173af3d1c5c7767b221fcefcb72e8200da3834805bea1d78",
+      "diff_lines": 0
+    }
+  },
+  "source_of_metadata": "Docker Hub manifests and official GitHub tagged sources/releases",
+  "release_urls": [
+    "https://github.com/pi-hole/docker-pi-hole/releases/tag/2026.11.0",
+    "https://github.com/eko/pihole-exporter/releases/tag/v1.3.1"
+  ],
+  "helm_version": "4.3.2",
+  "helm_archive_sha256": "6f3421de3a8cc2ac578c8cfb33b8edde290dde2871bc1bab12e24f2e5caeaa90",
+  "workflow_action_references": {
+    "bump-version.yaml": [
+      {
+        "name": "Generate token",
+        "uses": "actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510"
+      },
+      {
+        "name": "Checkout",
+        "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      },
+      {
+        "name": "Set up Helm",
+        "uses": "azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e"
+      },
+      {
+        "name": "Set up chart-testing",
+        "uses": "helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510"
+      }
+    ],
+    "trivy.yaml": [
+      {
+        "name": "Checkout code",
+        "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      },
+      {
+        "name": "Run Trivy vulnerability scanner in IaC mode",
+        "uses": "aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25"
+      },
+      {
+        "name": "Upload Trivy scan results to GitHub Security tab",
+        "uses": "github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066"
+      }
+    ],
+    "lint-test.yaml": [
+      {
+        "name": "Checkout",
+        "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      },
+      {
+        "name": "Set up Helm",
+        "uses": "azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e"
+      },
+      {
+        "name": "Set up chart-testing",
+        "uses": "helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510"
+      },
+      {
+        "name": "Create kind cluster",
+        "uses": "helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376"
+      }
+    ],
+    "release.yaml": [
+      {
+        "name": "Checkout",
+        "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      },
+      {
+        "name": "Install Helm",
+        "uses": "azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e"
+      },
+      {
+        "name": "Run chart-releaser",
+        "uses": "helm/chart-releaser-action@92c6b97fa9f664492a2592e0d1d80bc6bf378957"
+      },
+      {
+        "name": "Login to GHCR",
+        "uses": "docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550"
+      }
+    ]
+  },
+  "source_head": "adbe3ef59da895aacdf286cd0bf46251220a4ee3",
+  "kind_action_defaults": {
+    "version": "v0.33.0",
+    "version_file": null,
+    "node_image": null,
+    "kubectl_version": "v1.37.1",
+    "registry_image": "registry:2"
+  }
+}

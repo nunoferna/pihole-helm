@@ -1,0 +1,10 @@
+{
+  "completed_utc": "2026-10-28T21:58:05.981007+00:00",
+  "remaining_test_resources": {
+    "containers": [],
+    "volumes": [],
+    "networks": []
+  },
+  "all_test_resources_removed": true,
+  "scope": "Only pihole-audit resources were removed; unrelated containers/volumes and downloaded image cache were retained."
+}

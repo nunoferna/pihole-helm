@@ -1,0 +1,70 @@
+{
+  "started_utc": "2026-11-15T13:15:58.128928+00:00",
+  "context": "kind-pihole-stable-135-arm64",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "pinned_runtime_component_versions",
+      "passed": true,
+      "seconds": 0.27,
+      "details": {
+        "ftl_binary": "v6.9",
+        "component_versions": {
+          "CORE_VERSION": "6.6",
+          "WEB_VERSION": "6.6.1",
+          "FTL_VERSION": "6.9"
+        },
+        "installed_descriptions": {
+          "CORE_VERSION": "v6.6",
+          "WEB_VERSION": "v6.6.1",
+          "FTL_VERSION": "v6.9"
+        }
+      }
+    },
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.15,
+      "details": {
+        "revision": "8965c0300ddd675f4515fddcb91d2bc199bf005f29605a8a8a830c5f0ac20015",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "initial_helm_functional_test",
+      "passed": true,
+      "seconds": 4.54,
+      "details": {
+        "passed": true
+      }
+    }
+  ],
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
+  },
+  "helm_version": "v3.22.1+gd6c1a0e",
+  "tested_chart": "/tmp/pihole-2.0.0-certified/pihole-2.0.0.tgz",
+  "tested_archive_sha256": "a00aef6e8d1125ad188963fe5c3cdf3be7851c362e388ab682e8cb1ab7ca53bc",
+  "network_policy_enforcement": "Not asserted by this generic fixture; validate enforcement in a real-CNI deployment profile",
+  "nodes": [
+    {
+      "name": "pihole-stable-135-arm64-control-plane",
+      "architecture": "arm64",
+      "kubelet": "v1.35.8"
+    }
+  ],
+  "observed_component_versions": {
+    "CORE_VERSION": "6.6",
+    "WEB_VERSION": "6.6.1",
+    "FTL_VERSION": "6.9"
+  },
+  "installed_component_descriptions": {
+    "CORE_VERSION": "v6.6",
+    "WEB_VERSION": "v6.6.1",
+    "FTL_VERSION": "v6.9"
+  },
+  "namespace_removed": true,
+  "completed_utc": "2026-11-15T13:16:52.352488+00:00"
+}

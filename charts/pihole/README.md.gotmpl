@@ -13,6 +13,18 @@
 
 {{ template "chart.requirementsSection" . }}
 
+## v2 DNS production profile
+
+Pi-hole replicas use independent retained PVCs and stable StatefulSet identities. Read the [migration guide](MIGRATION.md) before adopting v2; v1 selectors and storage layouts require a parallel installation. Credentials must come from an existing Secret, an explicit password, or external injection. No credential is generated or printed automatically.
+
+Internal DNS/HTTP/HTTPS ports default to 5353/8080/8443, while Services expose 53/80/443. DNS defaults to a private ClusterIP; explicitly select a load-balancer/NodePort profile and client restrictions. Kubernetes Service values live under `services.*`, separately from native `pihole.ftl` values. Load-balancer classes/source ranges and role-scoped explicit egress rules are optional. The stock image retains root startup and a writable root filesystem with reduced capabilities; Kubernetes Restricted compatibility is not claimed.
+
+Policy reconciliation uses the local API, per-PVC ownership journals and immutable retained artifacts. It removes only owned records, protects unmanaged dependencies and gates readiness on the applied revision. For reproducible production filtering, use `policy.requirePinnedLists: true` and SHA-256 pinned HTTPS subscriptions. Bodies are verified and cached on each PVC; unchanged scheduled checks preserve serving readiness and reuse the cache. See [policy lifecycle](../../docs/policy-lifecycle.md) and [encrypted recovery](../../docs/recovery.md).
+
+`helm test` checks every replica and the Service over UDP/TCP, plus configured filtering, authentication and metrics samples. Scheduled DNS checks and Prometheus rules are optional. External VIP probes, actual load-balancer/CNI/storage failure behavior, client source-IP preservation and alert delivery remain deployment acceptance tests. HA DNS does not coordinate DHCP leases, histories, sessions or caches.
+
+CI gates the exact reproducible archive across the supported version/architecture matrix, blocking security checks and disposable HA/recovery fixtures. The release workflow is invoked manually after that complete run succeeds; it signs the tested bytes and resumes each distribution destination independently. See [validation evidence](../../docs/validation/README.md), [security exceptions](../../docs/security.md) and [release operations](../../docs/releasing.md).
+
 ## Examples
 
 The [`examples/`](https://github.com/nunoferna/pihole-helm/tree/main/examples) directory contains ready-to-use values files for common deployment scenarios:
@@ -20,7 +32,7 @@ The [`examples/`](https://github.com/nunoferna/pihole-helm/tree/main/examples) d
 | File | Description |
 |------|-------------|
 | [`values-external-secrets.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-external-secrets.yaml) | Integrate with [External Secrets Operator](https://external-secrets.io) to pull Pi-hole credentials from an external provider (Vault, AWS, GCP, Azure, etc.) |
-| [`values-monitoring.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-monitoring.yaml) | Enable the full monitoring stack: Pi-hole Exporter sidecar, Prometheus `ServiceMonitor`, and a Grafana dashboard `ConfigMap` |
+| [`values-monitoring.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-monitoring.yaml) | Enable the full monitoring stack: standalone Pi-hole Exporter, Prometheus `ServiceMonitor`, and a Grafana dashboard `ConfigMap` |
 | [`values-vault.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-vault.yaml) | Mount Pi-hole secrets from [HashiCorp Vault](https://www.vaultproject.io) using the Vault Agent Injector sidecar |
 
 To use an example, pass it alongside your own overrides:

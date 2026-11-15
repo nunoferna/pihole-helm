@@ -1,0 +1,56 @@
+# Portable v2 DNS HA starting profile. Requires three eligible nodes.
+# Review client CIDRs, upstreams, credentials, load-balancer behavior and capacity.
+replicas: 3
+
+# Supply approved HTTPS subscriptions with sha256 in your own values layer.
+# A fresh pinned installation starts without an implicit factory subscription.
+policy:
+  requirePinnedLists: true
+
+pihole:
+  web:
+    existingSecret: pihole-web-v1
+  ftl:
+    dns:
+      upstreams:
+        - 1.1.1.1
+        - 9.9.9.9
+      listeningMode: ALL
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# This example assumes the release is named "pihole". Change the instance label
+# to your release name so separate releases do not constrain each other.
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: pihole
+            app.kubernetes.io/component: dns
+
+metrics:
+  enabled: true
+
+networkPolicy:
+  enabled: true
+  dnsAllowFrom:
+    - ipBlock:
+        cidr: 192.168.0.0/16  # Replace with your real DNS client networks
+  webAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+  metricsAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+
+services:
+  dns:
+    type: LoadBalancer
+    loadBalancerSourceRanges:
+      - 192.168.0.0/16  # Replace with actual DNS client networks
+    externalTrafficPolicy: Local

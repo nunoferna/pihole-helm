@@ -1,8 +1,8 @@
 # pihole
 
-![Version: 1.7.0](https://img.shields.io/badge/Version-1.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.10.0](https://img.shields.io/badge/AppVersion-2026.10.0-informational?style=flat-square)
+![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.11.0](https://img.shields.io/badge/AppVersion-2026.11.0-informational?style=flat-square)
 
-Pi-hole v6 Helm Chart with full FTL configuration support.
+Pi-hole v6 DNS with independent replicas, verified policy snapshots and recovery tooling.
 
 **Homepage:** <https://nunoferna.github.io/pihole-helm/>
 
@@ -18,7 +18,19 @@ Pi-hole v6 Helm Chart with full FTL configuration support.
 
 ## Requirements
 
-Kubernetes: `>=1.23.0`
+Kubernetes: `>=1.35.0-0 <1.38.0-0`
+
+## v2 DNS production profile
+
+Pi-hole replicas use independent retained PVCs and stable StatefulSet identities. Read the [migration guide](MIGRATION.md) before adopting v2; v1 selectors and storage layouts require a parallel installation. Credentials must come from an existing Secret, an explicit password, or external injection. No credential is generated or printed automatically.
+
+Internal DNS/HTTP/HTTPS ports default to 5353/8080/8443, while Services expose 53/80/443. DNS defaults to a private ClusterIP; explicitly select a load-balancer/NodePort profile and client restrictions. Kubernetes Service values live under `services.*`, separately from native `pihole.ftl` values. Load-balancer classes/source ranges and role-scoped explicit egress rules are optional. The stock image retains root startup and a writable root filesystem with reduced capabilities; Kubernetes Restricted compatibility is not claimed.
+
+Policy reconciliation uses the local API, per-PVC ownership journals and immutable retained artifacts. It removes only owned records, protects unmanaged dependencies and gates readiness on the applied revision. For reproducible production filtering, use `policy.requirePinnedLists: true` and SHA-256 pinned HTTPS subscriptions. Bodies are verified and cached on each PVC; unchanged scheduled checks preserve serving readiness and reuse the cache. See [policy lifecycle](../../docs/policy-lifecycle.md) and [encrypted recovery](../../docs/recovery.md).
+
+`helm test` checks every replica and the Service over UDP/TCP, plus configured filtering, authentication and metrics samples. Scheduled DNS checks and Prometheus rules are optional. External VIP probes, actual load-balancer/CNI/storage failure behavior, client source-IP preservation and alert delivery remain deployment acceptance tests. HA DNS does not coordinate DHCP leases, histories, sessions or caches.
+
+CI gates the exact reproducible archive across the supported version/architecture matrix, blocking security checks and disposable HA/recovery fixtures. The release workflow is invoked manually after that complete run succeeds; it signs the tested bytes and resumes each distribution destination independently. See [validation evidence](../../docs/validation/README.md), [security exceptions](../../docs/security.md) and [release operations](../../docs/releasing.md).
 
 ## Examples
 
@@ -27,7 +39,7 @@ The [`examples/`](https://github.com/nunoferna/pihole-helm/tree/main/examples) d
 | File | Description |
 |------|-------------|
 | [`values-external-secrets.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-external-secrets.yaml) | Integrate with [External Secrets Operator](https://external-secrets.io) to pull Pi-hole credentials from an external provider (Vault, AWS, GCP, Azure, etc.) |
-| [`values-monitoring.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-monitoring.yaml) | Enable the full monitoring stack: Pi-hole Exporter sidecar, Prometheus `ServiceMonitor`, and a Grafana dashboard `ConfigMap` |
+| [`values-monitoring.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-monitoring.yaml) | Enable the full monitoring stack: standalone Pi-hole Exporter, Prometheus `ServiceMonitor`, and a Grafana dashboard `ConfigMap` |
 | [`values-vault.yaml`](https://github.com/nunoferna/pihole-helm/blob/main/examples/values-vault.yaml) | Mount Pi-hole secrets from [HashiCorp Vault](https://www.vaultproject.io) using the Vault Agent Injector sidecar |
 
 To use an example, pass it alongside your own overrides:
@@ -46,7 +58,6 @@ helm install pihole nunoferna/pihole \
 |-----|------|---------|-------------|
 | metrics.dashboards.enabled | boolean | `false` | Whether to create Grafana dashboard resources for the Pi-hole metrics exporter. Requires metrics.service.enabled to be true. |
 | metrics.enabled | boolean | `false` | Whether to enable the Pi-hole metrics exporter. Provides Prometheus metrics on port 9617. Required for any metrics-related features (ServiceMonitor, Grafana dashboards, etc.). |
-| metrics.env | array | `[{"name":"INTERVAL","value":"10s"}]` | Additional environment variables for the metrics exporter. PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment). Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables. |
 | metrics.image.repository | string | `"ekofr/pihole-exporter"` | Container image for the Pi-hole metrics exporter. |
 | metrics.podSecurityContext | object | `{"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible. |
 | metrics.port | integer | `9617` | Port on which the metrics exporter will listen. |
@@ -58,12 +69,12 @@ helm install pihole nunoferna/pihole \
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | metrics.service.enabled | boolean | `true` | Metrics Kubernetes Service. Required for external access to metrics endpoint. (port 9617) |
-| pihole.ftl.dhcp.ipv6.service.enabled | boolean | false | DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547). |
-| pihole.ftl.dhcp.service.enabled | boolean | false | DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67). |
-| pihole.ftl.dns.service.enabled | boolean | true | DNS Kubernetes Service. Required for external access to DNS functionality (port 53). |
-| pihole.ftl.dns.service.splitTcpUdp | boolean | false | Whether to create separate Kubernetes Services for TCP and UDP DNS ports. |
-| pihole.ftl.ntp.service.enabled | boolean | false | NTP Kubernetes Service. Required for external access to NTP functionality (port 123). |
-| pihole.web.service.enabled | boolean | `true` | Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443) |
+| services.dhcp.enabled | boolean | false | DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67). |
+| services.dhcpv6.enabled | boolean | false | DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547). |
+| services.dns.enabled | boolean | true | DNS Kubernetes Service. Required for external access to DNS functionality (port 53). |
+| services.dns.splitTcpUdp | boolean | false | Whether to create separate Kubernetes Services for TCP and UDP DNS ports. |
+| services.ntp.enabled | boolean | false | NTP Kubernetes Service. Required for external access to NTP functionality (port 123). |
+| services.web.enabled | boolean | `true` | Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443) |
 
 ### Clients
 
@@ -90,7 +101,6 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.dhcp.end | string | "" | No description provided. |
 | pihole.ftl.dhcp.hosts | array | [] | No description provided. |
 | pihole.ftl.dhcp.ignoreUnknownClients | boolean | false | No description provided. |
-| pihole.ftl.dhcp.ipv6.active | boolean | false | DHCPv6 functionality. |
 | pihole.ftl.dhcp.leaseTime | string | "" | No description provided. |
 | pihole.ftl.dhcp.logging | boolean | false | No description provided. |
 | pihole.ftl.dhcp.multiDNS | boolean | false | No description provided. |
@@ -125,7 +135,7 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.dns.hosts | array | [] | No description provided. |
 | pihole.ftl.dns.ignoreLocalhost | boolean | false | No description provided. |
 | pihole.ftl.dns.interface | string | "" | No description provided. |
-| pihole.ftl.dns.listeningMode | string | "LOCAL" | Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode |
+| pihole.ftl.dns.listeningMode | string | `"ALL"` | Accept Kubernetes Service/pod traffic. Restrict DNS clients with NetworkPolicy and private service exposure. |
 | pihole.ftl.dns.localise | boolean | true | No description provided. |
 | pihole.ftl.dns.piholePTR | string | "PI.HOLE" | Options: https://docs.pi-hole.net/ftldns/configfile/#piholeptr |
 | pihole.ftl.dns.port | integer | 53 | No description provided. |
@@ -160,7 +170,6 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.files.log.webserver | string | "/var/log/pihole/webserver.log" | No description provided. |
 | pihole.ftl.files.macvendor | string | "/etc/pihole/macvendor.db" | No description provided. |
 | pihole.ftl.files.pcap | string | "" | No description provided. |
-| pihole.ftl.files.pid | string | "/run/pihole-FTL.pid" | No description provided. |
 | pihole.ftl.misc.addr2line | boolean | true | No description provided. |
 | pihole.ftl.misc.check.disk | integer | 90 | No description provided. |
 | pihole.ftl.misc.check.load | boolean | true | No description provided. |
@@ -226,20 +235,12 @@ helm install pihole nunoferna/pihole \
 | pihole.ftl.webserver.tls.cert | string | "/etc/pihole/tls.pem" | Path to TLS certificate file. Set to empty string to disable TLS. |
 | pihole.ftl.webserver.tls.validity | integer | 47 | TLS validity period in days. |
 
-### Groups
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| pihole.groups | array | [] | List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients. |
-| pihole.groups[0].description | string | `"Default group"` | Description of the group. |
-| pihole.groups[0].enabled | boolean | `true` | Whether the group is enabled. |
-
 ### Web
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | pihole.web.existingSecret | string | `""` | Name of an existing Kubernetes Secret in the same namespace that contains the web interface password. If set, this secret will be used instead of creating a new one. Ignored if using external secret injection. |
-| pihole.web.password | string | `""` | Web interface password. Set to empty string to disable password protection. Ignored if using external secret injection. |
+| pihole.web.password | string | `""` | Explicit non-empty password for a chart-managed Secret. Prefer existingSecret in production. No random password is generated. |
 | pihole.web.passwordSecretKey | string | `"password"` | Key in the Kubernetes secret that contains the web interface password. Ignored if using external secret injection. |
 | pihole.web.skipPasswordEnv | boolean | `false` | Whether to skip setting the default web password environment variable when using external secret injection. Set to true if you are defining the FTLCONF_webserver_api_password variable in extraEnv with a value sourced from an external secret. |
 
@@ -251,20 +252,31 @@ helm install pihole nunoferna/pihole \
 | args | list | `[]` |  |
 | clusterDomain | string | "cluster.local" | Kubernetes cluster domain. Override only if your cluster uses a non-default DNS domain. |
 | command | list | `[]` |  |
+| credentialsRevision | string | `""` | Change when rotating an externally managed Secret; rolls DNS and exporter pods. |
 | extraEnv | list | `[]` |  |
 | extraInitContainers | list | `[]` |  |
+| extraVolumeMounts | list | `[]` | Additional DNS-container mounts, for example a read-only Secret containing a TLS PEM file. |
 | extraVolumes | list | `[]` |  |
+| image.allowUnverified | bool | `false` | Explicit opt-out from the recorded image compatibility baseline. |
+| image.digest | string | `"sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778"` | Immutable multi-platform digest. Clear explicitly when testing another image. |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"pihole/pihole"` |  |
 | image.tag | string | `""` |  |
 | imagePullSecrets | list | `[]` |  |
+| listeners | object | `{"dns":5353,"http":8080,"https":8443}` | Internal listener ports. Kubernetes Services retain their normal client ports. |
+| metrics.affinity | object | `{}` |  |
 | metrics.args | list | `[]` |  |
 | metrics.command | list | `[]` |  |
 | metrics.dashboards.annotations | object | `{}` |  |
 | metrics.dashboards.label | string | `"grafana_dashboard"` |  |
 | metrics.dashboards.labelValue | string | `"1"` |  |
+| metrics.env | array | `[]` | Additional exporter variables. Scrape timing is controlled by Prometheus. Authentication uses the Pi-hole Secret unless PIHOLE_PASSWORD or PIHOLE_PASSWORD_FILE is supplied here. |
+| metrics.image.allowUnverified | bool | `false` |  |
+| metrics.image.digest | string | `"sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"` |  |
 | metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
-| metrics.image.tag | string | `"v1.3.0"` |  |
+| metrics.image.tag | string | `"v1.3.1"` |  |
+| metrics.nodeSelector | object | `{}` |  |
+| metrics.podAnnotations | object | `{}` |  |
 | metrics.resources.limits.cpu | string | `"50m"` |  |
 | metrics.resources.limits.memory | string | `"64Mi"` |  |
 | metrics.resources.requests.cpu | string | `"10m"` |  |
@@ -276,8 +288,27 @@ helm install pihole nunoferna/pihole \
 | metrics.serviceMonitor.metricRelabelings | list | `[]` |  |
 | metrics.serviceMonitor.relabelings | list | `[]` |  |
 | metrics.serviceMonitor.scrapeTimeout | string | `"10s"` |  |
+| metrics.tolerations | list | `[]` |  |
+| minReadySeconds | int | `5` |  |
+| monitoring.alerts.enabled | bool | `false` |  |
+| monitoring.alerts.for | string | `"2m"` |  |
+| monitoring.labels | object | `{}` |  |
+| monitoring.namespace | string | `""` | Namespace for ServiceMonitor and PrometheusRule; empty uses the release namespace. |
+| monitoring.syntheticDns.enabled | bool | `false` | Run recurring UDP/TCP resolution and optional filtering checks against Service and every replica. |
+| monitoring.syntheticDns.schedule | string | `"* * * * *"` |  |
+| monitoring.syntheticDns.staleAfterSeconds | int | `180` |  |
+| monitoring.syntheticDns.timeoutSeconds | int | `45` |  |
+| networkPolicy.allowTests | bool | `true` | Permit release-labelled Helm test and synthetic DNS pods. Disable to supply your own validation policy. |
+| networkPolicy.dnsAllowFrom | list | `[]` |  |
+| networkPolicy.egress | list | `[]` | DNS-pod egress rules. Include bootstrap DNS, intended upstreams and approved HTTPS mirror destinations. |
+| networkPolicy.egressEnabled | bool | `false` | Enable explicit DNS/exporter egress policies. Requires enabled=true; empty rules deny egress. |
 | networkPolicy.enabled | bool | `false` |  |
+| networkPolicy.metricsAllowFrom | list | `[]` |  |
+| networkPolicy.metricsEgress | list | `[]` | Exporter egress rules. Include bootstrap DNS and HTTP access to this release's DNS pods. |
 | networkPolicy.webAllowFrom | list | `[]` |  |
+| networking.dnsConfig | object | `{}` |  |
+| networking.dnsPolicy | string | `""` | Explicit bootstrap DNS policy, or empty for ClusterFirst/ClusterFirstWithHostNet. |
+| networking.hostAliases | list | `[]` |  |
 | networking.hostNetwork | bool | `false` |  |
 | nodeSelector | object | `{}` |  |
 | persistence.etcDnsmasq.accessMode | string | `"ReadWriteOnce"` |  |
@@ -285,82 +316,83 @@ helm install pihole nunoferna/pihole \
 | persistence.etcDnsmasq.size | string | `"100Mi"` |  |
 | persistence.etcPihole.accessMode | string | `"ReadWriteOnce"` |  |
 | persistence.etcPihole.enabled | bool | `true` |  |
-| persistence.etcPihole.size | string | `"500Mi"` |  |
+| persistence.etcPihole.size | string | `"1Gi"` | Initial per-replica claim size; plan expansion and history retention separately. |
+| persistence.retentionPolicy.whenDeleted | string | `"Retain"` |  |
+| persistence.retentionPolicy.whenScaled | string | `"Retain"` |  |
 | pihole.additionalPackages | string | "" | Additional Alpine packages to install |
 | pihole.dnsmasqUser | string | "pihole" | User that FTLDNS runs as |
-| pihole.ftl.dhcp.ipv6.service.annotations | object | `{}` |  |
-| pihole.ftl.dhcp.ipv6.service.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.dhcp.ipv6.service.ports.dhcpv6 | int | `547` |  |
-| pihole.ftl.dhcp.ipv6.service.type | string | `"LoadBalancer"` |  |
-| pihole.ftl.dhcp.service.annotations | object | `{}` |  |
-| pihole.ftl.dhcp.service.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.dhcp.service.ports.dhcp | int | `67` |  |
-| pihole.ftl.dhcp.service.type | string | `"LoadBalancer"` |  |
-| pihole.ftl.dns.service.annotations | object | `{}` |  |
-| pihole.ftl.dns.service.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.dns.service.ports.tcp | int | `53` |  |
-| pihole.ftl.dns.service.ports.udp | int | `53` |  |
-| pihole.ftl.dns.service.tcp.annotations | object | `{}` |  |
-| pihole.ftl.dns.service.tcp.enabled | bool | `true` |  |
-| pihole.ftl.dns.service.tcp.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.dns.service.tcp.port | int | `53` |  |
-| pihole.ftl.dns.service.tcp.type | string | `"LoadBalancer"` |  |
-| pihole.ftl.dns.service.type | string | `"LoadBalancer"` |  |
-| pihole.ftl.dns.service.udp.annotations | object | `{}` |  |
-| pihole.ftl.dns.service.udp.enabled | bool | `true` |  |
-| pihole.ftl.dns.service.udp.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.dns.service.udp.port | int | `53` |  |
-| pihole.ftl.dns.service.udp.type | string | `"LoadBalancer"` |  |
-| pihole.ftl.ntp.service.annotations | object | `{}` |  |
-| pihole.ftl.ntp.service.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.ftl.ntp.service.ports.ntp | int | `123` |  |
-| pihole.ftl.ntp.service.type | string | `"LoadBalancer"` |  |
+| pihole.ftl.database.forceDisk | string | `nil` | Use a disk-backed short-term database (FTL v6.8). |
+| pihole.ftl.dhcp.ipv6 | bool | `false` | Native DHCPv6 switch. Auxiliary services are outside the DNS HA profile. |
+| pihole.ftl.dns.cache.rrtype | string | `nil` | Cached RR types supported by FTL v6.8 (for example ANY). |
+| pihole.ftl.files.tmp_db | string | `nil` | Location of the disk-backed temporary database. |
+| pihole.ftl.misc.hide_connection_error | string | `nil` | Suppress connection error logging (FTL v6.8). |
+| pihole.ftl.resolver.macNames | string | `nil` | Resolve client MAC addresses through configured names. |
 | pihole.ftl.resolver.networkNames | boolean | true | Control whether FTL should use the fallback option to try to obtain client names from checking the network table. |
 | pihole.ftl.resolver.refreshNames | string | "IPV4_ONLY" | Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames |
 | pihole.ftl.resolver.resolveIPv4 | boolean | true | Whether to resolve IPv4 addresses to hostnames in the query log and other outputs. |
 | pihole.ftl.resolver.resolveIPv6 | boolean | true | Whether to resolve IPv6 addresses to hostnames in the query log and other outputs. |
-| pihole.ftl.webserver.headers | array | `[]` | Headers to be set on all webserver responses. Check default value in pihole-FTL.toml for format. |
+| pihole.ftl.webserver.headers | array | `nil` | Headers to be set on all webserver responses. Check default value in pihole-FTL.toml for format. |
 | pihole.ftlCmd | string | "no-daemon" | Customize dnsmasq startup options |
 | pihole.gid | integer | 1000 | No description provided. |
-| pihole.lists.adlists[0].address | string | `"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"` |  |
-| pihole.lists.adlists[0].comment | string | `"StevenBlack Master"` |  |
-| pihole.lists.adlists[1].address | string | `"https://adaway.org/hosts.txt"` |  |
-| pihole.lists.adlists[1].comment | string | `"AdAway"` |  |
-| pihole.lists.adlists[1].enabled | bool | `false` |  |
-| pihole.lists.blacklist[0].comment | string | `"Known malware"` |  |
-| pihole.lists.blacklist[0].domain | string | `"bad-site.com"` |  |
+| pihole.groups | array | `[]` | Owned groups. Built-in Default is protected. Entries accept name, description and enabled. |
+| pihole.lists.adlists | list | `[]` | Subscriptions: address, optional sha256, type (block/allow), enabled, comment, groups. Pinned content is cached on each PVC. |
+| pihole.lists.blacklist | list | `[]` |  |
 | pihole.lists.regex_blacklist | list | `[]` |  |
-| pihole.lists.regex_whitelist[0].comment | string | `"Allow Google subdomains"` |  |
-| pihole.lists.regex_whitelist[0].domain | string | `".*\\.google\\.com$"` |  |
-| pihole.lists.whitelist[0].domain | string | `"good-site.com"` |  |
+| pihole.lists.regex_whitelist | list | `[]` |  |
+| pihole.lists.whitelist | list | `[]` |  |
 | pihole.tailFtlLog | integer | 1 | Whether to output FTL log (0 or 1) |
 | pihole.uid | integer | 1000 | No description provided. |
 | pihole.verbose | integer | 0 | Enable verbose startup scripts (0 or 1) |
-| pihole.web.service.annotations | object | `{}` |  |
-| pihole.web.service.externalTrafficPolicy | string | `"Local"` |  |
-| pihole.web.service.ports.http | int | `80` |  |
-| pihole.web.service.ports.https | int | `443` |  |
-| pihole.web.service.type | string | `"ClusterIP"` |  |
 | podAnnotations | object | `{}` |  |
 | podDisruptionBudget.enabled | bool | `false` |  |
 | podDisruptionBudget.minAvailable | int | `1` |  |
+| podManagementPolicy | string | `"Parallel"` | Stable StatefulSet identity for all replica counts. |
 | podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| policy.adoptExisting | bool | `false` | Explicitly adopt matching existing records. Enable only for a reviewed migration, then disable. |
+| policy.existingConfigMap | string | `""` | Optional externally retained immutable artifact containing policy.json and the runner files. |
+| policy.mode | string | `"reconcile"` | Reconcile owned records, apply without deletion, or explicitly freeze policy management. |
+| policy.owner | string | `""` | Explicit original namespace/release identity when restoring a journal into a new release. Empty derives the current identity. |
+| policy.requirePinnedLists | bool | `false` | Require SHA-256 pinned HTTPS subscriptions and reject enabled unmanaged feeds. |
+| policy.revision | string | `""` | Required SHA-256 of policy.json when referencing an external artifact. |
+| policyImportTimeout | int | `180` | Total deadline in seconds for policy validation, reconciliation and gravity. |
+| probes.dns.expectedAddress | string | `""` |  |
+| probes.dns.name | string | `"pi.hole"` |  |
+| probes.liveness.failureThreshold | int | `3` |  |
+| probes.liveness.periodSeconds | int | `15` |  |
+| probes.liveness.timeoutSeconds | int | `3` |  |
+| probes.readiness.failureThreshold | int | `2` |  |
+| probes.readiness.periodSeconds | int | `5` |  |
+| probes.readiness.timeoutSeconds | int | `3` |  |
+| probes.startup.failureThreshold | int | `60` |  |
+| probes.startup.periodSeconds | int | `5` |  |
+| probes.startup.timeoutSeconds | int | `3` |  |
 | replicas | int | `1` |  |
-| resources.limits.cpu | string | `"200m"` |  |
-| resources.limits.memory | string | `"256Mi"` |  |
+| resources.limits.cpu | string | `"1"` |  |
+| resources.limits.memory | string | `"512Mi"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"128Mi"` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` |  |
-| securityContext.capabilities.add | list | `[]` |  |
-| securityContext.capabilities.drop | list | `[]` |  |
+| securityContext.capabilities.add | list | `["CHOWN","DAC_OVERRIDE","FOWNER","SETGID","SETUID","SETPCAP","SETFCAP","KILL"]` | Stock-image startup needs ownership, identity/capability setup and child-process shutdown. DHCP adds its network capabilities separately. |
+| securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | securityContext.readOnlyRootFilesystem | bool | `false` |  |
 | serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automountServiceAccountToken | bool | `false` |  |
 | serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `"pihole"` |  |
-| strategy.type | string | `"Recreate"` |  |
+| serviceAccount.name | string | `""` |  |
+| services | object | `{"dhcp":{"annotations":{},"enabled":false,"externalTrafficPolicy":"Local","ports":{"dhcp":67},"type":"LoadBalancer"},"dhcpv6":{"annotations":{},"enabled":false,"externalTrafficPolicy":"Local","ports":{"dhcpv6":547},"type":"LoadBalancer"},"dns":{"annotations":{},"enabled":true,"externalTrafficPolicy":"Local","loadBalancerClass":"","loadBalancerSourceRanges":[],"nodePorts":{},"ports":{"tcp":53,"udp":53},"splitTcpUdp":false,"tcp":{"annotations":{},"enabled":true,"externalTrafficPolicy":"Local","loadBalancerClass":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"},"type":"ClusterIP","udp":{"annotations":{},"enabled":true,"externalTrafficPolicy":"Local","loadBalancerClass":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}},"ntp":{"annotations":{},"enabled":false,"externalTrafficPolicy":"Local","ports":{"ntp":123},"type":"LoadBalancer"},"web":{"annotations":{},"enabled":true,"externalTrafficPolicy":"Local","loadBalancerClass":"","loadBalancerSourceRanges":[],"nodePorts":{},"ports":{"http":80,"https":443},"type":"ClusterIP"}}` | Kubernetes Services are independent of the native FTL configuration tree. |
+| services.dns.loadBalancerClass | string | `""` | Optional provider class; immutable after the LoadBalancer Service is created. |
+| terminationGracePeriodSeconds | int | `30` |  |
+| tests.authentication | bool | `true` | Verify credentials against every replica and the private web Service when enabled. |
+| tests.enabled | bool | `true` |  |
+| tests.existingSecret | string | `""` | Optional credential Secret for tests when application credentials use an injector. |
+| tests.timeoutSeconds | int | `120` |  |
 | timezone | string | `"UTC"` |  |
 | tolerations | list | `[]` |  |
+| topologySpreadConstraints | list | `[]` |  |
 | updateStrategy.type | string | `"RollingUpdate"` |  |
+| validation.blockedAnswer | string | `"0.0.0.0"` | Expected blocked A answer, or NXDOMAIN when using that blocking mode. |
+| validation.blockedDomain | string | `""` | Optional known blocked domain for Helm tests and scheduled DNS checks. No rules are installed implicitly. |
+| validation.upstreamDomain | string | `""` | Optional upstream lookup. Empty keeps checks independent of public DNS. |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

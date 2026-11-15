@@ -1,4 +1,4 @@
-{{- if and .Values.pihole.ftl.dns.service.enabled (not .Values.pihole.ftl.dns.service.splitTcpUdp) }}
+{{- if and .Values.services.dns.enabled (not .Values.services.dns.splitTcpUdp) }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,33 +8,38 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.pihole.ftl.dns.service.annotations | nindent 4 }}
+    {{- toYaml .Values.services.dns.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.pihole.ftl.dns.service.type }}
-  {{- if or (eq .Values.pihole.ftl.dns.service.type "LoadBalancer") (eq .Values.pihole.ftl.dns.service.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.ftl.dns.service.externalTrafficPolicy }}
+  type: {{ .Values.services.dns.type }}
+  {{- include "pihole.loadBalancerFields" .Values.services.dns | nindent 2 }}
+  {{- if or (eq .Values.services.dns.type "LoadBalancer") (eq .Values.services.dns.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.dns.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dns.service.loadBalancerIP }}
+  {{- with .Values.services.dns.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dns.service.externalIPs }}
+  {{- with .Values.services.dns.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.ftl.dns.service.ports.tcp }}
+    - port: {{ .Values.services.dns.ports.tcp }}
       targetPort: dns-tcp
       protocol: TCP
       name: dns-tcp
-  {{- if and (eq .Values.pihole.ftl.dns.service.type "NodePort") .Values.pihole.ftl.dns.service.nodePorts.tcp }}
-      nodePort: {{ .Values.pihole.ftl.dns.service.nodePorts.tcp }}
+  {{- with (get (.Values.services.dns.nodePorts | default dict) "tcp") }}
+    {{- if eq $.Values.services.dns.type "NodePort" }}
+      nodePort: {{ . }}
+    {{- end }}
   {{- end }}
-    - port: {{ .Values.pihole.ftl.dns.service.ports.udp }}
+    - port: {{ .Values.services.dns.ports.udp }}
       targetPort: dns-udp
       protocol: UDP
       name: dns-udp
-  {{- if and (eq .Values.pihole.ftl.dns.service.type "NodePort") .Values.pihole.ftl.dns.service.nodePorts.udp }}
-      nodePort: {{ .Values.pihole.ftl.dns.service.nodePorts.udp }}
+  {{- with (get (.Values.services.dns.nodePorts | default dict) "udp") }}
+    {{- if eq $.Values.services.dns.type "NodePort" }}
+      nodePort: {{ . }}
+    {{- end }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

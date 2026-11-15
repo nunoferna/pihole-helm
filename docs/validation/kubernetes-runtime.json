@@ -1,0 +1,153 @@
+{
+  "started_utc": "2026-10-28T21:48:33.351664+00:00",
+  "scope": "one-node kind smoke; no node-failure or load-balancer HA claim",
+  "image": "pihole/pihole:2026.10.0@sha256:d8d848307ffe7f8c4b42be423b33295d6a45282215eb5a96fe25e05fa39b1abc",
+  "fixture_overrides": [
+    "explicit local DNS record",
+    "empty initial adlists",
+    "static TEST-NET hostAliases for gravity bootstrap check",
+    "ClusterIP DNS",
+    "no configured list/domain rules",
+    "512Mi memory limit"
+  ],
+  "checks": [
+    {
+      "check": "current_chart_two_replica_startup",
+      "passed": true,
+      "details": {
+        "audit-pihole-0": {
+          "udp": "192.0.2.123",
+          "tcp": "192.0.2.123"
+        },
+        "audit-pihole-1": {
+          "udp": "192.0.2.123",
+          "tcp": "192.0.2.123"
+        },
+        "unprivileged_port_start": "0"
+      },
+      "seconds": 92.62
+    },
+    {
+      "check": "reproduce_headless_and_pdb_selector_leak",
+      "passed": true,
+      "details": {
+        "finding": "confirmed defect",
+        "headless_ready_targets": [
+          "audit-metrics-fixture",
+          "audit-pihole-0",
+          "audit-pihole-1",
+          "audit-test-fixture"
+        ],
+        "pdb_status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-10-28T21:50:17Z",
+              "message": "",
+              "observedGeneration": 1,
+              "reason": "SufficientPods",
+              "status": "True",
+              "type": "DisruptionAllowed"
+            }
+          ],
+          "currentHealthy": 4,
+          "desiredHealthy": 2,
+          "disruptionsAllowed": 2,
+          "expectedPods": 4,
+          "observedGeneration": 1
+        }
+      },
+      "seconds": 0.2
+    },
+    {
+      "check": "bounded_poststart_loopback_api_and_probes",
+      "passed": false,
+      "error": "error: timed out waiting for the condition on pods/audit-lifecycle\n",
+      "seconds": 100.03
+    }
+  ],
+  "kubernetes_version": "v1.37.0",
+  "final_pod_states": [
+    {
+      "name": "audit-lifecycle",
+      "phase": "Pending",
+      "containers": [
+        {
+          "name": "pihole",
+          "ready": false,
+          "restarts": 0,
+          "state": {
+            "waiting": {
+              "reason": "PodInitializing"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audit-metrics-fixture",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "fixture",
+          "ready": true,
+          "restarts": 0,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-28T21:50:17Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audit-pihole-0",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "pihole",
+          "ready": true,
+          "restarts": 0,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-28T21:48:52Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audit-pihole-1",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "pihole",
+          "ready": true,
+          "restarts": 0,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-28T21:49:36Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audit-test-fixture",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "fixture",
+          "ready": true,
+          "restarts": 0,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-28T21:50:17Z"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "namespace_cleanup_succeeded": false,
+  "completed_utc": "2026-10-28T21:53:31.732106+00:00"
+}

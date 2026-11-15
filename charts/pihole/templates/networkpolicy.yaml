@@ -1,5 +1,4 @@
 {{- if .Values.networkPolicy.enabled }}
----
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -10,25 +9,110 @@ spec:
   podSelector:
     matchLabels:
       {{- include "pihole.selectorLabels" . | nindent 6 }}
-  policyTypes:
-    - Ingress
+  policyTypes: [Ingress{{ if .Values.networkPolicy.egressEnabled }}, Egress{{ end }}]
+  {{- if .Values.networkPolicy.egressEnabled }}
+  egress:
+    {{- toYaml .Values.networkPolicy.egress | nindent 4 }}
+  {{- end }}
   ingress:
     - ports:
-        - port: 53
+        - port: {{ .Values.listeners.dns }}
           protocol: UDP
-        - port: 53
+        - port: {{ .Values.listeners.dns }}
           protocol: TCP
+  {{- with .Values.networkPolicy.dnsAllowFrom }}
+      from:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- if .Values.services.dhcp.enabled }}
+    - ports:
         - port: 67
           protocol: UDP
+  {{- end }}
+  {{- if .Values.services.dhcpv6.enabled }}
     - ports:
-        - port: 80
+        - port: 547
+          protocol: UDP
+  {{- end }}
+  {{- if .Values.services.ntp.enabled }}
+    - ports:
+        - port: 123
+          protocol: UDP
+  {{- end }}
+  {{- with .Values.networkPolicy.webAllowFrom }}
+    - ports:
+        - port: {{ $.Values.listeners.http }}
           protocol: TCP
-        - port: 9617
+    {{- if gt (int $.Values.listeners.https) 0 }}
+        - port: {{ $.Values.listeners.https }}
+          protocol: TCP
+    {{- end }}
+      from:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- if .Values.metrics.enabled }}
+    - ports:
+        - port: {{ .Values.listeners.http }}
           protocol: TCP
       from:
-  {{- if .Values.networkPolicy.webAllowFrom }}
-        {{- toYaml .Values.networkPolicy.webAllowFrom | nindent 8 }}
-  {{- else }}
-        - namespaceSelector: {}
+        - podSelector:
+            matchLabels:
+              {{- include "pihole.metricsSelectorLabels" . | nindent 14 }}
+  {{- end }}
+  {{- if and .Values.networkPolicy.allowTests (or .Values.tests.enabled .Values.monitoring.syntheticDns.enabled) }}
+    - ports:
+        - port: {{ .Values.listeners.dns }}
+          protocol: UDP
+        - port: {{ .Values.listeners.dns }}
+          protocol: TCP
+    {{- if and .Values.tests.enabled .Values.tests.authentication }}
+        - port: {{ .Values.listeners.http }}
+          protocol: TCP
+    {{- end }}
+      from:
+        - podSelector:
+            matchLabels:
+              {{- include "pihole.commonSelectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: test
+  {{- end }}
+  {{- if .Values.metrics.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pihole.fullname" . }}-metrics
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "pihole.metricsSelectorLabels" . | nindent 6 }}
+  policyTypes: [Ingress{{ if .Values.networkPolicy.egressEnabled }}, Egress{{ end }}]
+    {{- if .Values.networkPolicy.egressEnabled }}
+  egress:
+    {{- toYaml .Values.networkPolicy.metricsEgress | nindent 4 }}
+    {{- end }}
+  ingress:
+    {{- if and .Values.networkPolicy.allowTests .Values.tests.enabled }}
+    - ports:
+        - port: {{ .Values.metrics.port }}
+          protocol: TCP
+      from:
+        - podSelector:
+            matchLabels:
+              {{- include "pihole.commonSelectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: test
+    {{- end }}
+    {{- with .Values.networkPolicy.metricsAllowFrom }}
+    - ports:
+        - port: {{ $.Values.metrics.port }}
+          protocol: TCP
+      from:
+        {{- toYaml . | nindent 8 }}
+    {{- else }}
+      {{- if not (and .Values.networkPolicy.allowTests .Values.tests.enabled) }}
+    []
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}

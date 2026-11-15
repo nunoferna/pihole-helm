@@ -1,0 +1,85 @@
+# Staging release/namespace: pihole-staging. This file contains no credentials.
+# Validate cluster version, two eligible nodes, storage and LB availability first.
+replicas: 2
+timezone: Europe/Lisbon
+credentialsRevision: staging-v2
+
+pihole:
+  web:
+    existingSecret: pihole-staging-web-v2
+  lists:
+    blacklist:
+      - domain: staging-blocked.invalid
+        comment: Isolated staging filtering check
+  ftl:
+    dns:
+      upstreams:
+        - 1.1.1.1
+        - 9.9.9.9
+      listeningMode: ALL
+      hosts:
+        - 192.0.2.42 staging-health.invalid
+        - 192.0.2.43 staging-blocked.invalid
+probes:
+  dns:
+    name: staging-health.invalid
+    expectedAddress: 192.0.2.42
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: pihole-staging
+            app.kubernetes.io/component: dns
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+persistence:
+  etcPihole:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+metrics:
+  enabled: true
+
+validation:
+  blockedDomain: staging-blocked.invalid
+  upstreamDomain: example.com
+
+# Initially allow only namespace-local probes and administration. Add actual
+# external test-client CIDRs after confirming the LB/CNI source-IP behavior.
+networkPolicy:
+  enabled: true
+  dnsAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: pihole-staging
+  webAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: pihole-staging
+  metricsAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: pihole-staging
+
+services:
+  dns:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  web:
+    type: ClusterIP

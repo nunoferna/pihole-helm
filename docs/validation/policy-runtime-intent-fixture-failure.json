@@ -1,0 +1,74 @@
+{
+  "started_utc": "2026-11-14T20:33:22.116213+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.8,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "ownership_crud_and_empty_policy",
+      "passed": true,
+      "seconds": 5.78,
+      "details": {
+        "create_update_remove_last_owned_rule": true,
+        "unmanaged_rule_retained": true
+      }
+    },
+    {
+      "check": "unmanaged_collision_and_explicit_adoption",
+      "passed": true,
+      "seconds": 7.7,
+      "details": {
+        "collision_preflight": true,
+        "explicit_adoption_and_later_deletion": true
+      }
+    },
+    {
+      "check": "groups_clients_and_dependency_protection",
+      "passed": true,
+      "seconds": 6.81,
+      "details": {
+        "explicit_associations": true,
+        "unmanaged_dependency_guard": true,
+        "default_group_preserved": true
+      }
+    },
+    {
+      "check": "subscription_types_and_gravity_state",
+      "passed": true,
+      "seconds": 5.27,
+      "details": {
+        "allow_and_block_subscriptions": true,
+        "last_list_removal_rebuilds_gravity": true
+      }
+    },
+    {
+      "check": "ownership_identity_conflict",
+      "passed": true,
+      "seconds": 4.85,
+      "details": {
+        "changed_ownership_marker_refuses_deletion": true
+      }
+    },
+    {
+      "check": "invalid_policy_and_artifact_rejection",
+      "passed": true,
+      "seconds": 3.82,
+      "details": {
+        "all_group_references_prevalidated": true,
+        "artifact_checksum_enforced": true
+      }
+    }
+  ],
+  "error": "Policy apply failed: Ownership journal is invalid or belongs to another release\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T20:34:52.523927+00:00"
+}

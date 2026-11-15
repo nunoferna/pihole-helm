@@ -1,0 +1,13 @@
+{
+  "utc": "2026-11-15T12:38:33.759271+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-staging",
+  "sourcePod": "pihole-staging-0",
+  "sameNodeControl": "cp01",
+  "destination": "1.1.1.1",
+  "controlHTTPStatus": "301",
+  "dnsPodExitCode": 28,
+  "dnsPodDiagnostic": "curl: (28) Connection timed out after 3001 milliseconds\ncommand terminated with exit code 28\n",
+  "passed": true,
+  "controlRemoved": true
+}

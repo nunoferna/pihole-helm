@@ -1,0 +1,301 @@
+{
+  "started_utc": "2026-10-28T21:44:59.545482+00:00",
+  "image": "pihole/pihole:2026.10.0@sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+  "scope": "Docker stock-entrypoint compatibility; not Kubernetes certification",
+  "network": "none; no published ports, host networking, or host bind mounts",
+  "fixture": {
+    "adlists": "empty file on a fresh named volume, initially owned by uid/gid 1000",
+    "dns_record": "192.0.2.10 health.audit.test",
+    "dns_port": 53,
+    "web_port": 8080,
+    "upstream": "192.0.2.53 (unreachable on purpose)",
+    "bootstrap_dns_check": "static TEST-NET hosts entries for raw.githubusercontent.com and github.com; no external requests",
+    "dhcp": false,
+    "ntp_servers_and_sync": false,
+    "nice": 0,
+    "memory": "512m",
+    "cpus": 2
+  },
+  "startup_timeout_seconds": 60,
+  "stability_seconds": 3,
+  "reduced_capabilities_candidate": [
+    "CHOWN",
+    "DAC_OVERRIDE",
+    "FOWNER",
+    "SETGID",
+    "SETUID",
+    "SETPCAP",
+    "SETFCAP",
+    "NET_BIND_SERVICE",
+    "KILL"
+  ],
+  "cases": [
+    {
+      "case": "stock",
+      "docker_flags": [],
+      "launch_exit_code": 0,
+      "dns_ready": true,
+      "stable": true,
+      "seconds_to_dns_answer": 9.91,
+      "ftl_process_status": "Uid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nCapInh:\t0000000000000000\nCapPrm:\t0000000000002401\nCapEff:\t0000000000002400\nCapBnd:\t00000000a80425fb\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\n",
+      "ftl_file_capabilities": "/usr/bin/pihole-FTL cap_chown,cap_net_bind_service,cap_net_raw=ep",
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 17888,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:45:01.595713015Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:45:03.303 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n        * CAP_NET_RAW\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n  [i] Version info:\n      Core version is v6.5 (Latest: N/A)\n      Web version is v6.6.1 (Latest: N/A)\n      FTL version is v6.8 (Latest: N/A)\n\n2026-10-28 21:45:08.760 UTC [173M] INFO: ########## FTL started on 7861eebb385b! ##########\n2026-10-28 21:45:08.761 UTC [173M] INFO: FTL branch: master\n2026-10-28 21:45:08.762 UTC [173M] INFO: FTL version: v6.8\n2026-10-28 21:45:08.762 UTC [173M] INFO: FTL commit: 29c8b13f\n2026-10-28 21:45:08.762 UTC [173M] INFO: FTL date: 2026-10-17 13:08:09 +0200\n2026-10-28 21:45:08.762 UTC [173M] INFO: FTL user: pihole\n2026-10-28 21:45:08.763 UTC [173M] INFO: Compiled for linux/amd64 (compiled on CI) using cc (Alpine 15.2.0) 15.2.0\n2026-10-28 21:45:09.542 UTC [173M] INFO: 11 FTLCONF environment variables found (11 used, 0 invalid, 0 ignored)\n2026-10-28 21:45:09.543 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_sync_active is used\n2026-10-28 21:45:09.543 UTC [173M] INFO:    [\u2713] FTLCONF_dns_listeningMode is used\n2026-10-28 21:45:09.543 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_ipv4_active is used\n2026-10-28 21:45:09.543 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_ipv6_active is used\n2026-10-28 21:45:09.543 UTC [173M] INFO:    [\u2713] FTLCONF_webserver_api_password is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_webserver_port is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_dns_upstreams is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_dns_hosts is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_dhcp_active is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_dns_port is used\n2026-10-28 21:45:09.544 UTC [173M] INFO:    [\u2713] FTLCONF_misc_nice is used\n2026-10-28 21:45:09.562 UTC [173M] INFO: Wrote config file:\n2026-10-28 21:45:09.562 UTC [173M] INFO:  - 167 total entries\n2026-10-28 21:45:09.562 UTC [173M] INFO:  - 157 entries are default\n2026-10-28 21:45:09.562 UTC [173M] INFO:  - 10 entries are modified\n2026-10-28 21:45:09.562 UTC [173M] INFO:  - 8 entries are forced through environment\n2026-10-28 21:45:09.583 UTC [173M] INFO: Config file written to /etc/pihole/pihole.toml\n2026-10-28 21:45:09.612 UTC [173M] INFO: Parsed config file /etc/pihole/pihole.toml successfully\n2026-10-28 21:45:09.613 UTC [173M] INFO: PID file does not exist or not readable\n2026-10-28 21:45:09.613 UTC [173M] INFO: No other running FTL process found.\n2026-10-28 21:45:09.647 UTC [173M] INFO: PID of FTL process: 173\n2026-10-28 21:45:09.670 UTC [173M] INFO: listening on 0.0.0.0 port 53\n2026-10-28 21:45:09.673 UTC [173M] INFO: listening on :: port 53\n2026-10-28 21:45:09.683 UTC [173M] WARNING: No database file found, creating new (empty) database at /etc/pihole/pihole-FTL.db\n2026-10-28 21:45:09.806 UTC [173M] INFO: Database version is 1\n2026-10-28 21:45:09.806 UTC [173M] INFO: Updating long-term database to version 2\n2026-10-28 21:45:09.817 UTC [173M] INFO: Updating long-term database to version 3\n2026-10-28 21:45:09.828 UTC [173M] INFO: Updating long-term database to version 4\n2026-10-28 21:45:09.841 UTC [173M] INFO: Updating long-term database to version 5\n2026-10-28 21:45:09.886 UTC [173M] INFO: Updating long-term database to version 6\n2026-10-28 21:45:09.896 UTC [173M] INFO: Updating long-term database to version 7\n2026-10-28 21:45:09.913 UTC [173M] INFO: Updating long-term database to version 8\n2026-10-28 21:45:09.954 UTC [173M] INFO: Updating long-term database to version 9\n2026-10-28 21:45:09.969 UTC [173M] INFO: Updating long-term database to version 10\n2026-10-28 21:45:10.001 UTC [173M] INFO: Updating long-term database to version 11\n2026-10-28 21:45:10.026 UTC [173M] INFO: Updating long-term database to version 12\n2026-10-28 21:45:10.042 UTC [173M] INFO: Updating long-term database to version 13\n2026-10-28 21:45:10.055 UTC [173M] INFO: Updating long-term database to version 14\n2026-10-28 21:45:10.066 UTC [173M] INFO: Updating long-term database to version 15\n2026-10-28 21:45:10.083 UTC [173M] INFO: Updating long-term database to version 16\n2026-10-28 21:45:10.094 UTC [173M] INFO: Updating long-term database to version 17\n2026-10-28 21:45:10.117 UTC [173M] INFO: Updating long-term database to version 18\n2026-10-28 21:45:10.137 UTC [173M] INFO: Updating long-term database to version 19\n2026-10-28 21:45:10.191 UTC [173M] INFO: Updating long-term database to version 20\n2026-10-28 21:45:10.217 UTC [173M] INFO: Updating long-term database to version 21\n2026-10-28 21:45:10.235 UTC [173M] INFO: Updating long-term database to version 22\n2026-10-28 21:45:10.249 UTC [173M] INFO: Database successfully initialized\n2026-10-28 21:45:10.684 UTC [173M] INFO: NTP sync is disabled\n2026-10-28 21:45:10.686 UTC [173M] INFO: Restored 0 API sessions from the database\n2026-10-28 21:45:10.704 UTC [173M] INFO: FTL is running as user pihole (UID 1000)\n2026-10-28 21:45:10.711 UTC [173/T183] INFO: Imported 0 queries from the on-disk database (it has 0 rows)\n2026-10-28 21:45:10.711 UTC [173/T183] INFO: Parsing queries in database\n2026-10-28 21:45:10.715 UTC [173/T183] INFO: Imported 0 queries from the long-term database\n2026-10-28 21:45:10.716 UTC [173/T183] INFO:  -> Total DNS queries: 0\n2026-10-28 21:45:10.716 UTC [173/T183] INFO:  -> Cached DNS queries: 0\n2026-10-28 21:45:10.716 UTC [173/T183] INFO:  -> Forwarded DNS queries: 0\n2026-10-28 21:45:10.720 UTC [173/T183] INFO:  -> Blocked DNS queries: 0\n2026-10-28 21:45:10.720 UTC [173/T183] INFO:  -> Unknown DNS queries: 0\n2026-10-28 21:45:10.723 UTC [173/T183] INFO:  -> Unique domains: 0\n2026-10-28 21:45:10.723 UTC [173/T183] INFO:  -> Unique clients: 0\n2026-10-28 21:45:10.723 UTC [173/T183] INFO:  -> DNS cache records: 0\n2026-10-28 21:45:10.724 UTC [173/T183] INFO:  -> Known forward destinations: 0\n2026-10-28 21:45:10.730 UTC [173M] INFO: Blocking status is enabled\n2026-10-28 21:45:10.791 UTC [173/T187] INFO: Web server ports:\n2026-10-28 21:45:10.791 UTC [173/T187] INFO:   - 0.0.0.0:8080 (HTTP, IPv4, OK)\n2026-10-28 21:45:10.994 UTC [173/T183] INFO: Compiled 0 allow and 0 deny regex for 1 client in 1.7 msec\n2026-10-28 21:45:11.129 UTC [173/T183] INFO: Compiled 0 allow and 0 deny regex for 1 client in 1.8 msec\nfatal: unable to access 'https://github.com/pi-hole/pi-hole/': Failed to connect to github.com:443 after 6 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/web/': Failed to connect to github.com:443 after 4 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/FTL/': Failed to connect to github.com:443 after 4 ms: Could not connect to server\n"
+    },
+    {
+      "case": "stock_no_new_privileges",
+      "docker_flags": [
+        "--security-opt=no-new-privileges:true"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": true,
+      "stable": true,
+      "seconds_to_dns_answer": 11.93,
+      "ftl_process_status": "Uid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t00000000a80425fb\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\n",
+      "ftl_file_capabilities": "/usr/bin/pihole-FTL cap_chown,cap_net_bind_service,cap_net_raw=ep",
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 18863,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:45:22.282092968Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:45:24.914 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n        * CAP_NET_RAW\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n  [i] Version info:\n      Core version is v6.5 (Latest: N/A)\n      Web version is v6.6.1 (Latest: N/A)\n      FTL version is v6.8 (Latest: N/A)\n\n2026-10-28 21:45:29.607 UTC [172M] INFO: ########## FTL started on 437df10e6fd6! ##########\n2026-10-28 21:45:29.610 UTC [172M] INFO: FTL branch: master\n2026-10-28 21:45:29.610 UTC [172M] INFO: FTL version: v6.8\n2026-10-28 21:45:29.611 UTC [172M] INFO: FTL commit: 29c8b13f\n2026-10-28 21:45:29.611 UTC [172M] INFO: FTL date: 2026-10-17 13:08:09 +0200\n2026-10-28 21:45:29.612 UTC [172M] INFO: FTL user: pihole\n2026-10-28 21:45:29.612 UTC [172M] INFO: Compiled for linux/amd64 (compiled on CI) using cc (Alpine 15.2.0) 15.2.0\n2026-10-28 21:45:30.329 UTC [172M] INFO: 11 FTLCONF environment variables found (11 used, 0 invalid, 0 ignored)\n2026-10-28 21:45:30.330 UTC [172M] INFO:    [\u2713] FTLCONF_ntp_sync_active is used\n2026-10-28 21:45:30.330 UTC [172M] INFO:    [\u2713] FTLCONF_dns_listeningMode is used\n2026-10-28 21:45:30.330 UTC [172M] INFO:    [\u2713] FTLCONF_ntp_ipv4_active is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_ntp_ipv6_active is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_webserver_api_password is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_webserver_port is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_dns_upstreams is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_dns_hosts is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_dhcp_active is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_dns_port is used\n2026-10-28 21:45:30.331 UTC [172M] INFO:    [\u2713] FTLCONF_misc_nice is used\n2026-10-28 21:45:30.341 UTC [172M] INFO: Wrote config file:\n2026-10-28 21:45:30.341 UTC [172M] INFO:  - 167 total entries\n2026-10-28 21:45:30.341 UTC [172M] INFO:  - 157 entries are default\n2026-10-28 21:45:30.342 UTC [172M] INFO:  - 10 entries are modified\n2026-10-28 21:45:30.342 UTC [172M] INFO:  - 8 entries are forced through environment\n2026-10-28 21:45:30.351 UTC [172M] INFO: Config file written to /etc/pihole/pihole.toml\n2026-10-28 21:45:30.392 UTC [172M] INFO: Parsed config file /etc/pihole/pihole.toml successfully\n2026-10-28 21:45:30.393 UTC [172M] INFO: PID file does not exist or not readable\n2026-10-28 21:45:30.394 UTC [172M] INFO: No other running FTL process found.\n2026-10-28 21:45:30.425 UTC [172M] INFO: PID of FTL process: 172\n2026-10-28 21:45:30.426 UTC [172M] WARNING: Linux capability CAP_NET_BIND_SERVICE is not available, needed for binding a privileged port\n2026-10-28 21:45:30.427 UTC [172M] WARNING: Linux capability CAP_CHOWN is not available, needed for taking ownership of the files FTL creates\n2026-10-28 21:45:30.458 UTC [172M] INFO: listening on 0.0.0.0 port 53\n2026-10-28 21:45:30.464 UTC [172M] INFO: listening on :: port 53\n2026-10-28 21:45:30.513 UTC [172M] WARNING: No database file found, creating new (empty) database at /etc/pihole/pihole-FTL.db\n2026-10-28 21:45:30.616 UTC [172M] INFO: Database version is 1\n2026-10-28 21:45:30.617 UTC [172M] INFO: Updating long-term database to version 2\n2026-10-28 21:45:30.631 UTC [172M] INFO: Updating long-term database to version 3\n2026-10-28 21:45:30.647 UTC [172M] INFO: Updating long-term database to version 4\n2026-10-28 21:45:30.660 UTC [172M] INFO: Updating long-term database to version 5\n2026-10-28 21:45:30.697 UTC [172M] INFO: Updating long-term database to version 6\n2026-10-28 21:45:30.705 UTC [172M] INFO: Updating long-term database to version 7\n2026-10-28 21:45:30.722 UTC [172M] INFO: Updating long-term database to version 8\n2026-10-28 21:45:30.774 UTC [172M] INFO: Updating long-term database to version 9\n2026-10-28 21:45:30.794 UTC [172M] INFO: Updating long-term database to version 10\n2026-10-28 21:45:30.822 UTC [172M] INFO: Updating long-term database to version 11\n2026-10-28 21:45:30.837 UTC [172M] INFO: Updating long-term database to version 12\n2026-10-28 21:45:30.851 UTC [172M] INFO: Updating long-term database to version 13\n2026-10-28 21:45:30.865 UTC [172M] INFO: Updating long-term database to version 14\n2026-10-28 21:45:30.875 UTC [172M] INFO: Updating long-term database to version 15\n2026-10-28 21:45:30.884 UTC [172M] INFO: Updating long-term database to version 16\n2026-10-28 21:45:30.894 UTC [172M] INFO: Updating long-term database to version 17\n2026-10-28 21:45:30.915 UTC [172M] INFO: Updating long-term database to version 18\n2026-10-28 21:45:30.924 UTC [172M] INFO: Updating long-term database to version 19\n2026-10-28 21:45:30.935 UTC [172M] INFO: Updating long-term database to version 20\n2026-10-28 21:45:30.952 UTC [172M] INFO: Updating long-term database to version 21\n2026-10-28 21:45:30.964 UTC [172M] INFO: Updating long-term database to version 22\n2026-10-28 21:45:30.976 UTC [172M] INFO: Database successfully initialized\n2026-10-28 21:45:31.329 UTC [172M] INFO: NTP sync is disabled\n2026-10-28 21:45:31.332 UTC [172M] INFO: Restored 0 API sessions from the database\n2026-10-28 21:45:31.343 UTC [172M] INFO: FTL is running as user pihole (UID 1000)\n2026-10-28 21:45:31.348 UTC [172/T186] INFO: Imported 0 queries from the on-disk database (it has 0 rows)\n2026-10-28 21:45:31.348 UTC [172/T186] INFO: Parsing queries in database\n2026-10-28 21:45:31.349 UTC [172M] WARNING: Linux capability CAP_NET_BIND_SERVICE is not available, needed for binding a privileged port\n2026-10-28 21:45:31.352 UTC [172/T186] INFO: Imported 0 queries from the long-term database\n2026-10-28 21:45:31.353 UTC [172/T190] INFO: Web server ports:\n2026-10-28 21:45:31.353 UTC [172/T186] INFO:  -> Total DNS queries: 0\n2026-10-28 21:45:31.353 UTC [172/T190] INFO:   - 0.0.0.0:8080 (HTTP, IPv4, OK)\n2026-10-28 21:45:31.353 UTC [172/T186] INFO:  -> Cached DNS queries: 0\n2026-10-28 21:45:31.353 UTC [172/T186] INFO:  -> Forwarded DNS queries: 0\n2026-10-28 21:45:31.349 UTC [172M] WARNING: Linux capability CAP_CHOWN is not available, needed for taking ownership of the files FTL creates\n2026-10-28 21:45:31.354 UTC [172M] INFO: Blocking status is enabled\n2026-10-28 21:45:31.355 UTC [172/T186] INFO:  -> Blocked DNS queries: 0\n2026-10-28 21:45:31.355 UTC [172/T186] INFO:  -> Unknown DNS queries: 0\n2026-10-28 21:45:31.355 UTC [172/T186] INFO:  -> Unique domains: 0\n2026-10-28 21:45:31.355 UTC [172/T186] INFO:  -> Unique clients: 0\n2026-10-28 21:45:31.355 UTC [172/T186] INFO:  -> DNS cache records: 0\n2026-10-28 21:45:31.356 UTC [172/T186] INFO:  -> Known forward destinations: 0\n2026-10-28 21:45:31.378 UTC [172/T186] INFO: Compiled 0 allow and 0 deny regex for 0 client in 1.3 msec\nfatal: unable to access 'https://github.com/pi-hole/pi-hole/': Failed to connect to github.com:443 after 4 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/web/': Failed to connect to github.com:443 after 2 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/FTL/': Failed to connect to github.com:443 after 2 ms: Could not connect to server\n"
+    },
+    {
+      "case": "reduced_capabilities",
+      "docker_flags": [
+        "--cap-drop=ALL",
+        "--cap-add=CHOWN",
+        "--cap-add=DAC_OVERRIDE",
+        "--cap-add=FOWNER",
+        "--cap-add=SETGID",
+        "--cap-add=SETUID",
+        "--cap-add=SETPCAP",
+        "--cap-add=SETFCAP",
+        "--cap-add=NET_BIND_SERVICE",
+        "--cap-add=KILL"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": true,
+      "stable": true,
+      "seconds_to_dns_answer": 9.25,
+      "ftl_process_status": "Uid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000401\nCapEff:\t0000000000000400\nCapBnd:\t00000000800005eb\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\n",
+      "ftl_file_capabilities": "/usr/bin/pihole-FTL cap_chown,cap_net_bind_service=ep",
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 19512,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:45:39.183351586Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:45:40.927 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n  [i] Version info:\n      Core version is v6.5 (Latest: N/A)\n      Web version is v6.6.1 (Latest: N/A)\n      FTL version is v6.8 (Latest: N/A)\n\n2026-10-28 21:45:44.720 UTC [165M] INFO: ########## FTL started on d9f6368ad3d7! ##########\n2026-10-28 21:45:44.721 UTC [165M] INFO: FTL branch: master\n2026-10-28 21:45:44.722 UTC [165M] INFO: FTL version: v6.8\n2026-10-28 21:45:44.722 UTC [165M] INFO: FTL commit: 29c8b13f\n2026-10-28 21:45:44.722 UTC [165M] INFO: FTL date: 2026-10-17 13:08:09 +0200\n2026-10-28 21:45:44.722 UTC [165M] INFO: FTL user: pihole\n2026-10-28 21:45:44.722 UTC [165M] INFO: Compiled for linux/amd64 (compiled on CI) using cc (Alpine 15.2.0) 15.2.0\n2026-10-28 21:45:45.358 UTC [165M] INFO: 11 FTLCONF environment variables found (11 used, 0 invalid, 0 ignored)\n2026-10-28 21:45:45.358 UTC [165M] INFO:    [\u2713] FTLCONF_ntp_sync_active is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_dns_listeningMode is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_ntp_ipv4_active is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_ntp_ipv6_active is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_webserver_api_password is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_webserver_port is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_dns_upstreams is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_dns_hosts is used\n2026-10-28 21:45:45.359 UTC [165M] INFO:    [\u2713] FTLCONF_dhcp_active is used\n2026-10-28 21:45:45.360 UTC [165M] INFO:    [\u2713] FTLCONF_dns_port is used\n2026-10-28 21:45:45.360 UTC [165M] INFO:    [\u2713] FTLCONF_misc_nice is used\n2026-10-28 21:45:45.368 UTC [165M] INFO: Wrote config file:\n2026-10-28 21:45:45.368 UTC [165M] INFO:  - 167 total entries\n2026-10-28 21:45:45.368 UTC [165M] INFO:  - 157 entries are default\n2026-10-28 21:45:45.369 UTC [165M] INFO:  - 10 entries are modified\n2026-10-28 21:45:45.369 UTC [165M] INFO:  - 8 entries are forced through environment\n2026-10-28 21:45:45.376 UTC [165M] INFO: Config file written to /etc/pihole/pihole.toml\n2026-10-28 21:45:45.390 UTC [165M] INFO: Parsed config file /etc/pihole/pihole.toml successfully\n2026-10-28 21:45:45.391 UTC [165M] INFO: PID file does not exist or not readable\n2026-10-28 21:45:45.391 UTC [165M] INFO: No other running FTL process found.\n2026-10-28 21:45:45.409 UTC [165M] INFO: PID of FTL process: 165\n2026-10-28 21:45:45.429 UTC [165M] INFO: listening on 0.0.0.0 port 53\n2026-10-28 21:45:45.431 UTC [165M] INFO: listening on :: port 53\n2026-10-28 21:45:45.438 UTC [165M] WARNING: No database file found, creating new (empty) database at /etc/pihole/pihole-FTL.db\n2026-10-28 21:45:45.524 UTC [165M] INFO: Database version is 1\n2026-10-28 21:45:45.524 UTC [165M] INFO: Updating long-term database to version 2\n2026-10-28 21:45:45.534 UTC [165M] INFO: Updating long-term database to version 3\n2026-10-28 21:45:45.543 UTC [165M] INFO: Updating long-term database to version 4\n2026-10-28 21:45:45.552 UTC [165M] INFO: Updating long-term database to version 5\n2026-10-28 21:45:45.585 UTC [165M] INFO: Updating long-term database to version 6\n2026-10-28 21:45:45.590 UTC [165M] INFO: Updating long-term database to version 7\n2026-10-28 21:45:45.598 UTC [165M] INFO: Updating long-term database to version 8\n2026-10-28 21:45:45.618 UTC [165M] INFO: Updating long-term database to version 9\n2026-10-28 21:45:45.626 UTC [165M] INFO: Updating long-term database to version 10\n2026-10-28 21:45:45.644 UTC [165M] INFO: Updating long-term database to version 11\n2026-10-28 21:45:45.655 UTC [165M] INFO: Updating long-term database to version 12\n2026-10-28 21:45:45.665 UTC [165M] INFO: Updating long-term database to version 13\n2026-10-28 21:45:45.673 UTC [165M] INFO: Updating long-term database to version 14\n2026-10-28 21:45:45.678 UTC [165M] INFO: Updating long-term database to version 15\n2026-10-28 21:45:45.686 UTC [165M] INFO: Updating long-term database to version 16\n2026-10-28 21:45:45.693 UTC [165M] INFO: Updating long-term database to version 17\n2026-10-28 21:45:45.708 UTC [165M] INFO: Updating long-term database to version 18\n2026-10-28 21:45:45.717 UTC [165M] INFO: Updating long-term database to version 19\n2026-10-28 21:45:45.724 UTC [165M] INFO: Updating long-term database to version 20\n2026-10-28 21:45:45.732 UTC [165M] INFO: Updating long-term database to version 21\n2026-10-28 21:45:45.740 UTC [165M] INFO: Updating long-term database to version 22\n2026-10-28 21:45:45.749 UTC [165M] INFO: Database successfully initialized\n2026-10-28 21:45:46.011 UTC [165M] INFO: NTP sync is disabled\n2026-10-28 21:45:46.013 UTC [165M] INFO: Restored 0 API sessions from the database\n2026-10-28 21:45:46.021 UTC [165M] INFO: FTL is running as user pihole (UID 1000)\n2026-10-28 21:45:46.026 UTC [165/T174] INFO: Imported 0 queries from the on-disk database (it has 0 rows)\n2026-10-28 21:45:46.026 UTC [165M] INFO: Blocking status is enabled\n2026-10-28 21:45:46.027 UTC [165/T174] INFO: Parsing queries in database\n2026-10-28 21:45:46.034 UTC [165/T174] INFO: Imported 0 queries from the long-term database\n2026-10-28 21:45:46.035 UTC [165/T174] INFO:  -> Total DNS queries: 0\n2026-10-28 21:45:46.035 UTC [165/T174] INFO:  -> Cached DNS queries: 0\n2026-10-28 21:45:46.035 UTC [165/T174] INFO:  -> Forwarded DNS queries: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> Blocked DNS queries: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> Unknown DNS queries: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> Unique domains: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> Unique clients: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> DNS cache records: 0\n2026-10-28 21:45:46.036 UTC [165/T174] INFO:  -> Known forward destinations: 0\n2026-10-28 21:45:46.038 UTC [165/T178] INFO: Web server ports:\n2026-10-28 21:45:46.038 UTC [165/T178] INFO:   - 0.0.0.0:8080 (HTTP, IPv4, OK)\n2026-10-28 21:45:46.062 UTC [165/T174] INFO: Compiled 0 allow and 0 deny regex for 0 client in 1.4 msec\nfatal: unable to access 'https://github.com/pi-hole/pi-hole/': Failed to connect to github.com:443 after 4 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/web/': Failed to connect to github.com:443 after 2 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/FTL/': Failed to connect to github.com:443 after 2 ms: Could not connect to server\n"
+    },
+    {
+      "case": "reduced_capabilities_no_new_privileges",
+      "docker_flags": [
+        "--cap-drop=ALL",
+        "--cap-add=CHOWN",
+        "--cap-add=DAC_OVERRIDE",
+        "--cap-add=FOWNER",
+        "--cap-add=SETGID",
+        "--cap-add=SETUID",
+        "--cap-add=SETPCAP",
+        "--cap-add=SETFCAP",
+        "--cap-add=NET_BIND_SERVICE",
+        "--cap-add=KILL",
+        "--security-opt=no-new-privileges:true"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": true,
+      "stable": true,
+      "seconds_to_dns_answer": 13.97,
+      "ftl_process_status": "Uid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t00000000800005eb\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\n",
+      "ftl_file_capabilities": "/usr/bin/pihole-FTL cap_chown,cap_net_bind_service=ep",
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 20101,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:45:53.799258036Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:45:55.103 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n  [i] Version info:\n      Core version is v6.5 (Latest: N/A)\n      Web version is v6.6.1 (Latest: N/A)\n      FTL version is v6.8 (Latest: N/A)\n\n2026-10-28 21:46:01.895 UTC [173M] INFO: ########## FTL started on d36283d8bd30! ##########\n2026-10-28 21:46:01.897 UTC [173M] INFO: FTL branch: master\n2026-10-28 21:46:01.904 UTC [173M] INFO: FTL version: v6.8\n2026-10-28 21:46:01.905 UTC [173M] INFO: FTL commit: 29c8b13f\n2026-10-28 21:46:01.906 UTC [173M] INFO: FTL date: 2026-10-17 13:08:09 +0200\n2026-10-28 21:46:01.906 UTC [173M] INFO: FTL user: pihole\n2026-10-28 21:46:01.906 UTC [173M] INFO: Compiled for linux/amd64 (compiled on CI) using cc (Alpine 15.2.0) 15.2.0\n2026-10-28 21:46:03.370 UTC [173M] INFO: 11 FTLCONF environment variables found (11 used, 0 invalid, 0 ignored)\n2026-10-28 21:46:03.371 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_sync_active is used\n2026-10-28 21:46:03.371 UTC [173M] INFO:    [\u2713] FTLCONF_dns_listeningMode is used\n2026-10-28 21:46:03.371 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_ipv4_active is used\n2026-10-28 21:46:03.371 UTC [173M] INFO:    [\u2713] FTLCONF_ntp_ipv6_active is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_webserver_api_password is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_webserver_port is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_dns_upstreams is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_dns_hosts is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_dhcp_active is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_dns_port is used\n2026-10-28 21:46:03.372 UTC [173M] INFO:    [\u2713] FTLCONF_misc_nice is used\n2026-10-28 21:46:03.491 UTC [173M] INFO: Wrote config file:\n2026-10-28 21:46:03.491 UTC [173M] INFO:  - 167 total entries\n2026-10-28 21:46:03.492 UTC [173M] INFO:  - 157 entries are default\n2026-10-28 21:46:03.492 UTC [173M] INFO:  - 10 entries are modified\n2026-10-28 21:46:03.492 UTC [173M] INFO:  - 8 entries are forced through environment\n2026-10-28 21:46:03.520 UTC [173M] INFO: Config file written to /etc/pihole/pihole.toml\n2026-10-28 21:46:03.570 UTC [173M] INFO: Parsed config file /etc/pihole/pihole.toml successfully\n2026-10-28 21:46:03.573 UTC [173M] INFO: PID file does not exist or not readable\n2026-10-28 21:46:03.574 UTC [173M] INFO: No other running FTL process found.\n2026-10-28 21:46:03.697 UTC [173M] INFO: PID of FTL process: 173\n2026-10-28 21:46:03.698 UTC [173M] WARNING: Linux capability CAP_NET_BIND_SERVICE is not available, needed for binding a privileged port\n2026-10-28 21:46:03.699 UTC [173M] WARNING: Linux capability CAP_CHOWN is not available, needed for taking ownership of the files FTL creates\n2026-10-28 21:46:03.768 UTC [173M] INFO: listening on 0.0.0.0 port 53\n2026-10-28 21:46:03.775 UTC [173M] INFO: listening on :: port 53\n2026-10-28 21:46:03.820 UTC [173M] WARNING: No database file found, creating new (empty) database at /etc/pihole/pihole-FTL.db\n2026-10-28 21:46:04.328 UTC [173M] INFO: Database version is 1\n2026-10-28 21:46:04.341 UTC [173M] INFO: Updating long-term database to version 2\n2026-10-28 21:46:04.379 UTC [173M] INFO: Updating long-term database to version 3\n2026-10-28 21:46:04.408 UTC [173M] INFO: Updating long-term database to version 4\n2026-10-28 21:46:04.449 UTC [173M] INFO: Updating long-term database to version 5\n2026-10-28 21:46:04.606 UTC [173M] INFO: Updating long-term database to version 6\n2026-10-28 21:46:04.638 UTC [173M] INFO: Updating long-term database to version 7\n2026-10-28 21:46:04.678 UTC [173M] INFO: Updating long-term database to version 8\n2026-10-28 21:46:04.816 UTC [173M] INFO: Updating long-term database to version 9\n2026-10-28 21:46:04.875 UTC [173M] INFO: Updating long-term database to version 10\n2026-10-28 21:46:04.958 UTC [173M] INFO: Updating long-term database to version 11\n2026-10-28 21:46:05.008 UTC [173M] INFO: Updating long-term database to version 12\n2026-10-28 21:46:05.075 UTC [173M] INFO: Updating long-term database to version 13\n2026-10-28 21:46:05.143 UTC [173M] INFO: Updating long-term database to version 14\n2026-10-28 21:46:05.175 UTC [173M] INFO: Updating long-term database to version 15\n2026-10-28 21:46:05.212 UTC [173M] INFO: Updating long-term database to version 16\n2026-10-28 21:46:05.259 UTC [173M] INFO: Updating long-term database to version 17\n2026-10-28 21:46:05.354 UTC [173M] INFO: Updating long-term database to version 18\n2026-10-28 21:46:05.384 UTC [173M] INFO: Updating long-term database to version 19\n2026-10-28 21:46:05.429 UTC [173M] INFO: Updating long-term database to version 20\n2026-10-28 21:46:05.477 UTC [173M] INFO: Updating long-term database to version 21\n2026-10-28 21:46:05.520 UTC [173M] INFO: Updating long-term database to version 22\n2026-10-28 21:46:05.552 UTC [173M] INFO: Database successfully initialized\n2026-10-28 21:46:06.517 UTC [173M] INFO: NTP sync is disabled\n2026-10-28 21:46:06.530 UTC [173M] INFO: Restored 0 API sessions from the database\n2026-10-28 21:46:06.598 UTC [173/T200] INFO: Imported 0 queries from the on-disk database (it has 0 rows)\n2026-10-28 21:46:06.599 UTC [173M] INFO: FTL is running as user pihole (UID 1000)\n2026-10-28 21:46:06.617 UTC [173/T200] INFO: Parsing queries in database\n2026-10-28 21:46:06.658 UTC [173/T200] INFO: Imported 0 queries from the long-term database\n2026-10-28 21:46:06.682 UTC [173M] WARNING: Linux capability CAP_NET_BIND_SERVICE is not available, needed for binding a privileged port\n2026-10-28 21:46:06.693 UTC [173M] WARNING: Linux capability CAP_CHOWN is not available, needed for taking ownership of the files FTL creates\n2026-10-28 21:46:06.658 UTC [173/T200] INFO:  -> Total DNS queries: 0\n2026-10-28 21:46:06.694 UTC [173M] INFO: Blocking status is enabled\n2026-10-28 21:46:06.694 UTC [173/T200] INFO:  -> Cached DNS queries: 0\n2026-10-28 21:46:06.694 UTC [173/T200] INFO:  -> Forwarded DNS queries: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> Blocked DNS queries: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> Unknown DNS queries: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> Unique domains: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> Unique clients: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> DNS cache records: 0\n2026-10-28 21:46:06.695 UTC [173/T200] INFO:  -> Known forward destinations: 0\n2026-10-28 21:46:06.707 UTC [173/T204] INFO: Web server ports:\n2026-10-28 21:46:06.707 UTC [173/T204] INFO:   - 0.0.0.0:8080 (HTTP, IPv4, OK)\n2026-10-28 21:46:06.840 UTC [173/T200] INFO: Compiled 0 allow and 0 deny regex for 0 client in 7.2 msec\nfatal: unable to access 'https://github.com/pi-hole/pi-hole/': Failed to connect to github.com:443 after 29 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/web/': Failed to connect to github.com:443 after 3 ms: Could not connect to server\nfatal: unable to access 'https://github.com/pi-hole/FTL/': Failed to connect to github.com:443 after 3 ms: Could not connect to server\n"
+    },
+    {
+      "case": "nonroot",
+      "docker_flags": [
+        "--user=1000:1000",
+        "--cap-drop=ALL",
+        "--cap-add=NET_BIND_SERVICE"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": false,
+      "stable": false,
+      "state_before_cleanup": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 1,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:46:20.569042795Z",
+        "FinishedAt": "2026-10-28T21:46:25.395699958Z",
+        "Health": {
+          "Status": "unhealthy",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] No DNS upstream set in environment or config file, defaulting to Google DNS\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n  [!] Failed to install crontab - scheduled tasks (gravity, update checker) will not run\n\n  [i] Gravity migration checks\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n2026-10-28 21:46:22.133 UTC crond: crond (busybox 1.37.0) started, log level 6\n2026-10-28 21:46:22.244 UTC crond: root: Permission denied\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [!] ERROR: Unable to set capabilities for pihole-FTL.\n            Please ensure that the container has the required capabilities.\nchown: changing ownership of '/macvendor.db': Operation not permitted\nsed: can't create temp file '/crontab.txtXXXXXX': Permission denied\nsed: can't create temp file '/crontab.txtXXXXXX': Permission denied\ncrontab: must be suid to work properly\n"
+    },
+    {
+      "case": "read_only_root",
+      "docker_flags": [
+        "--read-only",
+        "--tmpfs=/run",
+        "--tmpfs=/tmp",
+        "--tmpfs=/var/log/pihole",
+        "--tmpfs=/var/lib/logrotate",
+        "--tmpfs=/var/spool/cron/crontabs"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": false,
+      "stable": false,
+      "state_before_cleanup": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 1,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:46:31.069445002Z",
+        "FinishedAt": "2026-10-28T21:46:36.534685511Z",
+        "Health": {
+          "Status": "unhealthy",
+          "FailingStreak": 0,
+          "Log": []
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:46:33.273 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n\n\u001b[K  [\u2713] DNS resolution is available\n\n  [i] Migrating the list's cache directory to new location...\n\u001b[K  [\u2717] Migrating the list's cache directory to new location\n  [i] Creating new gravity database\n  [i] Migrating content of /etc/pihole/adlists.list into new database\n  [i] Neutrino emissions detected...\n\n  [i] Preparing new gravity database...\n\u001b[K  [\u2713] Preparing new gravity database\n  [i] Creating new gravity databases...\n\u001b[K  [\u2713] Creating new gravity databases\n\n\u001b[K  [\u2713] Pulling blocklist source list into range\n  [i] No source list found, or it is empty\n\n  [i] Using libz compression\n\n  [i] Building gravity tree...\n\u001b[K  [\u2713] Building gravity tree\n  [i] Building antigravity tree...\n\u001b[K  [\u2713] Building antigravity tree\n\n  [i] Number of gravity domains: 0 (0 unique domains)\n  [i] Number of antigravity domains: 0 (0 unique domains)\n  [i] Number of exact denied domains: 0\n  [i] Number of regex denied filters: 0\n  [i] Number of exact allowed domains: 0\n  [i] Number of regex allowed filters: 0\n\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n        * CAP_NET_RAW\n  [!] ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root.\n            If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'\nchown: changing ownership of '/macvendor.db': Read-only file system\nsed: can't create temp file '/crontab.txtXXXXXX': Read-only file system\nsed: can't create temp file '/crontab.txtXXXXXX': Read-only file system\nFailed to set capabilities on file '/usr/bin/pihole-FTL': Read-only file system\n"
+    }
+  ],
+  "cleanup_errors": [],
+  "docker_version": {
+    "Platform": {
+      "Name": "Docker Engine - Community"
+    },
+    "Version": "28.4.0",
+    "ApiVersion": "1.51",
+    "MinAPIVersion": "1.24",
+    "Os": "linux",
+    "Arch": "amd64",
+    "Components": [
+      {
+        "Name": "Engine",
+        "Version": "28.4.0",
+        "Details": {
+          "ApiVersion": "1.51",
+          "Arch": "amd64",
+          "BuildTime": "Wed Sep  3 20:57:32 2025",
+          "Experimental": "false",
+          "GitCommit": "249d679",
+          "GoVersion": "go1.24.7",
+          "KernelVersion": "6.8.0-64-generic",
+          "MinAPIVersion": "1.24",
+          "Os": "linux"
+        }
+      },
+      {
+        "Name": "containerd",
+        "Version": "1.7.27",
+        "Details": {
+          "GitCommit": "05044ec0a9a75232cad458027ca83437aae3f4da"
+        }
+      },
+      {
+        "Name": "runc",
+        "Version": "1.2.5",
+        "Details": {
+          "GitCommit": "v1.2.5-0-g59923ef"
+        }
+      },
+      {
+        "Name": "docker-init",
+        "Version": "0.19.0",
+        "Details": {
+          "GitCommit": "de40ad0"
+        }
+      }
+    ],
+    "GitCommit": "249d679",
+    "GoVersion": "go1.24.7",
+    "KernelVersion": "6.8.0-64-generic",
+    "BuildTime": "2025-09-03T20:57:32.000000000+00:00"
+  },
+  "image_metadata": {
+    "Id": "sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+    "RepoDigests": [
+      "pihole/pihole@sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux",
+    "Created": "2026-10-17T11:55:58.550442431Z"
+  },
+  "completed_utc": "2026-10-28T21:46:40.997583+00:00"
+}

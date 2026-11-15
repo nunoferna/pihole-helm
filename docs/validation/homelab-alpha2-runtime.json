@@ -1,0 +1,78 @@
+{
+  "started_utc": "2026-11-14T20:45:30.550169+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-staging",
+  "chart_version": "2.0.0-alpha.2",
+  "checks": [
+    {
+      "check": "persistent_ownership_and_safe_upgrade",
+      "passed": true,
+      "seconds": 2.15,
+      "details": {
+        "ready_replicas": 2,
+        "independent_owned_records_per_replica": 1,
+        "expected_revision": "9344923b9284a91e092776220895a0742b9e871f631b636fa8c404947b823d47",
+        "immutable_artifact": "pihole-staging-policy-ccc7517518342740c4a2",
+        "adoption_disabled": true,
+        "original_pvc_uids_preserved": true,
+        "pre_adoption_backup_integrity": "ok",
+        "ordinary_post_migration_upgrade_succeeded": true
+      }
+    },
+    {
+      "check": "strengthened_helm_test",
+      "passed": true,
+      "seconds": 0.0,
+      "details": {
+        "helm_test": "Succeeded",
+        "checks": "per-replica and Service UDP/TCP local/filtering/upstream answers, API authentication and all exporter status samples"
+      }
+    },
+    {
+      "check": "external_nodeport_dns_after_upgrade",
+      "passed": true,
+      "seconds": 0.23,
+      "details": {
+        "192.168.1.73/UDP": "local and filtering answers passed",
+        "192.168.1.73/TCP": "local and filtering answers passed",
+        "192.168.1.77/UDP": "local and filtering answers passed",
+        "192.168.1.77/TCP": "local and filtering answers passed"
+      }
+    },
+    {
+      "check": "scheduled_dns_success",
+      "passed": true,
+      "seconds": 43.81,
+      "details": {
+        "schedule": "* * * * *",
+        "last_successful_time": "2026-11-14T20:46:15Z",
+        "credential_mount": false,
+        "scope": "Service and both replicas; UDP/TCP local/filtering/upstream checks"
+      }
+    },
+    {
+      "check": "prometheus_scrape_and_four_rule_evaluation",
+      "passed": true,
+      "seconds": 2.41,
+      "details": {
+        "healthy_scrape_targets": 1,
+        "last_scrape": [
+          "2026-11-14T20:46:05.882189977Z"
+        ],
+        "authenticated_status_samples": 2,
+        "alert_rules": {
+          "PiholeReplicasUnavailable": "inactive",
+          "PiholeExporterUnavailable": "inactive",
+          "PiholeBlockingDisabled": "inactive",
+          "PiholeSyntheticDnsStale": "inactive"
+        },
+        "notification_delivery_tested": false,
+        "scheduled_synthetic_dns_monitor_installed": true,
+        "synthetic_scope": "in-cluster Service and all replicas; one-minute schedule"
+      }
+    }
+  ],
+  "scope": "retained homelab alpha.2 adoption/normal upgrade, ownership persistence, Helm tests, scheduled in-cluster DNS and Prometheus; no power-loss/VIP/backup-restoration certification",
+  "staging_retained": true,
+  "completed_utc": "2026-11-14T20:46:19.149001+00:00"
+}

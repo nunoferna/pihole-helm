@@ -1,0 +1,214 @@
+{
+  "startedUTC": "2026-11-15T13:05:05.136789+00:00",
+  "context": "kind-pihole-stable-arm64",
+  "scope": "disposable kind L2/Local VIP, one abrupt worker-container failure, bounded synthetic load and fresh-namespace recovery; not hardware/site certification",
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "client": "python:3.13-alpine@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916"
+  },
+  "checks": [
+    {
+      "check": "two_replica_offline_snapshot_startup",
+      "passed": true,
+      "seconds": 9.51,
+      "details": {
+        "domains": 100001,
+        "sha256": "7e1a71d840a4985e7c0dac23800f5d47adf1ebbb39d1fff8579434a55e7c957e"
+      }
+    },
+    {
+      "check": "private_admin_tls_and_negative_validation",
+      "passed": true,
+      "seconds": 4.18,
+      "details": {
+        "customSecretPEM": true,
+        "trustedCAAndHostnameValidated": true,
+        "service443ToPod8443Validated": true,
+        "wrongHostnameAndUntrustedCARejected": true
+      }
+    },
+    {
+      "check": "external_source_ip_and_client_specific_filtering",
+      "passed": true,
+      "seconds": 162.06,
+      "details": {
+        "externalClientIP": "172.18.0.7",
+        "defaultGroupBlocked": true,
+        "explicitClientGroupBypassesDefaultList": true,
+        "ownedClientGroupRemovalRestoresBlocking": true,
+        "udpAndTcp": true,
+        "transportWarmupObservations": [],
+        "sourcePreservationScope": "This MetalLB L2 externalTrafficPolicy=Local fixture only"
+      }
+    },
+    {
+      "check": "bounded_external_load",
+      "passed": true,
+      "seconds": 20.73,
+      "details": {
+        "externalClient": "Docker peer on the kind bridge, outside Kubernetes",
+        "results": {
+          "queries": 13964,
+          "failures": 0,
+          "firstErrors": [],
+          "elapsedSeconds": 20.028,
+          "observedQPS": 697.22,
+          "p50Ms": 0.658,
+          "p99Ms": 2.866
+        },
+        "storage": "10216\t/etc/pihole\nFilesystem     1K-blocks  Used Available Use% Mounted on\nshm                65536  2716     62820   5% /dev/shm\nVmRSS:\t   14400 kB\n",
+        "limit": "Synthetic list and one client with per-client rate limiting disabled for throughput measurement; no long-term history or saturation/SLA claim"
+      }
+    },
+    {
+      "check": "abrupt_announcer_loss_and_udp_tcp_recovery",
+      "passed": true,
+      "seconds": 60.55,
+      "details": {
+        "killedKindWorker": "pihole-stable-arm64-worker",
+        "mechanism": "SIGKILL of the Docker node container",
+        "postCrashQueries": 1204,
+        "failedQueries": 10,
+        "lastObservedFailureAfterSeconds": 6.354,
+        "steadyRecoverySamples": 1116,
+        "firstSuccessAfterFinalFailureSeconds": 6.354,
+        "restartedNodePodReconnected": "pihole-ha-0",
+        "perReplicaPostRestartHelmTests": true,
+        "summary": {
+          "queries": 1316,
+          "failures": 10,
+          "firstErrors": [
+            {
+              "utc": 1794748110.875388,
+              "protocol": "udp",
+              "name": "health.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.245
+            },
+            {
+              "utc": 1794748110.8756874,
+              "protocol": "udp",
+              "name": "blocked.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.05
+            },
+            {
+              "utc": 1794748110.8757567,
+              "protocol": "tcp",
+              "name": "health.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.056
+            },
+            {
+              "utc": 1794748110.875825,
+              "protocol": "tcp",
+              "name": "blocked.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.024
+            }
+          ],
+          "elapsedSeconds": 40.082,
+          "observedQPS": 32.83,
+          "p50Ms": 0.7545,
+          "p99Ms": 2.339
+        },
+        "sampleIntervalSeconds": 0.1,
+        "limit": "One local virtual worker and L2 VIP; not physical power loss, CNI/provider-independent guarantees or site recovery"
+      }
+    },
+    {
+      "check": "encrypted_off_cluster_backup_and_fresh_namespace_restore",
+      "passed": true,
+      "seconds": 56.3,
+      "details": {
+        "backupAndIdentityDirectory": "/var/folders/09/8yf88qrj7jd45_9dlt885nww0000gn/T/pihole-encrypted-recovery-ee0vyj_7",
+        "archiveSHA256": "9e536ee6539dd362fdbdb25ac4eac0d1257b4b1ff7218482f5e3a03dc1f27dcb",
+        "restoredIntoFreshPVCAndNamespace": true,
+        "identicalOwnershipEntries": true,
+        "listProviderUnavailableThroughout": true,
+        "perReplicaUDPAndTCPFilteringAuthenticationMetrics": true,
+        "activeClaimOverwriteRejected": true,
+        "adminTLSAndTrustRestoredFromIndependentSecret": true,
+        "independentCiphertextChecksumEnforced": true,
+        "queryHistoryIncluded": false,
+        "restore": {
+          "restoredPVC": "etc-pihole-pihole-ha-0",
+          "integrity": "ok",
+          "policyOwner": "pihole-ha-28c3f5da/pihole-ha",
+          "nextStep": "Install the same image with policy.owner set to the original identity, original desired policy and independently retained credentials"
+        }
+      }
+    }
+  ],
+  "tested_chart": "/tmp/pihole-2.0.0-certified/pihole-2.0.0.tgz",
+  "tested_archive_sha256": "a00aef6e8d1125ad188963fe5c3cdf3be7851c362e388ab682e8cb1ab7ca53bc",
+  "nodes": [
+    {
+      "name": "pihole-stable-arm64-control-plane",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "e170665037ee41549e47c25260444b96",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "ad993a3b-350f-4087-b1c4-886aecb0eae5"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "5109304fcb7c4b9684403dccfd5292fa",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "e43adb3c-4f2d-4973-a84e-4b0ad0d1b19d"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker2",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "06cb933c591a41f49c413932a03853a2",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "d0ee225e-8583-41c7-ad79-bcd6f879f6d5"
+      }
+    }
+  ],
+  "VIP": "172.18.255.156",
+  "baselineLoadObservation": {
+    "queries": 13964,
+    "failures": 0,
+    "firstErrors": [],
+    "elapsedSeconds": 20.028,
+    "observedQPS": 697.22,
+    "p50Ms": 0.658,
+    "p99Ms": 2.866
+  },
+  "namespaceCleanup": {
+    "pihole-ha-28c3f5da-restore": true,
+    "pihole-ha-28c3f5da": true
+  },
+  "finishedUTC": "2026-11-15T13:12:00.833859+00:00"
+}

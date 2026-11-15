@@ -1,0 +1,166 @@
+{
+  "startedUTC": "2026-11-15T01:01:32.585460+00:00",
+  "context": "kind-pihole-stable-arm64",
+  "scope": "disposable kind L2/Local VIP, one abrupt worker-container failure, bounded synthetic load and fresh-namespace recovery; not hardware/site certification",
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "client": "python:3.13-alpine@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916"
+  },
+  "checks": [
+    {
+      "check": "two_replica_offline_snapshot_startup",
+      "passed": true,
+      "seconds": 16.12,
+      "details": {
+        "domains": 100001,
+        "sha256": "7e1a71d840a4985e7c0dac23800f5d47adf1ebbb39d1fff8579434a55e7c957e"
+      }
+    },
+    {
+      "check": "bounded_external_load",
+      "passed": true,
+      "seconds": 21.04,
+      "details": {
+        "externalClient": "Docker peer on the kind bridge, outside Kubernetes",
+        "results": {
+          "queries": 12500,
+          "failures": 0,
+          "firstErrors": [],
+          "elapsedSeconds": 20.023,
+          "observedQPS": 624.29,
+          "p50Ms": 1.098,
+          "p99Ms": 5.811
+        },
+        "storage": "10204\t/etc/pihole\nFilesystem     1K-blocks  Used Available Use% Mounted on\nshm                65536  2716     62820   5% /dev/shm\nVmRSS:\t   13292 kB\n",
+        "limit": "Synthetic list and one client with per-client rate limiting disabled for throughput measurement; no long-term history or saturation/SLA claim"
+      }
+    },
+    {
+      "check": "abrupt_announcer_loss_and_udp_tcp_recovery",
+      "passed": true,
+      "seconds": 48.37,
+      "details": {
+        "killedKindWorker": "pihole-stable-arm64-worker",
+        "mechanism": "SIGKILL of the Docker node container",
+        "postCrashQueries": 1104,
+        "failedQueries": 12,
+        "lastObservedFailureAfterSeconds": 7.329,
+        "steadyRecoverySamples": 1056,
+        "summary": {
+          "queries": 1212,
+          "failures": 12,
+          "firstErrors": [
+            {
+              "utc": 1794704539.554432,
+              "protocol": "udp",
+              "name": "health.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.714
+            },
+            {
+              "utc": 1794704539.555232,
+              "protocol": "udp",
+              "name": "blocked.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.101
+            },
+            {
+              "utc": 1794704539.5553505,
+              "protocol": "tcp",
+              "name": "health.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.097
+            },
+            {
+              "utc": 1794704539.555464,
+              "protocol": "tcp",
+              "name": "blocked.ha.invalid",
+              "ok": false,
+              "error": "[Errno 111] Connection refused",
+              "ms": 0.414
+            }
+          ],
+          "elapsedSeconds": 40.007,
+          "observedQPS": 30.29,
+          "p50Ms": 0.9435,
+          "p99Ms": 3.499
+        },
+        "sampleIntervalSeconds": 0.1,
+        "limit": "One local virtual worker and L2 VIP; not physical power loss, CNI/provider-independent guarantees or site recovery"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "name": "pihole-stable-arm64-control-plane",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "e170665037ee41549e47c25260444b96",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "ad993a3b-350f-4087-b1c4-886aecb0eae5"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "de30c72adad14110b1cd3ef27fc25db9",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "e43adb3c-4f2d-4973-a84e-4b0ad0d1b19d"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker2",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "06cb933c591a41f49c413932a03853a2",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "d0ee225e-8583-41c7-ad79-bcd6f879f6d5"
+      }
+    }
+  ],
+  "VIP": "172.18.255.156",
+  "baselineLoadObservation": {
+    "queries": 12500,
+    "failures": 0,
+    "firstErrors": [],
+    "elapsedSeconds": 20.023,
+    "observedQPS": 624.29,
+    "p50Ms": 1.098,
+    "p99Ms": 5.811
+  },
+  "error": "Recovery operation failed: flock: unrecognized option: w\nBusyBox v1.37.0 (2026-01-10 15:38:28 UTC) multi-call binary.\n\nUsage: flock [-sxun] FD | { FILE [-c] PROG ARGS }\n\n[Un]lock file descriptor, or lock FILE, run PROG\n\n\t-s\tShared lock\n\t-x\tExclusive lock (default)\n\t-u\tUnlock FD\n\t-n\tFail rather than wait\ncommand terminated with exit code 1\n\n",
+  "diagnostics": {
+    "pihole-ha-8597df62": "\n  [i] Gravity migration checks\n2026-11-15 01:03:00.796 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] Existing gravity database found - schema will be upgraded if necessary\n     \n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n        * CAP_NET_BIND_SERVICE\n        * CAP_NET_RAW\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n",
+    "pihole-ha-8597df62-restore": ""
+  },
+  "namespaceCleanup": {
+    "pihole-ha-8597df62-restore": true,
+    "pihole-ha-8597df62": true
+  },
+  "finishedUTC": "2026-11-15T01:04:03.075021+00:00"
+}

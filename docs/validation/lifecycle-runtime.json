@@ -1,0 +1,47 @@
+{
+  "started_utc": "2026-10-28T21:54:43.952037+00:00",
+  "scope": "one-node kind smoke; no node-failure or load-balancer HA claim",
+  "image": "pihole/pihole:2026.10.0@sha256:d8d848307ffe7f8c4b42be423b33295d6a45282215eb5a96fe25e05fa39b1abc",
+  "fixture_overrides": [
+    "explicit local DNS record",
+    "empty initial adlists",
+    "static TEST-NET hostAliases for gravity bootstrap check",
+    "ClusterIP DNS",
+    "no configured list/domain rules",
+    "512Mi memory limit"
+  ],
+  "checks": [
+    {
+      "check": "bounded_poststart_loopback_api_and_probes",
+      "passed": true,
+      "details": {
+        "authenticated_loopback_api_hook_completed_at": "2026-10-28T21:55:07Z",
+        "ready": true,
+        "restart_count": 0,
+        "scope": "authenticated API and probe ordering only; full policy runner not implemented"
+      },
+      "seconds": 25.77
+    }
+  ],
+  "kubernetes_version": "v1.37.0",
+  "final_pod_states": [
+    {
+      "name": "audit-lifecycle",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "pihole",
+          "ready": true,
+          "restarts": 0,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-28T21:54:53Z"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "namespace_cleanup_succeeded": true,
+  "completed_utc": "2026-10-28T21:55:56.113822+00:00"
+}

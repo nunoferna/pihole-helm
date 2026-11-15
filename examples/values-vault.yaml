@@ -51,6 +51,11 @@ command: ["/bin/bash", "-c"]
 args:
   - source /vault/secrets/web-password && exec start.sh
 
+tests:
+  # The injector provides the application credential without a Kubernetes Secret.
+  # Supply tests.existingSecret instead if authentication tests are required.
+  authentication: false
+
 pihole:
   web:
     # Skip the default password env var since we're setting it in the wrapper script

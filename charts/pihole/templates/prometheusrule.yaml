@@ -1,0 +1,58 @@
+{{- if .Values.monitoring.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "pihole.fullname" . }}
+  namespace: {{ .Values.monitoring.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+  {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    - name: {{ include "pihole.fullname" . }}
+      rules:
+        - alert: PiholeReplicasUnavailable
+          expr: {{ printf "(max(kube_statefulset_status_replicas_ready{namespace=%q,statefulset=%q}) or vector(0)) < %d" .Release.Namespace (include "pihole.fullname" .) (int .Values.replicas) | quote }}
+          for: {{ .Values.monitoring.alerts.for }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            release: {{ .Release.Name }}
+          annotations:
+            summary: Pi-hole has fewer ready DNS replicas than configured
+  {{- if and .Values.metrics.enabled .Values.metrics.service.enabled .Values.metrics.serviceMonitor.enabled }}
+        - alert: PiholeExporterUnavailable
+          expr: {{ printf "absent(up{namespace=%q,service=%q}) or (up{namespace=%q,service=%q} == 0)" .Release.Namespace (printf "%s-metrics" (include "pihole.fullname" .)) .Release.Namespace (printf "%s-metrics" (include "pihole.fullname" .)) | quote }}
+          for: {{ .Values.monitoring.alerts.for }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            release: {{ .Release.Name }}
+          annotations:
+            summary: Prometheus cannot scrape the Pi-hole exporter
+        - alert: PiholeBlockingDisabled
+          expr: {{ printf "pihole_status{namespace=%q,service=%q} != 1" .Release.Namespace (printf "%s-metrics" (include "pihole.fullname" .)) | quote }}
+          for: {{ .Values.monitoring.alerts.for }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            release: {{ .Release.Name }}
+          annotations:
+            summary: A Pi-hole replica reports blocking disabled
+            description: Exporter samples can be stale. Use synthetic DNS checks to establish actual DNS correctness.
+  {{- end }}
+  {{- if .Values.monitoring.syntheticDns.enabled }}
+        - alert: PiholeSyntheticDnsStale
+          expr: {{ $job := printf "%s-dns-check" (include "pihole.fullname" . | trunc 40 | trimSuffix "-") }}{{ printf "(time() - ((kube_cronjob_status_last_successful_time{namespace=%q,cronjob=%q} > 0) or kube_cronjob_created{namespace=%q,cronjob=%q})) > %d or absent(kube_cronjob_created{namespace=%q,cronjob=%q})" .Release.Namespace $job .Release.Namespace $job (int .Values.monitoring.syntheticDns.staleAfterSeconds) .Release.Namespace $job | quote }}
+          for: {{ .Values.monitoring.alerts.for }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            release: {{ .Release.Name }}
+          annotations:
+            summary: Scheduled Pi-hole UDP/TCP DNS checks are failing or not completing
+            description: Checks cover the in-cluster Service and every replica; an independent external probe is still required for VIP and site failure detection.
+  {{- end }}
+{{- end }}

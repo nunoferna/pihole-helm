@@ -1,0 +1,6 @@
+# Apply only to cp01 (192.168.1.73) and cp03 (192.168.1.77).
+# Directory-backed storage: no disk selection, formatting or repartitioning.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: pihole-staging
+volumeType: directory

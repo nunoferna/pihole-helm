@@ -12,6 +12,8 @@ on:
           - patch
           - minor
           - major
+          - prerelease
+          - stable
 
 permissions:
   contents: write
@@ -58,27 +60,23 @@ jobs:
 
       - name: Compute and apply new version
         id: bump
+        env:
+          BUMP_KIND: ${{ inputs.bump }}
         run: |
-          CHART_FILE="charts/pihole/Chart.yaml"
-          CURRENT=$(grep '^version:' "$CHART_FILE" | awk '{print $2}')
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-
-          case "${{ inputs.bump }}" in
-            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-            patch) PATCH=$((PATCH + 1)) ;;
-          esac
-
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          sed -i "s/^version: .*/version: ${NEW_VERSION}/" "$CHART_FILE"
-
-          echo "current=${CURRENT}"     >> "$GITHUB_OUTPUT"
-          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          python3 scripts/bump-version.py --bump "$BUMP_KIND" > "$RUNNER_TEMP/version.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          result = json.loads((Path(os.environ['RUNNER_TEMP']) / 'version.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key, value in result.items():
+                  output.write(key + '=' + value + '\n')
+          PY
 
       - name: Run pre-commit hooks
         # Hooks like helm-docs and helm-schema regenerate README/schema and exit 1
         # on first run because they modified files. The changes are committed below.
-        run: pre-commit run --all-files || true
+        run: pre-commit run --all-files || pre-commit run --all-files
 
       - name: Configure Git
         run: |
@@ -100,9 +98,13 @@ jobs:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           BUMP: ${{ inputs.bump }}
         run: |
+          pr_body_file=$(mktemp)
+          trap 'rm -f "$pr_body_file"' EXIT
+          printf 'Bumps chart version from %s to %s.\n\n**Bump type:** %s\n\n---\nAfter merging, the chart will be automatically linted, tested, and released.\n' \
+            "$CURRENT" "$NEW_VERSION" "$BUMP" > "$pr_body_file"
           gh pr create \
             --title "chore: bump chart version ${CURRENT} → ${NEW_VERSION}" \
-            --body "$(printf 'Bumps chart version from \`%s\` to \`%s\`.\n\n**Bump type:** \`%s\`\n\n---\nAfter merging, the chart will be automatically linted, tested, and released.' "$CURRENT" "$NEW_VERSION" "$BUMP")" \
+            --body-file "$pr_body_file" \
             --base main \
             --head "bump/v${NEW_VERSION}" \
             --label release

@@ -1,0 +1,96 @@
+# Overlay after values.yaml for admin@homelab.
+# Provision talos-volume.yaml and storage.yaml before installing.
+persistence:
+  etcPihole:
+    storageClassName: pihole-staging-local
+
+metrics:
+  serviceMonitor:
+    enabled: true
+
+monitoring:
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+  alerts:
+    enabled: true
+  syntheticDns:
+    enabled: true
+
+networkPolicy:
+  egressEnabled: true
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 1.1.1.1/32
+        - ipBlock:
+            cidr: 9.9.9.9/32
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Stock update-checker/factory feeds use HTTPS. A controlled production
+    # mirror can replace this with fixed destinations or CNI FQDN policy.
+    - ports:
+        - port: 443
+          protocol: TCP
+  metricsEgress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pihole-staging
+              app.kubernetes.io/component: dns
+      ports:
+        - port: 8080
+          protocol: TCP
+  dnsAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: pihole-staging
+    # Confirmed workstation source address on 2026-11-14. Update if it changes.
+    - ipBlock:
+        cidr: 192.168.1.68/32
+  metricsAllowFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: pihole-staging
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: prometheus
+          operator.prometheus.io/name: monitoring-stack-prometheus
+
+services:
+  dns:
+    type: NodePort
+    externalTrafficPolicy: Local
+    nodePorts:
+      tcp: 32052
+      udp: 32052

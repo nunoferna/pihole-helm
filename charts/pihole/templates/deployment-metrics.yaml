@@ -1,4 +1,10 @@
 {{- if .Values.metrics.enabled }}
+  {{- $compatibility := .Files.Get "files/compatibility.json" | fromJson }}
+  {{- $userEnvKeys := dict }}
+  {{- range .Values.metrics.env }}
+    {{- $_ := set $userEnvKeys .name true }}
+  {{- end }}
+  {{- $automaticAuth := and (not .Values.pihole.web.skipPasswordEnv) (not (or (hasKey $userEnvKeys "PIHOLE_PASSWORD") (hasKey $userEnvKeys "PIHOLE_PASSWORD_FILE"))) }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -17,8 +23,10 @@ spec:
     metadata:
       labels:
         {{- include "pihole.metricsSelectorLabels" . | nindent 8 }}
-  {{- with .Values.podAnnotations }}
       annotations:
+        checksum/credentials: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        credentials-revision: {{ .Values.credentialsRevision | quote }}
+  {{- with .Values.metrics.podAnnotations }}
         {{- toYaml . | nindent 8 }}
   {{- end }}
     spec:
@@ -26,26 +34,36 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
   {{- end }}
-  {{- with .Values.nodeSelector }}
+  {{- with .Values.metrics.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
   {{- end }}
-  {{- with .Values.affinity }}
+  {{- with .Values.metrics.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
   {{- end }}
-  {{- with .Values.tolerations }}
+  {{- with .Values.metrics.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
   {{- end }}
-      serviceAccountName: {{ .Values.serviceAccount.name | default (include "pihole.fullname" .) | quote }}
+      serviceAccountName: {{ include "pihole.serviceAccountName" . | quote }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+  {{- if $automaticAuth }}
+      volumes:
+        - name: exporter-auth
+          secret:
+            secretName: {{ include "pihole.passwordSecretName" . | quote }}
+            items:
+              - key: {{ .Values.pihole.web.passwordSecretKey }}
+                path: password
+  {{- end }}
   {{- with .Values.metrics.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
   {{- end }}
       containers:
         - name: metrics
-          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
+          image: {{ include "pihole.image" (dict "image" .Values.metrics.image "defaultTag" $compatibility.exporterTag) | quote }}
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
   {{- with .Values.metrics.command }}
           command:
@@ -60,10 +78,6 @@ spec:
             {{- toYaml . | nindent 12 }}
   {{- end }}
           env:
-  {{- $userEnvKeys := dict }}
-  {{- range .Values.metrics.env }}
-    {{- $_ := set $userEnvKeys .name true }}
-  {{- end }}
   {{- if not (hasKey $userEnvKeys "PIHOLE_HOSTNAME") }}
             - name: PIHOLE_HOSTNAME
               value: {{ include "pihole.metricsHostnames" . | quote }}
@@ -76,6 +90,14 @@ spec:
             - name: PIHOLE_PROTOCOL
               value: {{ include "pihole.metricsProtocols" . | quote }}
   {{- end }}
+  {{- if not (hasKey $userEnvKeys "PORT") }}
+            - name: PORT
+              value: {{ .Values.metrics.port | quote }}
+  {{- end }}
+  {{- if $automaticAuth }}
+            - name: PIHOLE_PASSWORD_FILE
+              value: /etc/pihole-exporter-auth/password
+  {{- end }}
   {{- range .Values.metrics.env }}
             - name: {{ .name }}
               {{- omit . "name" | toYaml | nindent 14 }}
@@ -84,6 +106,21 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
+  {{- if $automaticAuth }}
+          volumeMounts:
+            - name: exporter-auth
+              mountPath: /etc/pihole-exporter-auth
+              readOnly: true
+  {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: metrics
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: metrics
           resources:
             {{- toYaml .Values.metrics.resources | nindent 12 }}
 {{- end }}

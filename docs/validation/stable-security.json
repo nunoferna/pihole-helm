@@ -1,0 +1,45 @@
+{
+  "utc": "2026-11-15T01:00:44.455908+00:00",
+  "checks": [
+    {
+      "check": "rendered_manifests",
+      "passed": true,
+      "resources": 12
+    },
+    {
+      "check": "image_vulnerabilities",
+      "image": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+      "platform": "linux/amd64",
+      "passed": true
+    },
+    {
+      "check": "image_vulnerabilities",
+      "image": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+      "platform": "linux/amd64",
+      "passed": true
+    },
+    {
+      "check": "image_vulnerabilities",
+      "image": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+      "platform": "linux/arm64",
+      "passed": true
+    },
+    {
+      "check": "image_vulnerabilities",
+      "image": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+      "platform": "linux/arm64",
+      "passed": true
+    }
+  ],
+  "acceptedManifestExceptions": [
+    {
+      "id": "KSV014",
+      "message": "Container 'pihole' of StatefulSet 'security-pihole' should set 'securityContext.readOnlyRootFilesystem' to true"
+    },
+    {
+      "id": "AVD-KSV-0109",
+      "message": "ConfigMap 'security-pihole-policy-9babea39f25ca566b056' in 'security' namespace stores secrets in key(s) or value(s) '{\"    '{password\"}'"
+    }
+  ],
+  "trivyVersion": "Version: 0.76.2"
+}

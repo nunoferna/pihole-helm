@@ -1,298 +1,70 @@
 # Pi-hole Helm Chart
 
-[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/pihole-helm)](https://artifacthub.io/packages/search?repo=pihole-helm)
+A Helm chart for Pi-hole v6 on Kubernetes. The current source is **v2.0.0**, targeting a reproducible DNS deployment with independent storage, controlled policy changes and tested recovery. See the [runtime evidence and support limits](docs/validation/README.md) and [production architecture](docs/production-architecture-v2.md). Publication requires the complete CI gate for the exact package; a version in this checkout does not mean it has been published.
 
-A production-ready Helm chart for deploying [Pi-hole v6](https://pi-hole.net/) on Kubernetes, with full FTL configuration support, high-availability, and built-in observability.
+## Install
 
-## Features
+Use Kubernetes 1.35–1.37 with a compatible storage and TCP/UDP load-balancer implementation. Create credentials in the intended namespace, then install from this checkout:
 
-- **Pi-hole v6**: Full FTL configuration via `pihole-FTL.toml` — DNS, DHCP, NTP, webserver, database, and more
-- **High Availability**: Scales to multiple replicas using a StatefulSet with per-pod PVCs; web UI pins to pod-0, DNS is load-balanced across all pods
-- **Declarative List Management**: Adlists, allowlists, blocklists, regex rules, groups, and clients managed via `values.yaml` and applied idempotently on every `helm upgrade`
-- **Automatic Config Sync**: A checksum annotation on the pod template forces a pod restart whenever list configuration changes, ensuring `postStart` re-runs and the Pi-hole database stays in sync
-- **Observability**: Standalone Prometheus metrics exporter ([ekofr/pihole-exporter](https://hub.docker.com/r/ekofr/pihole-exporter)) with auto-generated multi-instance scrape targets, optional ServiceMonitor, and bundled Grafana dashboard
-- **Secret Management**: Supports plain values, existing Kubernetes Secrets, HashiCorp Vault Agent Injector, and External Secrets Operator
-- **Network Policies**: Optional NetworkPolicy to restrict ingress to DNS, DHCP, and web ports
-- **Pod Disruption Budget**: Optional PDB to guarantee minimum availability during cluster maintenance
-- **GPG Signed**: Charts are signed for supply chain security
-- **OCI & Helm Repo**: Available via GitHub Releases (Helm repository) and GitHub Container Registry (OCI)
-
-## Requirements
-
-| Dependency | Version     |
-| ---------- | ----------- |
-| Kubernetes | `>= 1.23.0` |
-| Helm       | `>= 3.0.0`  |
-
-## Quick Start
-
-```bash
-helm repo add pihole-helm https://nunoferna.github.io/pihole-helm/
-helm repo update
-helm install pihole pihole-helm/pihole --set pihole.web.password=yourpassword
+```sh
+kubectl create namespace pihole
+kubectl -n pihole create secret generic pihole-web-v1 \
+  --from-file=password=/path/to/password-file
+helm upgrade --install pihole ./charts/pihole --namespace pihole \
+  --set pihole.web.existingSecret=pihole-web-v1
 ```
 
-Or from OCI:
+DNS defaults to a private ClusterIP. Select `services.dns.type: LoadBalancer` or `NodePort` explicitly for client access, and configure the provider and client restrictions. Load-balancer classes and source ranges are supported for DNS/web Services. The password file must not end in whitespace/newlines when shared with the exporter. No password is generated automatically. For a disposable test, an explicit `pihole.web.password` creates a deterministic chart-managed Secret. Prefer externally managed, versioned Secrets for production.
 
-```bash
-helm install pihole oci://ghcr.io/nunoferna/charts/pihole --set pihole.web.password=yourpassword
-```
+Read the [migration guide](charts/pihole/MIGRATION.md) before moving an existing v1 installation. Use a parallel release with separate claims and a controlled DNS-address cutover.
 
-## Configuration
+## Workload and availability
 
-### Workload Topology
+Every replica count uses a StatefulSet. Each instance has its own retained PVC and stable identity. DNS Services select only DNS pods; metrics and Helm test pods cannot contribute to DNS endpoints or the disruption budget.
 
-| `replicas` | Workload kind | Update strategy | PVC                               |
-| ---------- | ------------- | --------------- | --------------------------------- |
-| `1`        | `Deployment`  | `Recreate`      | Single shared PVC                 |
-| `> 1`      | `StatefulSet` | `RollingUpdate` | Per-pod PVC (VolumeClaimTemplate) |
+Internal listener ports default to DNS 5353, HTTP 8080 and HTTPS 8443, with Services exposing 53/80/443. DNS listening mode defaults to `ALL` for cross-pod Service traffic; restrict access with private addressing and NetworkPolicy. Configure `listeners` to change internal ports, and set `listeners.https: 0` to disable HTTPS. Named ports, FTL environment, probes, discovery, network policy and exporter targets follow the same listener settings.
 
-When running as a StatefulSet, the web Service selects only `pod-0` (stable UI endpoint) while the DNS Service load-balances across all pods. All pods share identical blocklist configuration thanks to the Helm-driven import script.
+Use two replicas on two nodes for redundancy, or three on three nodes for maintenance headroom. [examples/values-ha.yaml](examples/values-ha.yaml) provides a portable HA starting profile with node anti-affinity, a PDB and client restrictions. Edit its release-name label, CIDRs and upstreams for your environment. A load balancer must support TCP/UDP and healthy-node failover. MetalLB layer 2 with `externalTrafficPolicy: Local` sends traffic only to pods on the announcing node; it does not distribute external queries across all replicas.
 
-### Web Password
+Caches, history, sessions and DHCP leases remain per-instance. DHCP with multiple replicas is rejected. The default DNS profile disables DHCP and NTP functionality. The stock image starts with root-owned setup; non-root/Restricted compatibility is not claimed.
 
-```yaml
-# Plain value (auto-generates a random password if left empty)
-pihole:
-  web:
-    password: "your-secure-password"
+## Configuration and policy
 
-# Existing Kubernetes Secret
-pihole:
-  web:
-    existingSecret: "my-secret"
-    passwordSecretKey: "password"
+Native configuration remains under `pihole.ftl`. Null values are omitted; configured false, zero and empty values are emitted. Kubernetes Service settings are separate under `services.dns`, `.web`, `.dhcp`, `.dhcpv6` and `.ntp`; legacy locations are rejected. `pihole.ftl.dhcp.ipv6` is a native boolean. Use `scripts/migrate-values.py` and review its output when moving older values. `files.pid` is rejected for FTL v6.8. Conflicting listener overrides are rejected so networking and probes stay consistent.
 
-# External injection (Vault, ESO) — skip the env var entirely
-pihole:
-  web:
-    skipPasswordEnv: true
-```
+The chart ships no sample allow/deny rules or groups. Fresh-image factory adlists and bootstrap behavior still come from Pi-hole. Declare upstream DNS explicitly for your environment and avoid a CoreDNS-to-Pi-hole forwarding cycle. `networking.dnsPolicy`, `dnsConfig` and `hostAliases` support bootstrap configuration; the image's gravity initialization checks public hostname resolution even with empty adlists.
 
-See [examples/values-vault.yaml](examples/values-vault.yaml) and [examples/values-external-secrets.yaml](examples/values-external-secrets.yaml) for full secret management patterns.
+A bounded local API reconciler manages journaled records, safely removes owned entries deleted from values, and preserves unmanaged data. Policy artifacts are immutable, content-named and retained for rollback; readiness verifies the expected revision. Existing records require explicit adoption. See the [policy lifecycle guide](docs/policy-lifecycle.md) for adoption, partial-failure recovery, externally retained GitOps artifacts and rollback limits. Production deployments should set `policy.requirePinnedLists: true` and pin every enabled subscription with `sha256`. Verified bodies are cached on each PVC and reused during provider outages. Scheduled checks share the runner lock, preserve readiness for unchanged verified policy, and avoid needless gravity rebuilds. See [encrypted recovery](docs/recovery.md).
 
-### DNS
+Chart-managed credential changes roll DNS and exporter pods. For an existing Secret, use a versioned name or change `credentialsRevision` to roll consumers after rotation. `skipPasswordEnv` supports external injection; supply exporter authentication separately in that mode.
 
-```yaml
-pihole:
-  ftl:
-    dns:
-      upstreams:
-        - 1.1.1.1
-        - 8.8.8.8
-      dnssec: true
-      queryLogging: true
-      cache:
-        size: 10000
-      service:
-        type: LoadBalancer
-        externalTrafficPolicy: Local
-        # Split TCP and UDP into separate services (different IPs, types per protocol)
-        splitTcpUdp: false
-```
+## Monitoring and access
 
-### DHCP
+Metrics run in a separate optional Deployment and automatically authenticate with the configured web Secret. Set `metrics.enabled: true`. Prometheus Operator integration and Grafana dashboard resources remain optional; see [values-monitoring.yaml](examples/values-monitoring.yaml). Exporter scheduling and annotations are independent of DNS pods.
 
-```yaml
-pihole:
-  ftl:
-    dhcp:
-      active: true
-      start: "192.168.1.100"
-      end: "192.168.1.200"
-      router: "192.168.1.1"
-      service:
-        enabled: true
-        type: LoadBalancer
-```
+Exporter HTTP health does not prove functioning DNS or fresh target statistics. `helm test` verifies per-replica/Service UDP/TCP answers, configured filtering, credentials and blocking-status samples. Enable `monitoring.syntheticDns` for scheduled DNS checks and `monitoring.alerts` for stale-success/replica/exporter/blocking alerts; use `monitoring.namespace` and labels for discovery. Independent external DNS-address probes are still required. `INTERVAL` and `PIHOLE_API_TOKEN` are not supported by exporter v1.3.1; configure scrape intervals in Prometheus.
 
-### List Management
+Administration is private by default through a ClusterIP Service pinned to pod-0. Each pod also has a headless discovery address. A shared UI does not aggregate history or replicate session/policy changes.
 
-All list entries are applied via `INSERT OR IGNORE` into Pi-hole's `gravity.db` on every pod start and on every `helm upgrade` that changes list configuration. Deletions from `values.yaml` are **not** purged from the database (idempotent inserts only).
-
-```yaml
-pihole:
-  lists:
-    adlists:
-      - address: "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-        comment: "StevenBlack Master"
-      - address: "https://adaway.org/hosts.txt"
-        enabled: false
-
-    whitelist:
-      - domain: "good-site.com"
-
-    blacklist:
-      - domain: "bad-site.com"
-        comment: "Known malware"
-
-    regex_whitelist:
-      - domain: ".*\\.trusted\\.com$"
-
-    regex_blacklist:
-      - domain: "(^|\\.)ads\\..*"
-
-  groups:
-    - name: "default"
-      enabled: true
-      description: "Default group"
-
-  clients:
-    - id: "192.168.1.100"
-      comment: "My PC"
-      groups:
-        - "default"
-    - id: "aa:bb:cc:dd:ee:ff"
-      comment: "My Phone"
-      groups:
-        - "default"
-```
-
-### Persistence
-
-```yaml
-persistence:
-  etcPihole:
-    enabled: true
-    size: 500Mi
-    accessMode: ReadWriteOnce
-    # storageClassName: ""
-```
-
-### Observability
-
-The metrics exporter runs as a standalone `Deployment` (always 1 replica) and scrapes all Pi-hole instances. Connection targets (`PIHOLE_HOSTNAME`, `PIHOLE_PORT`, `PIHOLE_PROTOCOL`) are auto-generated from the number of replicas — no manual configuration needed.
-
-- **Deployment** (1 replica): targets the web ClusterIP Service
-- **StatefulSet** (N replicas): targets each pod directly via headless DNS (`pod-0.pihole-headless`, `pod-1.pihole-headless`, ...)
-
-```yaml
-metrics:
-  enabled: true
-  service:
-    enabled: true
-    type: ClusterIP
-  serviceMonitor:
-    enabled: true # Requires Prometheus Operator
-    interval: 30s
-  dashboards:
-    enabled: true # Requires Grafana with sidecar
-    label: "grafana_dashboard"
-    labelValue: "1"
-  env:
-    - name: INTERVAL
-      value: "10s"
-    # Optional: authenticate with Pi-hole API password
-    # - name: PIHOLE_PASSWORD
-    #   valueFrom:
-    #     secretKeyRef:
-    #       name: pihole-secret
-    #       key: password
-    # Override auto-generated connection settings (e.g. for HTTPS):
-    # - name: PIHOLE_PROTOCOL
-    #   value: "https"
-```
-
-The bundled Grafana dashboard ([ID: 10176](https://grafana.com/grafana/dashboards/10176)) provides query rates, blocking rates, top domains/clients, and cache statistics.
-
-See [examples/values-monitoring.yaml](examples/values-monitoring.yaml) for the full monitoring stack example.
-
-### Network Policy
-
-```yaml
-networkPolicy:
-  enabled: true
-  # Restrict web UI and metrics access to specific namespaces.
-  # DNS (port 53) and DHCP (port 67) are always open.
-  # Leave empty to allow all namespaces.
-  webAllowFrom:
-    - namespaceSelector:
-        matchLabels:
-          name: monitoring
-```
-
-### Pod Disruption Budget
-
-```yaml
-podDisruptionBudget:
-  enabled: true
-  minAvailable: 1
-```
-
-### Extra Customisation
-
-```yaml
-# Extra environment variables
-extraEnv:
-  - name: MY_VAR
-    value: "value"
-
-# Extra init containers (e.g. for secret transformation)
-extraInitContainers: []
-
-# Pod scheduling
-nodeSelector: {}
-affinity: {}
-tolerations: []
-
-# Cluster DNS domain (override only if non-default)
-clusterDomain: "cluster.local"
-```
-
-## High Availability
-
-```yaml
-replicas: 3
-
-persistence:
-  etcPihole:
-    enabled: true
-    accessMode: ReadWriteOnce # Each pod gets its own PVC
-
-podDisruptionBudget:
-  enabled: true
-  minAvailable: 2
-```
-
-With 3 replicas:
-
-- DNS queries are load-balanced across all 3 pods (active-active)
-- Web UI is served exclusively by pod-0 (stable endpoint)
-- Metrics exporter scrapes all 3 pods via headless DNS
-- A rolling restart upgrades one pod at a time with no DNS outage
-
-## Secret Management Examples
-
-| Method                    | File                                                                           |
-| ------------------------- | ------------------------------------------------------------------------------ |
-| Kubernetes Secret         | `pihole.web.existingSecret`                                                    |
-| HashiCorp Vault Agent     | [examples/values-vault.yaml](examples/values-vault.yaml)                       |
-| External Secrets Operator | [examples/values-external-secrets.yaml](examples/values-external-secrets.yaml) |
+When NetworkPolicy is enabled, `dnsAllowFrom` controls clients; empty web/metrics allowlists deny general ingress; `networkPolicy.allowTests` separately permits same-release labelled test/probe pods. Optional `networkPolicy.egressEnabled` applies explicit `egress` rules to DNS pods and `metricsEgress` rules to the exporter; empty rules deny outbound traffic. Declare bootstrap DNS, upstreams, list mirrors and monitoring paths. Use CNI-specific policy for hostname-based destinations. Validate source-IP preservation where client-specific policy is used; the homelab overlay is a separate deployment example.
 
 ## Development
 
-```bash
-# Lint
-helm lint charts/pihole
-
-# Template (dry-run)
-helm template pihole charts/pihole
-
-# With metrics and 3 replicas
-helm template pihole charts/pihole --set metrics.enabled=true --set replicas=3
-
-# Install with dry-run
-helm install pihole charts/pihole --dry-run --debug
+```sh
+helm lint charts/pihole -f charts/pihole/ci/default-values.yaml
+python3 -m unittest discover -s scripts/validation -p 'test_*.py' -v
+ct lint --config .github/configs/ct.yaml --charts charts/pihole
 ```
 
-## Links
+The CI credential file is a disposable test fixture. CI builds one reproducible package, tests that package on Kubernetes 1.35/1.36/1.37 with Helm 3/4 on amd64/arm64, runs blocking image/manifest scans and performs disposable VIP-failure and encrypted-restore tests. The manually invoked release workflow signs and publishes the same bytes, independently resuming GitHub, OCI and Pages destinations. See [release operations](docs/releasing.md). Runtime harnesses under `scripts/validation` use explicitly guarded isolated fixtures; homelab harnesses always select their context and namespace. Read each script before running it: some replace staging pods, and credential rotation requires explicit selection.
 
-- [Chart README](charts/pihole/README.md) — full values reference
-- [Pi-hole Documentation](https://docs.pi-hole.net/)
-- [Pi-hole Docker](https://github.com/pi-hole/docker-pi-hole)
-- [ekofr/pihole-exporter](https://github.com/eko/pihole-exporter)
-- [Artifact Hub](https://artifacthub.io/packages/search?repo=pihole-helm)
+- [Generated values reference](charts/pihole/README.md)
+- [Migration and behavior changes](charts/pihole/MIGRATION.md)
+- [Architecture and deployment acceptance](docs/production-architecture-v2.md)
+- [Runtime validation](docs/validation/README.md)
+- [Encrypted backup and restore](docs/recovery.md)
+- [Security gate and scoped exceptions](docs/security.md)
+- [Release operations](docs/releasing.md)
+- [Contributing](CONTRIBUTING.md)
 
-## License
-
-Apache-2.0 — see [Chart.yaml](charts/pihole/Chart.yaml).
+Apache-2.0; see [LICENSE](LICENSE).

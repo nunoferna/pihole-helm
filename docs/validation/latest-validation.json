@@ -1,0 +1,42 @@
+{
+  "chart_version": "2.0.0-alpha.3",
+  "pihole_tag": "2026.11.0",
+  "pihole_digest": "sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+  "components": {
+    "ftl": "6.9",
+    "core": "6.6",
+    "web": "6.6.1"
+  },
+  "exporter_tag": "v1.3.1",
+  "exporter_digest": "sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+  "helm_version": "v4.3.2+g8346aaa",
+  "source_head": "adbe3ef59da895aacdf286cd0bf46251220a4ee3",
+  "source_scope": "uncommitted v2 working tree rebased onto updated dependencies",
+  "merge_conflicts_resolved": [
+    ".github/workflows/lint-test.yaml",
+    "charts/pihole/Chart.yaml",
+    "charts/pihole/values.yaml"
+  ],
+  "contract_regressions_passed": 23,
+  "isolated_lifecycle_and_upgrade_checks_passed": 13,
+  "staging_upgrade_checks_passed": 6,
+  "workflow_actionlint": "passed",
+  "required_chart_hooks": "passed; Docker ShellCheck hook skipped and equivalent native v0.11.0 passed",
+  "packaged_chart_lint": "passed",
+  "package_sha256": "e92af6fc5b7b03629fbcc42eef3a2b747cb3261e3a6444c26ad3d3370363cadb",
+  "staging_retained": true,
+  "controller_pvcs_and_ownership_preserved": true,
+  "production_cutover_performed": false,
+  "github_actions_or_publication_triggered": false,
+  "evidence": [
+    "latest-upstream-review.json",
+    "latest-policy-runtime.json",
+    "latest-dependency-upgrade.json"
+  ],
+  "limits": [
+    "amd64 Kubernetes 1.37 runtime only; arm64/version matrix pending",
+    "same-disk migration backups; off-node restoration not certified",
+    "hard node/VIP failure, external/site probes and notification delivery still pending",
+    "controlled snapshots, capacity and release security/publication gates remain open"
+  ]
+}

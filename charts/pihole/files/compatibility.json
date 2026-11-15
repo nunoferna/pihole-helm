@@ -1,0 +1,28 @@
+{
+  "dockerTag": "2026.11.0",
+  "digest": "sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+  "platformDigests": {
+    "linux/amd64": "sha256:52762e1620160b1e8cb3e12c585d0d0b0df901395c2bad6b514db379e526a9fb",
+    "linux/arm64": "sha256:13089e5c4d33c5cd8eb7b011949a380145f3ff1405dea24c81dd54dcb255b792"
+  },
+  "components": {
+    "ftl": "6.9",
+    "core": "6.6",
+    "web": "6.6.1"
+  },
+  "exporterTag": "v1.3.1",
+  "exporterDigest": "sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+  "runtimeEvidence": {
+    "linux/amd64": "See docs/validation/stable-amd64-policy-final.json and the retained Talos/Cilium staging reports; scope, exact tested state and outcomes are in the reports.",
+    "linux/arm64": "See docs/validation/stable-kubernetes135-arm64.json, stable-kubernetes136-arm64.json, stable-arm64-policy-final.json and stable-kind-ha-recovery.json; scope and outcomes are in each report."
+  },
+  "helmVersions": [
+    "3.22.1",
+    "4.3.2"
+  ],
+  "kubernetesVersions": [
+    "1.35.8",
+    "1.36.4",
+    "1.37.0"
+  ]
+}
