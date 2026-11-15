@@ -1,0 +1,80 @@
+{
+  "utc": "2026-11-15T13:22:09.737525+00:00",
+  "chartVersion": "2.0.0",
+  "appVersion": "2026.11.0",
+  "artifact": {
+    "path": "dist/pihole-2.0.0.tgz",
+    "sha256": "a00aef6e8d1125ad188963fe5c3cdf3be7851c362e388ab682e8cb1ab7ca53bc",
+    "sourceCommit": "adbe3ef59da895aacdf286cd0bf46251220a4ee3",
+    "sourceDirty": true,
+    "signed": false
+  },
+  "checks": {
+    "stable-amd64-policy-final.json": {
+      "passed": 15,
+      "sha256": "e7c32cfa37d94da468271488b836b2792b016906f8164890c77a09d8bc56f0a3"
+    },
+    "stable-arm64-policy-final.json": {
+      "passed": 15,
+      "sha256": "f402a8e1ac423e678078e1e8b1a46f0608c131b7111252aa67b3864d8017292c"
+    },
+    "stable-kind-ha-recovery-final.json": {
+      "passed": 6,
+      "sha256": "975b3e6fde4b93153002400635da16f6f37e469b921056949c0f2721ab6f7745"
+    },
+    "stable-security-final.json": {
+      "passed": 5,
+      "sha256": "382b07f4a339b01ba1cd76ab3c3765436eb006e122c173861f7944c8dcdaaf9c"
+    },
+    "stable-staging-upgrade.json": {
+      "passed": 6,
+      "sha256": "20f3696a27d67baf331c773c6a1aa5ae4efdb440ce99f0e111dff1c29ef7bd5d"
+    },
+    "stable-egress-pod0.json": {
+      "passed": true,
+      "sha256": "4ec48a6a34fb8a8a823eac61d14694ee6a1a8e85c63150539324f8ab3ef22c38"
+    },
+    "stable-egress-pod1.json": {
+      "passed": true,
+      "sha256": "7abcbe24676ecfa72d4c5a9a5b9d9c815cc81d54ed4deb74245f8b59ad819720"
+    },
+    "stable-final-kubernetes135-smoke.json": {
+      "passed": 3,
+      "sha256": "4ca141b1b8e8ed7c53a21994f3122a4ff9c2779a9e2195e02cd358ebb2a63854"
+    }
+  },
+  "localContractTests": 30,
+  "requiredHooks": "passed on tracked and newly added files, including Docker ShellCheck",
+  "workflowActionlint": "passed",
+  "releaseToolingTests": "Real reproducible packages, OpenPGP verification/tamper rejection and signed OCI push/pull/resume under Helm 3 and 4; simulated GitHub partial-asset retries and Pages build/delivery",
+  "localCompatibility": {
+    "amd64": [
+      "Kubernetes 1.37.0 / Helm 3.22.1, final archive"
+    ],
+    "arm64": [
+      "Kubernetes 1.36.4 / Helm 4.3.2, final archive",
+      "Kubernetes 1.37.0 / Helm 4.3.2, final archive HA/TLS/load/recovery",
+      "Kubernetes 1.35.8 / Helm 3.22.1, earlier hardened source lifecycle fixture",
+      "Kubernetes 1.35.8 / Helm 3.22.1, exact final archive functional smoke"
+    ]
+  },
+  "ci": {
+    "configured": "12-combination Kubernetes 1.35.8/1.36.4/1.37.0 x Helm 3.22.1/4.3.2 x amd64/arm64, plus security and HA/recovery",
+    "executedRemotely": false,
+    "releaseInvoked": false
+  },
+  "limits": [
+    "IPv4 DNS profile; no generic CNI/load-balancer/storage/site availability SLA",
+    "Synthetic 100001-domain list; per-client rate limiting disabled only in throughput fixture; no saturation or long-term history capacity claim",
+    "Stock image needs root startup and writable root filesystem; Restricted profile not claimed",
+    "Homelab uses retained directory-backed local volumes without enforced 1Gi quota; not a production storage certification",
+    "Alert rules/scraping tested; notification delivery and independent continuous external/site probes require deployment acceptance",
+    "Local checkout is dirty/uncommitted; publishing requires a clean successful full main-push CI run and manual release workflow"
+  ],
+  "recoveryIntegrity": "Positive restoration, wrong-checksum rejection before helper creation, active-claim overwrite rejection and unchanged ownership/filtering all passed",
+  "cleanup": {
+    "report": "stable-local-cleanup.json",
+    "sha256": "fba1c4bb36afe497c2f0b50ff9917502eb9854ae0c28a8af18ab6bbc03241e25",
+    "passed": true
+  }
+}

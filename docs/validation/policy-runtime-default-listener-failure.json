@@ -1,0 +1,21 @@
+{
+  "started_utc": "2026-11-14T20:30:10.856673+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.54,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    }
+  ],
+  "error": "helm failed: Error: resource Pod/pihole-policy-validation/policy-audit-pihole-test-functional not ready. status: Failed, message: pod policy-audit-pihole-test-functional failed\n",
+  "functional_test_diagnostic": "Validation failed at line 9\nValidation failed at line 9\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T20:31:11.798162+00:00"
+}

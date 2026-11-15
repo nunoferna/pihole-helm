@@ -1,4 +1,4 @@
-{{- if .Values.pihole.ftl.dhcp.service.enabled }}
+{{- if .Values.services.dhcp.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,26 +8,26 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.pihole.ftl.dhcp.service.annotations | nindent 4 }}
+    {{- toYaml .Values.services.dhcp.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.pihole.ftl.dhcp.service.type }}
-  {{- if or (eq .Values.pihole.ftl.dhcp.service.type "LoadBalancer") (eq .Values.pihole.ftl.dhcp.service.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.ftl.dhcp.service.externalTrafficPolicy }}
+  type: {{ .Values.services.dhcp.type }}
+  {{- if or (eq .Values.services.dhcp.type "LoadBalancer") (eq .Values.services.dhcp.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.dhcp.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dhcp.service.loadBalancerIP }}
+  {{- with .Values.services.dhcp.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dhcp.service.externalIPs }}
+  {{- with .Values.services.dhcp.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.ftl.dhcp.service.ports.dhcp }}
+    - port: {{ .Values.services.dhcp.ports.dhcp }}
       targetPort: dhcp
       protocol: UDP
       name: dhcp
-  {{- if and (eq .Values.pihole.ftl.dhcp.service.type "NodePort") .Values.pihole.ftl.dhcp.service.nodePort }}
-      nodePort: {{ .Values.pihole.ftl.dhcp.service.nodePort }}
+  {{- if and (eq .Values.services.dhcp.type "NodePort") .Values.services.dhcp.nodePort }}
+      nodePort: {{ .Values.services.dhcp.nodePort }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

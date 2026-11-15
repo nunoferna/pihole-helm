@@ -2,20 +2,111 @@ image:
   repository: pihole/pihole
   pullPolicy: IfNotPresent
   tag: ""  # Defaults to appVersion
+  # -- Explicit opt-out from the recorded image compatibility baseline.
+  allowUnverified: false
+  # -- Immutable multi-platform digest. Clear explicitly when testing another image.
+  digest: "sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778"
 
 imagePullSecrets: []
 
 timezone: "UTC"
 
+# @schema minimum:1
 replicas: 1
 
-strategy:
-  type: Recreate
-  # rollingUpdate:
-  #   maxSurge: 1
-  #   maxUnavailable: 0
+# @schema enum:[Parallel, OrderedReady]
+# -- Stable StatefulSet identity for all replica counts.
+podManagementPolicy: Parallel
+# @schema minimum:0
+minReadySeconds: 5
+# @schema minimum:1
+terminationGracePeriodSeconds: 30
 
-# Update strategy used when replicas > 1 and the resource is rendered as a StatefulSet
+# -- Change when rotating an externally managed Secret; rolls DNS and exporter pods.
+credentialsRevision: ""
+
+# @schema minimum:1
+# -- Total deadline in seconds for policy validation, reconciliation and gravity.
+policyImportTimeout: 180
+
+policy:
+  # -- Explicit original namespace/release identity when restoring a journal into a new release. Empty derives the current identity.
+  owner: ""
+  # -- Require SHA-256 pinned HTTPS subscriptions and reject enabled unmanaged feeds.
+  requirePinnedLists: false
+  # @schema enum:[reconcile, additive, disabled]
+  # -- Reconcile owned records, apply without deletion, or explicitly freeze policy management.
+  mode: reconcile
+  # -- Explicitly adopt matching existing records. Enable only for a reviewed migration, then disable.
+  adoptExisting: false
+  # -- Optional externally retained immutable artifact containing policy.json and the runner files.
+  existingConfigMap: ""
+  # -- Required SHA-256 of policy.json when referencing an external artifact.
+  revision: ""
+
+# -- Internal listener ports. Kubernetes Services retain their normal client ports.
+listeners:
+  # @schema minimum:1
+  # @schema maximum:65535
+  dns: 5353
+  # @schema minimum:1
+  # @schema maximum:65535
+  http: 8080
+  # @schema minimum:0
+  # @schema maximum:65535
+  https: 8443  # Set to 0 to disable HTTPS
+
+probes:
+  dns:
+    name: pi.hole
+    expectedAddress: ""
+  startup:
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 60
+  liveness:
+    periodSeconds: 15
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+
+validation:
+  # -- Optional known blocked domain for Helm tests and scheduled DNS checks. No rules are installed implicitly.
+  blockedDomain: ""
+  # -- Expected blocked A answer, or NXDOMAIN when using that blocking mode.
+  blockedAnswer: "0.0.0.0"
+  # -- Optional upstream lookup. Empty keeps checks independent of public DNS.
+  upstreamDomain: ""
+
+tests:
+  enabled: true
+  # -- Verify credentials against every replica and the private web Service when enabled.
+  authentication: true
+  # -- Optional credential Secret for tests when application credentials use an injector.
+  existingSecret: ""
+  # @schema minimum:10
+  timeoutSeconds: 120
+
+monitoring:
+  # -- Namespace for ServiceMonitor and PrometheusRule; empty uses the release namespace.
+  namespace: ""
+  labels: {}
+  alerts:
+    enabled: false
+    for: 2m
+  syntheticDns:
+    # -- Run recurring UDP/TCP resolution and optional filtering checks against Service and every replica.
+    enabled: false
+    schedule: "* * * * *"
+    # @schema minimum:10
+    timeoutSeconds: 45
+    # @schema minimum:60
+    staleAfterSeconds: 180
+
+# StatefulSet rolling update strategy
 updateStrategy:
   type: RollingUpdate
   # rollingUpdate:
@@ -41,43 +132,18 @@ command: []
 args: []
 
 pihole:
+  # Example policy belongs in examples/; defaults must not install sample allow/deny rules.
   lists:
-    adlists:
-      - address: "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-        comment: "StevenBlack Master"  # enabled is true by default
-      - address: "https://adaway.org/hosts.txt"
-        enabled: false  # Explicitly disabled
-        comment: "AdAway"
-
-    whitelist:
-      - domain: "good-site.com"
-        # enabled: true (implicit)
-        # comment: "Helm-Import" (default if missing)
-
-    blacklist:
-      - domain: "bad-site.com"
-        comment: "Known malware"
-
-    regex_whitelist:
-      - domain: ".*\\.google\\.com$"
-        comment: "Allow Google subdomains"
-
+    # -- Subscriptions: address, optional sha256, type (block/allow), enabled, comment, groups. Pinned content is cached on each PVC.
+    adlists: []
+    whitelist: []
+    blacklist: []
+    regex_whitelist: []
     regex_blacklist: []
 
   # @schema type:array,null
-  # -- (array) List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients.
-  # @section -- Groups
-  # @default -- []
-  groups:
-    - name: "default"
-      # @schema type:boolean,null
-      # -- (boolean) Whether the group is enabled.
-      # @section -- Groups
-      enabled: true
-      # @schema type:string,null
-      # -- (string) Description of the group.
-      # @section -- Groups
-      description: "Default group"
+  # -- (array) Owned groups. Built-in Default is protected. Entries accept name, description and enabled.
+  groups: []
 
   # @schema type:array,null
   # -- (array) List of Pi-hole clients. Each client can be identified by an IPv4 address, IPv6 address, or MAC address.
@@ -97,7 +163,7 @@ pihole:
   # Web logic (Kubernetes specific helper)
   web:
     # @schema type:string,null
-    # -- (string) Web interface password. Set to empty string to disable password protection. Ignored if using external secret injection.
+    # -- (string) Explicit non-empty password for a chart-managed Secret. Prefer existingSecret in production. No random password is generated.
     # @section -- Web
     password: ""
     # @schema type:string,null
@@ -114,23 +180,6 @@ pihole:
     skipPasswordEnv: false
 
     # WEB K8S SERVICE #
-    service:
-      # @schema type:boolean,null
-      # -- (boolean) Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)
-      # @section -- K8S Services
-      enabled: true
-      type: ClusterIP
-      externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
-      annotations: {}
-      ports:
-        http: 80
-        https: 443
-      # loadBalancerIP: ""
-      # externalIPs: []
-      # nodePorts:
-      #   http: 30080
-      #   https: 30443
-
   # FTL Configuration
   # Maps directly to pihole-FTL.toml structure
   # Reference: https://docs.pi-hole.net/ftldns/configfile/
@@ -140,7 +189,7 @@ pihole:
       # -- (array) List of upstream DNS servers.
       # @section -- DNS
       # @default -- [8.8.8.8, 8.8.4.4]
-      upstreams: []
+      upstreams: null
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- DNS
@@ -190,7 +239,7 @@ pihole:
       # -- (array) No description provided.
       # @section -- DNS
       # @default -- []
-      hosts: []
+      hosts: null
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- DNS
@@ -222,10 +271,9 @@ pihole:
       # @default -- ""
       hostRecord: null
       # @schema type:string,null
-      # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode
+      # -- (string) Accept Kubernetes Service/pod traffic. Restrict DNS clients with NetworkPolicy and private service exposure.
       # @section -- DNS
-      # @default -- "LOCAL"
-      listeningMode: null
+      listeningMode: ALL
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- DNS
@@ -250,7 +298,7 @@ pihole:
       # -- (array) No description provided.
       # @section -- DNS
       # @default -- []
-      revServers: []
+      revServers: null
 
       domain:
         # @schema type:string,null
@@ -280,6 +328,9 @@ pihole:
         # @section -- DNS
         # @default -- 86400
         upstreamBlockedTTL: null
+        # @schema type:string,null
+        # -- Cached RR types supported by FTL v6.8 (for example ANY).
+        rrtype: null
 
       blocking:
         # @schema type:boolean,null
@@ -372,60 +423,12 @@ pihole:
         interval: null
 
       # DNS K8S SERVICE #
-      service:
-        # @schema type:boolean,null
-        # -- (boolean) DNS Kubernetes Service. Required for external access to DNS functionality (port 53).
-        # @section -- K8S Services
-        # @default -- true
-        enabled: true
-        # Split mode creates separate services for TCP and UDP
-        # Set to true for advanced use cases (different IPs, types per protocol)
-        # Default false keeps both protocols in one service (standard DNS behavior)
-        # @schema type:boolean,null
-        # -- (boolean) Whether to create separate Kubernetes Services for TCP and UDP DNS ports.
-        # @section -- K8S Services
-        # @default -- false
-        splitTcpUdp: false
-
-        # Combined service configuration (used when splitTcpUdp: false)
-        type: LoadBalancer
-        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
-        annotations: {}
-        ports:
-          tcp: 53
-          udp: 53
-        # loadBalancerIP: ""
-        # externalIPs: []
-        # nodePorts:
-        #   tcp: 30053
-        #   udp: 30054
-
-        # TCP-specific service (used when splitTcpUdp: true)
-        tcp:
-          enabled: true
-          type: LoadBalancer
-          externalTrafficPolicy: Local
-          annotations: {}
-          port: 53
-          # loadBalancerIP: ""
-          # externalIPs: []
-
-        # UDP-specific service (used when splitTcpUdp: true)
-        udp:
-          enabled: true
-          type: LoadBalancer
-          externalTrafficPolicy: Local
-          annotations: {}
-          port: 53
-          # loadBalancerIP: ""
-          # externalIPs: []
-
     dhcp:
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- DHCP
       # @default -- false
-      active: null
+      active: false
       # @schema type:string,null
       # -- (string) No description provided.
       # @section -- DHCP
@@ -475,47 +478,15 @@ pihole:
       # -- (array) No description provided.
       # @section -- DHCP
       # @default -- []
-      hosts: []
+      hosts: null
 
       # DHCP K8S SERVICE #
       # Optional: Required only if using Pi-hole's DHCP functions (port 67)
-      service:
-        # @schema type:boolean,null
-        # -- (boolean) DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).
-        # @section -- K8S Services
-        # @default -- false
-        enabled: false
-        type: LoadBalancer
-        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
-        annotations: {}
-        ports:
-          dhcp: 67
-        # loadBalancerIP: ""
-        # externalIPs: []
-        # nodePort: 30067
-
       # DHCPv6 K8S SERVICE #
       # Optional: Required only when pihole.ftl.dhcp.ipv6 is enabled (port 547)
-      ipv6:
-        # @schema type:boolean,null
-        # -- (boolean) DHCPv6 functionality.
-        # @section -- DHCP
-        # @default -- false
-        active: null
-        service:
-          # @schema type:boolean,null
-          # -- (boolean) DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).
-          # @section -- K8S Services
-          # @default -- false
-          enabled: false
-          type: LoadBalancer
-          externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
-          annotations: {}
-          ports:
-            dhcpv6: 547
-          # loadBalancerIP: ""
-          # externalIPs: []
-          # nodePort: 30547
+      # @schema type:boolean,null
+      # -- Native DHCPv6 switch. Auxiliary services are outside the DNS HA profile.
+      ipv6: false
 
     ntp:
       ipv4:
@@ -523,7 +494,7 @@ pihole:
         # -- (boolean) NTP functionality on IPv4.
         # @section -- NTP
         # @default -- true
-        active: null
+        active: false
         # @schema type:string,null
         # -- (string) NTP address on IPv4.
         # @section -- NTP
@@ -534,7 +505,7 @@ pihole:
         # -- (boolean) NTP functionality on IPv6.
         # @section -- NTP
         # @default -- true
-        active: null
+        active: false
         # @schema type:string,null
         # -- (string) NTP address on IPv6.
         # @section -- NTP
@@ -545,7 +516,7 @@ pihole:
         # -- (boolean) Whether to enable NTP time synchronization.
         # @section -- NTP
         # @default -- true
-        active: null
+        active: false
         # @schema type:string,null
         # -- (string) NTP server to sync with. Can be an IP address or hostname. Set to empty string to disable syncing.
         # @section -- NTP
@@ -580,21 +551,6 @@ pihole:
 
       # NTP K8S SERVICE #
       # Optional: Required only when using pihole-FTL as NTP-Server (port 123)
-      service:
-        # @schema type:boolean,null
-        # -- (boolean) NTP Kubernetes Service. Required for external access to NTP functionality (port 123).
-        # @section -- K8S Services
-        # @default -- false
-        enabled: false
-        type: LoadBalancer
-        externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
-        annotations: {}
-        ports:
-          ntp: 123
-          # loadBalancerIP: ""
-          # externalIPs: []
-           # nodePort: 30123
-
     resolver:
       # @schema type:boolean,null
       # -- (boolean) Whether to resolve IPv4 addresses to hostnames in the query log and other outputs.
@@ -608,6 +564,9 @@ pihole:
       # -- (boolean) Control whether FTL should use the fallback option to try to obtain client names from checking the network table.
       # @default -- true
       networkNames: null
+      # @schema type:boolean,null
+      # -- Resolve client MAC addresses through configured names.
+      macNames: null
       # @schema type:string,null
       # -- (string) Options: https://docs.pi-hole.net/ftldns/configfile/#refreshnames
       # @default -- "IPV4_ONLY"
@@ -634,6 +593,9 @@ pihole:
       # @section -- Database
       # @default -- true
       useWAL: null
+      # @schema type:boolean,null
+      # -- Use a disk-backed short-term database (FTL v6.8).
+      forceDisk: null
       network:
         # @schema type:boolean,null
         # -- (boolean) Whether to parse the ARP cache.
@@ -669,7 +631,7 @@ pihole:
       threads: null
       # @schema type:array,null
       # -- (array) Headers to be set on all webserver responses. Check default value in pihole-FTL.toml for format.
-      headers: []
+      headers: null
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- Webserver
@@ -679,7 +641,7 @@ pihole:
       # -- (array) Additional options to be passed to the webserver. Can be used to set custom options like TLS configuration, etc.
       # @section -- Webserver
       # @default -- []
-      advancedOpts: []
+      advancedOpts: null
 
       session:
         # @schema type:integer,null
@@ -774,12 +736,12 @@ pihole:
         # -- (array) No description provided.
         # @section -- Webserver
         # @default -- []
-        excludeClients: []
+        excludeClients: null
         # @schema type:array,null
         # -- (array) No description provided.
         # @section -- Webserver
         # @default -- []
-        excludeDomains: []
+        excludeDomains: null
         # @schema type:integer,null
         # -- (integer) No description provided.
         # @section -- Webserver
@@ -814,10 +776,8 @@ pihole:
 
     files:
       # @schema type:string,null
-      # -- (string) No description provided.
-      # @section -- Advanced
-      # @default -- "/run/pihole-FTL.pid"
-      pid: null
+      # -- Location of the disk-backed temporary database.
+      tmp_db: null
       # @schema type:string,null
       # -- (string) No description provided.
       # @section -- Advanced
@@ -875,7 +835,7 @@ pihole:
       # -- (integer) No description provided.
       # @section -- Advanced
       # @default -- -10
-      nice: null
+      nice: 0
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- Advanced
@@ -890,7 +850,7 @@ pihole:
       # -- (array) No description provided.
       # @section -- Advanced
       # @default -- []
-      dnsmasq_lines: []
+      dnsmasq_lines: null
       # @schema type:boolean,null
       # -- (boolean) No description provided.
       # @section -- Advanced
@@ -911,6 +871,9 @@ pihole:
       # @section -- Advanced
       # @default -- false
       hide_dnsmasq_warn: null
+      # @schema type:boolean,null
+      # -- Suppress connection error logging (FTL v6.8).
+      hide_connection_error: null
       check:
         # @schema type:boolean,null
         # -- (boolean) No description provided.
@@ -962,7 +925,8 @@ pihole:
 
 serviceAccount:
   create: true
-  name: "pihole"
+  name: ""
+  automountServiceAccountToken: false
   annotations: {}
 
 # @schema type:string
@@ -972,12 +936,22 @@ clusterDomain: "cluster.local"
 
 networking:
   hostNetwork: false
+  # -- Explicit bootstrap DNS policy, or empty for ClusterFirst/ClusterFirstWithHostNet.
+  dnsPolicy: ""
+  dnsConfig: {}
+  hostAliases: []
 
 persistence:
+  retentionPolicy:
+    # @schema enum:[Retain, Delete]
+    whenDeleted: Retain
+    # @schema enum:[Retain, Delete]
+    whenScaled: Retain
   etcPihole:
     enabled: true
     accessMode: ReadWriteOnce
-    size: 500Mi
+    # -- Initial per-replica claim size; plan expansion and history retention separately.
+    size: 1Gi
     # storageClassName: "" # Leave empty to use the cluster default StorageClass
   # By default, Pi-hole v6 no longer reads configuration files from /etc/dnsmasq.d/. Read: https://docs.pi-hole.net/docker/upgrading/v5-v6/?h=dnsmasq#custom-dnsmasq-config-files
   etcDnsmasq:
@@ -997,6 +971,8 @@ metrics:
     # @section -- Metrics
     repository: ekofr/pihole-exporter
     tag: v1.3.1
+    allowUnverified: false
+    digest: "sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
     pullPolicy: IfNotPresent
   # @schema type:integer,null
   # -- (integer) Port on which the metrics exporter will listen.
@@ -1007,6 +983,7 @@ metrics:
     # -- (boolean) Metrics Kubernetes Service. Required for external access to metrics endpoint. (port 9617)
     # @section -- K8S Services
     enabled: true
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
     type: ClusterIP
     # externalTrafficPolicy: Local # Defined only for LoadBalancer/NodePort types
     # annotations: {}
@@ -1014,23 +991,13 @@ metrics:
     # externalIPs: []
     # nodePort: 30617
   # @schema type:array,null
-  # -- (array) Additional environment variables for the metrics exporter.
-  # PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the
-  # number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment).
-  # Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables.
-  # @section -- Metrics
-  env:
-    - name: INTERVAL
-      value: "10s"
-    # Uncomment to use password authentication:
-    # - name: PIHOLE_PASSWORD
-    #   valueFrom:
-    #     secretKeyRef:
-    #       name: pihole-secret
-    #       key: password
-    # Or use API token (WEBPASSWORD from /etc/pihole/setupVars.conf):
-    # - name: PIHOLE_API_TOKEN
-    #   value: "your-api-token-here"
+  # -- (array) Additional exporter variables. Scrape timing is controlled by Prometheus.
+  # Authentication uses the Pi-hole Secret unless PIHOLE_PASSWORD or PIHOLE_PASSWORD_FILE is supplied here.
+  env: []
+  podAnnotations: {}
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
   # Override metrics container command (optional)
   command: []
   # Override metrics container args (optional)
@@ -1090,13 +1057,24 @@ podSecurityContext:
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
-    drop: []
-    add: []
+    drop: [ALL]
+    # -- Stock-image startup needs ownership, identity/capability setup and child-process shutdown. DHCP adds its network capabilities separately.
+    add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID, SETPCAP, SETFCAP, KILL]
   readOnlyRootFilesystem: false
 
 networkPolicy:
   enabled: false
-  webAllowFrom: []
+  # -- Enable explicit DNS/exporter egress policies. Requires enabled=true; empty rules deny egress.
+  egressEnabled: false
+  # -- DNS-pod egress rules. Include bootstrap DNS, intended upstreams and approved HTTPS mirror destinations.
+  egress: []
+  # -- Exporter egress rules. Include bootstrap DNS and HTTP access to this release's DNS pods.
+  metricsEgress: []
+  # -- Permit release-labelled Helm test and synthetic DNS pods. Disable to supply your own validation policy.
+  allowTests: true
+  dnsAllowFrom: []  # Empty permits all DNS clients
+  webAllowFrom: []  # Empty denies inbound web access when policy is enabled
+  metricsAllowFrom: []  # Empty denies inbound exporter access when policy is enabled
 
 podDisruptionBudget:
   enabled: false
@@ -1104,15 +1082,149 @@ podDisruptionBudget:
 
 resources:
   limits:
-    memory: 256Mi
-    cpu: 200m
+    memory: 512Mi
+    cpu: "1"
   requests:
     memory: 128Mi
     cpu: 100m
 
+topologySpreadConstraints: []
 affinity: {}
 nodeSelector: {}
 tolerations: []
 
 # Extra volumes to add to the pod (optional)
 extraVolumes: []
+# -- Additional DNS-container mounts, for example a read-only Secret containing a TLS PEM file.
+extraVolumeMounts: []
+
+# -- Kubernetes Services are independent of the native FTL configuration tree.
+services:
+  dns:
+    # @schema type:boolean,null
+    # -- (boolean) DNS Kubernetes Service. Required for external access to DNS functionality (port 53).
+    # @section -- K8S Services
+    # @default -- true
+    enabled: true
+    # Split mode creates separate services for TCP and UDP
+    # Set to true for advanced use cases (different IPs, types per protocol)
+    # Default false keeps both protocols in one service (standard DNS behavior)
+    # @schema type:boolean,null
+    # -- (boolean) Whether to create separate Kubernetes Services for TCP and UDP DNS ports.
+    # @section -- K8S Services
+    # @default -- false
+    splitTcpUdp: false
+
+    # Combined service configuration (used when splitTcpUdp: false)
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+    type: ClusterIP
+    # -- Optional provider class; immutable after the LoadBalancer Service is created.
+    loadBalancerClass: ""
+    loadBalancerSourceRanges: []
+    # @schema enum:[Local, Cluster]
+    externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
+    annotations: {}
+    ports:
+      tcp: 53
+      udp: 53
+    # loadBalancerIP: ""
+    # externalIPs: []
+    nodePorts: {}  # Optional tcp/udp NodePorts
+
+    # TCP-specific service (used when splitTcpUdp: true)
+    tcp:
+      enabled: true
+      # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+      type: ClusterIP
+      loadBalancerClass: ""
+      loadBalancerSourceRanges: []
+      # @schema enum:[Local, Cluster]
+      externalTrafficPolicy: Local
+      annotations: {}
+      port: 53
+      # loadBalancerIP: ""
+      # externalIPs: []
+
+    # UDP-specific service (used when splitTcpUdp: true)
+    udp:
+      enabled: true
+      # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+      type: ClusterIP
+      loadBalancerClass: ""
+      loadBalancerSourceRanges: []
+      # @schema enum:[Local, Cluster]
+      externalTrafficPolicy: Local
+      annotations: {}
+      port: 53
+      # loadBalancerIP: ""
+      # externalIPs: []
+
+  web:
+    # @schema type:boolean,null
+    # -- (boolean) Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)
+    # @section -- K8S Services
+    enabled: true
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+    type: ClusterIP
+    loadBalancerClass: ""
+    loadBalancerSourceRanges: []
+    # @schema enum:[Local, Cluster]
+    externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
+    annotations: {}
+    ports:
+      http: 80
+      https: 443
+    # loadBalancerIP: ""
+    # externalIPs: []
+    nodePorts: {}  # Optional http/https NodePorts; omitted ports are assigned by Kubernetes
+
+  dhcp:
+    # @schema type:boolean,null
+    # -- (boolean) DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).
+    # @section -- K8S Services
+    # @default -- false
+    enabled: false
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+    type: LoadBalancer
+    # @schema enum:[Local, Cluster]
+    externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
+    annotations: {}
+    ports:
+      dhcp: 67
+    # loadBalancerIP: ""
+    # externalIPs: []
+    # nodePort: 30067
+
+  dhcpv6:
+    # @schema type:boolean,null
+    # -- (boolean) DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).
+    # @section -- K8S Services
+    # @default -- false
+    enabled: false
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+    type: LoadBalancer
+    # @schema enum:[Local, Cluster]
+    externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
+    annotations: {}
+    ports:
+      dhcpv6: 547
+    # loadBalancerIP: ""
+    # externalIPs: []
+    # nodePort: 30547
+
+  ntp:
+    # @schema type:boolean,null
+    # -- (boolean) NTP Kubernetes Service. Required for external access to NTP functionality (port 123).
+    # @section -- K8S Services
+    # @default -- false
+    enabled: false
+    # @schema enum:[ClusterIP, NodePort, LoadBalancer]
+    type: LoadBalancer
+    # @schema enum:[Local, Cluster]
+    externalTrafficPolicy: Local  # Defined only for LoadBalancer/NodePort types
+    annotations: {}
+    ports:
+      ntp: 123
+      # loadBalancerIP: ""
+      # externalIPs: []
+       # nodePort: 30123

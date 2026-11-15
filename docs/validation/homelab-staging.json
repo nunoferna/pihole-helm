@@ -1,0 +1,136 @@
+{
+  "started_utc": "2026-11-14T19:56:14.385035+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-staging",
+  "checks": [
+    {
+      "check": "independent_persistent_volumes_and_selection",
+      "passed": true,
+      "seconds": 0.76,
+      "details": {
+        "nodes": [
+          "cp01",
+          "cp03"
+        ],
+        "claims": {
+          "etc-pihole-pihole-staging-0": "pihole-staging-0",
+          "etc-pihole-pihole-staging-1": "pihole-staging-1"
+        },
+        "pdb_healthy": 2
+      }
+    },
+    {
+      "check": "udp_tcp_service_pod_and_workstation_nodeport",
+      "passed": true,
+      "seconds": 33.12,
+      "details": {
+        "service/UDP": "local, blocked, upstream passed",
+        "pihole-staging-0/UDP": "local, blocked, upstream passed",
+        "192.168.1.73/UDP": "local, blocked, upstream passed",
+        "pihole-staging-1/UDP": "local, blocked, upstream passed",
+        "192.168.1.77/UDP": "local, blocked, upstream passed",
+        "service/TCP": "local, blocked, upstream passed",
+        "pihole-staging-0/TCP": "local, blocked, upstream passed",
+        "192.168.1.73/TCP": "local, blocked, upstream passed",
+        "pihole-staging-1/TCP": "local, blocked, upstream passed",
+        "192.168.1.77/TCP": "local, blocked, upstream passed"
+      }
+    },
+    {
+      "check": "authenticated_exporter",
+      "passed": true,
+      "seconds": 2.03,
+      "details": {
+        "authenticated_targets": [
+          "pihole-staging-0",
+          "pihole-staging-1"
+        ],
+        "blocking_status": 1
+      }
+    },
+    {
+      "check": "sequential_pod_replacement_and_persistence",
+      "passed": true,
+      "seconds": 29.17,
+      "details": {
+        "pihole-staging-0": {
+          "same_pvc": true,
+          "marker_retained": true,
+          "policy_entries": 1,
+          "queries": 8,
+          "failures": 0
+        },
+        "pihole-staging-1": {
+          "same_pvc": true,
+          "marker_retained": true,
+          "policy_entries": 1,
+          "queries": 8,
+          "failures": 0
+        }
+      }
+    },
+    {
+      "check": "versioned_secret_rotation",
+      "passed": true,
+      "seconds": 32.6,
+      "details": {
+        "current_secret": "pihole-staging-web-v2",
+        "rollback_secret_retained": true,
+        "both_replicas_authenticated": true
+      }
+    },
+    {
+      "check": "authenticated_exporter_after_rotation",
+      "passed": true,
+      "seconds": 2.22,
+      "details": {
+        "authenticated_targets": [
+          "pihole-staging-0",
+          "pihole-staging-1"
+        ],
+        "blocking_status": 1
+      }
+    },
+    {
+      "check": "dns_after_rotation",
+      "passed": true,
+      "seconds": 31.95,
+      "details": {
+        "service/UDP": "local, blocked, upstream passed",
+        "pihole-staging-0/UDP": "local, blocked, upstream passed",
+        "192.168.1.73/UDP": "local, blocked, upstream passed",
+        "pihole-staging-1/UDP": "local, blocked, upstream passed",
+        "192.168.1.77/UDP": "local, blocked, upstream passed",
+        "service/TCP": "local, blocked, upstream passed",
+        "pihole-staging-0/TCP": "local, blocked, upstream passed",
+        "192.168.1.73/TCP": "local, blocked, upstream passed",
+        "pihole-staging-1/TCP": "local, blocked, upstream passed",
+        "192.168.1.77/TCP": "local, blocked, upstream passed"
+      }
+    },
+    {
+      "check": "prometheus_live_scrape_and_rule_evaluation",
+      "passed": true,
+      "seconds": 17.02,
+      "details": {
+        "healthy_scrape_targets": 1,
+        "last_scrape": [
+          "2026-11-14T20:01:05.882189977Z"
+        ],
+        "authenticated_status_samples": 2,
+        "alert_rules": {
+          "PiholeStagingReplicasUnavailable": "inactive",
+          "PiholeStagingExporterUnavailable": "inactive",
+          "PiholeStagingBlockingDisabled": "inactive"
+        },
+        "notification_delivery_tested": false,
+        "continuous_synthetic_dns_monitor_installed": false
+      }
+    }
+  ],
+  "scope": "two homelab nodes; NodePort; directory-backed retained local PVs; no node power-off or production cutover",
+  "validation_pod_removed": true,
+  "staging_retained": true,
+  "completed_utc": "2026-11-14T20:01:12.269231+00:00",
+  "resolved_monitoring_issue": "Existing Prometheus Cilium egress allowlist denied staging port 9617; added staging-only endpoint/port allow rule."
+}

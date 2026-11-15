@@ -1,0 +1,15 @@
+{
+  "started_utc": "2026-11-14T21:10:33.257351+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [],
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
+  },
+  "helm_version": "v4.3.2+g8346aaa",
+  "error": "helm failed: Error: kubernetes cluster unreachable: Get \"https://192.168.1.70:6443/version\": dial tcp 192.168.1.70:6443: i/o timeout\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T21:11:11.930991+00:00"
+}

@@ -1,4 +1,4 @@
-{{- if .Values.pihole.ftl.dhcp.ipv6.service.enabled }}
+{{- if .Values.services.dhcpv6.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,26 +8,26 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.pihole.ftl.dhcp.ipv6.service.annotations | nindent 4 }}
+    {{- toYaml .Values.services.dhcpv6.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.pihole.ftl.dhcp.ipv6.service.type }}
-  {{- if or (eq .Values.pihole.ftl.dhcp.ipv6.service.type "LoadBalancer") (eq .Values.pihole.ftl.dhcp.ipv6.service.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.ftl.dhcp.ipv6.service.externalTrafficPolicy }}
+  type: {{ .Values.services.dhcpv6.type }}
+  {{- if or (eq .Values.services.dhcpv6.type "LoadBalancer") (eq .Values.services.dhcpv6.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.dhcpv6.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dhcp.ipv6.service.loadBalancerIP }}
+  {{- with .Values.services.dhcpv6.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dhcp.ipv6.service.externalIPs }}
+  {{- with .Values.services.dhcpv6.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.ftl.dhcp.ipv6.service.ports.dhcpv6 }}
+    - port: {{ .Values.services.dhcpv6.ports.dhcpv6 }}
       targetPort: dhcpv6
       protocol: UDP
       name: dhcpv6
-  {{- if and (eq .Values.pihole.ftl.dhcp.ipv6.service.type "NodePort") .Values.pihole.ftl.dhcp.ipv6.service.nodePort }}
-      nodePort: {{ .Values.pihole.ftl.dhcp.ipv6.service.nodePort }}
+  {{- if and (eq .Values.services.dhcpv6.type "NodePort") .Values.services.dhcpv6.nodePort }}
+      nodePort: {{ .Values.services.dhcpv6.nodePort }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

@@ -15,10 +15,18 @@
         "command": {
             "type": "array"
         },
+        "credentialsRevision": {
+            "description": "Change when rotating an externally managed Secret; rolls DNS and exporter pods.",
+            "type": "string"
+        },
         "extraEnv": {
             "type": "array"
         },
         "extraInitContainers": {
+            "type": "array"
+        },
+        "extraVolumeMounts": {
+            "description": "Additional DNS-container mounts, for example a read-only Secret containing a TLS PEM file.",
             "type": "array"
         },
         "extraVolumes": {
@@ -27,6 +35,14 @@
         "image": {
             "type": "object",
             "properties": {
+                "allowUnverified": {
+                    "description": "Explicit opt-out from the recorded image compatibility baseline.",
+                    "type": "boolean"
+                },
+                "digest": {
+                    "description": "Immutable multi-platform digest. Clear explicitly when testing another image.",
+                    "type": "string"
+                },
                 "pullPolicy": {
                     "type": "string"
                 },
@@ -41,9 +57,33 @@
         "imagePullSecrets": {
             "type": "array"
         },
+        "listeners": {
+            "description": "Internal listener ports. Kubernetes Services retain their normal client ports.",
+            "type": "object",
+            "properties": {
+                "dns": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 1
+                },
+                "http": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 1
+                },
+                "https": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
+                }
+            }
+        },
         "metrics": {
             "type": "object",
             "properties": {
+                "affinity": {
+                    "type": "object"
+                },
                 "args": {
                     "type": "array"
                 },
@@ -79,26 +119,21 @@
                     ]
                 },
                 "env": {
-                    "description": "Additional environment variables for the metrics exporter. PIHOLE_HOSTNAME, PIHOLE_PORT, and PIHOLE_PROTOCOL are auto-generated from the number of replicas (headless DNS for StatefulSet, ClusterIP FQDN for Deployment). Use this to pass PIHOLE_PASSWORD, INTERVAL, or other custom variables.",
+                    "description": "Additional exporter variables. Scrape timing is controlled by Prometheus. Authentication uses the Pi-hole Secret unless PIHOLE_PASSWORD or PIHOLE_PASSWORD_FILE is supplied here.",
                     "type": [
                         "array",
                         "null"
-                    ],
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "value": {
-                                "type": "string"
-                            }
-                        }
-                    }
+                    ]
                 },
                 "image": {
                     "type": "object",
                     "properties": {
+                        "allowUnverified": {
+                            "type": "boolean"
+                        },
+                        "digest": {
+                            "type": "string"
+                        },
                         "pullPolicy": {
                             "type": "string"
                         },
@@ -113,6 +148,12 @@
                             "type": "string"
                         }
                     }
+                },
+                "nodeSelector": {
+                    "type": "object"
+                },
+                "podAnnotations": {
+                    "type": "object"
                 },
                 "podSecurityContext": {
                     "description": "Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible.",
@@ -216,7 +257,12 @@
                             ]
                         },
                         "type": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
                         }
                     }
                 },
@@ -249,14 +295,86 @@
                             "type": "string"
                         }
                     }
+                },
+                "tolerations": {
+                    "type": "array"
+                }
+            }
+        },
+        "minReadySeconds": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "monitoring": {
+            "type": "object",
+            "properties": {
+                "alerts": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "for": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "labels": {
+                    "type": "object"
+                },
+                "namespace": {
+                    "description": "Namespace for ServiceMonitor and PrometheusRule; empty uses the release namespace.",
+                    "type": "string"
+                },
+                "syntheticDns": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "description": "Run recurring UDP/TCP resolution and optional filtering checks against Service and every replica.",
+                            "type": "boolean"
+                        },
+                        "schedule": {
+                            "type": "string"
+                        },
+                        "staleAfterSeconds": {
+                            "type": "integer",
+                            "minimum": 60
+                        },
+                        "timeoutSeconds": {
+                            "type": "integer",
+                            "minimum": 10
+                        }
+                    }
                 }
             }
         },
         "networkPolicy": {
             "type": "object",
             "properties": {
+                "allowTests": {
+                    "description": "Permit release-labelled Helm test and synthetic DNS pods. Disable to supply your own validation policy.",
+                    "type": "boolean"
+                },
+                "dnsAllowFrom": {
+                    "type": "array"
+                },
+                "egress": {
+                    "description": "DNS-pod egress rules. Include bootstrap DNS, intended upstreams and approved HTTPS mirror destinations.",
+                    "type": "array"
+                },
+                "egressEnabled": {
+                    "description": "Enable explicit DNS/exporter egress policies. Requires enabled=true; empty rules deny egress.",
+                    "type": "boolean"
+                },
                 "enabled": {
                     "type": "boolean"
+                },
+                "metricsAllowFrom": {
+                    "type": "array"
+                },
+                "metricsEgress": {
+                    "description": "Exporter egress rules. Include bootstrap DNS and HTTP access to this release's DNS pods.",
+                    "type": "array"
                 },
                 "webAllowFrom": {
                     "type": "array"
@@ -266,6 +384,16 @@
         "networking": {
             "type": "object",
             "properties": {
+                "dnsConfig": {
+                    "type": "object"
+                },
+                "dnsPolicy": {
+                    "description": "Explicit bootstrap DNS policy, or empty for ClusterFirst/ClusterFirstWithHostNet.",
+                    "type": "string"
+                },
+                "hostAliases": {
+                    "type": "array"
+                },
                 "hostNetwork": {
                     "type": "boolean"
                 }
@@ -301,7 +429,27 @@
                             "type": "boolean"
                         },
                         "size": {
+                            "description": "Initial per-replica claim size; plan expansion and history retention separately.",
                             "type": "string"
+                        }
+                    }
+                },
+                "retentionPolicy": {
+                    "type": "object",
+                    "properties": {
+                        "whenDeleted": {
+                            "type": "string",
+                            "enum": [
+                                "Retain",
+                                "Delete"
+                            ]
+                        },
+                        "whenScaled": {
+                            "type": "string",
+                            "enum": [
+                                "Retain",
+                                "Delete"
+                            ]
                         }
                     }
                 }
@@ -348,6 +496,13 @@
                                     "description": "Database update interval in seconds.",
                                     "type": [
                                         "integer",
+                                        "null"
+                                    ]
+                                },
+                                "forceDisk": {
+                                    "description": "Use a disk-backed short-term database (FTL v6.8).",
+                                    "type": [
+                                        "boolean",
                                         "null"
                                     ]
                                 },
@@ -418,45 +573,11 @@
                                     ]
                                 },
                                 "ipv6": {
-                                    "type": "object",
-                                    "properties": {
-                                        "active": {
-                                            "description": "DHCPv6 functionality.",
-                                            "type": [
-                                                "boolean",
-                                                "null"
-                                            ]
-                                        },
-                                        "service": {
-                                            "type": "object",
-                                            "properties": {
-                                                "annotations": {
-                                                    "type": "object"
-                                                },
-                                                "enabled": {
-                                                    "description": "DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).",
-                                                    "type": [
-                                                        "boolean",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "externalTrafficPolicy": {
-                                                    "type": "string"
-                                                },
-                                                "ports": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "dhcpv6": {
-                                                            "type": "integer"
-                                                        }
-                                                    }
-                                                },
-                                                "type": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
+                                    "description": "Native DHCPv6 switch. Auxiliary services are outside the DNS HA profile.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
                                 },
                                 "leaseTime": {
                                     "description": "No description provided.",
@@ -499,35 +620,6 @@
                                         "string",
                                         "null"
                                     ]
-                                },
-                                "service": {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "type": "object"
-                                        },
-                                        "enabled": {
-                                            "description": "DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).",
-                                            "type": [
-                                                "boolean",
-                                                "null"
-                                            ]
-                                        },
-                                        "externalTrafficPolicy": {
-                                            "type": "string"
-                                        },
-                                        "ports": {
-                                            "type": "object",
-                                            "properties": {
-                                                "dhcp": {
-                                                    "type": "integer"
-                                                }
-                                            }
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
                                 },
                                 "start": {
                                     "description": "No description provided.",
@@ -616,6 +708,13 @@
                                             "description": "No description provided.",
                                             "type": [
                                                 "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "rrtype": {
+                                            "description": "Cached RR types supported by FTL v6.8 (for example ANY).",
+                                            "type": [
+                                                "string",
                                                 "null"
                                             ]
                                         },
@@ -711,7 +810,7 @@
                                     ]
                                 },
                                 "listeningMode": {
-                                    "description": "Options: https://docs.pi-hole.net/ftldns/configfile/#listeningmode",
+                                    "description": "Accept Kubernetes Service/pod traffic. Restrict DNS clients with NetworkPolicy and private service exposure.",
                                     "type": [
                                         "string",
                                         "null"
@@ -849,85 +948,6 @@
                                         "null"
                                     ]
                                 },
-                                "service": {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "type": "object"
-                                        },
-                                        "enabled": {
-                                            "description": "DNS Kubernetes Service. Required for external access to DNS functionality (port 53).",
-                                            "type": [
-                                                "boolean",
-                                                "null"
-                                            ]
-                                        },
-                                        "externalTrafficPolicy": {
-                                            "type": "string"
-                                        },
-                                        "ports": {
-                                            "type": "object",
-                                            "properties": {
-                                                "tcp": {
-                                                    "type": "integer"
-                                                },
-                                                "udp": {
-                                                    "type": "integer"
-                                                }
-                                            }
-                                        },
-                                        "splitTcpUdp": {
-                                            "description": "Whether to create separate Kubernetes Services for TCP and UDP DNS ports.",
-                                            "type": [
-                                                "boolean",
-                                                "null"
-                                            ]
-                                        },
-                                        "tcp": {
-                                            "type": "object",
-                                            "properties": {
-                                                "annotations": {
-                                                    "type": "object"
-                                                },
-                                                "enabled": {
-                                                    "type": "boolean"
-                                                },
-                                                "externalTrafficPolicy": {
-                                                    "type": "string"
-                                                },
-                                                "port": {
-                                                    "type": "integer"
-                                                },
-                                                "type": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        },
-                                        "udp": {
-                                            "type": "object",
-                                            "properties": {
-                                                "annotations": {
-                                                    "type": "object"
-                                                },
-                                                "enabled": {
-                                                    "type": "boolean"
-                                                },
-                                                "externalTrafficPolicy": {
-                                                    "type": "string"
-                                                },
-                                                "port": {
-                                                    "type": "integer"
-                                                },
-                                                "type": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
                                 "showDNSSEC": {
                                     "description": "No description provided.",
                                     "type": [
@@ -1034,8 +1054,8 @@
                                         "null"
                                     ]
                                 },
-                                "pid": {
-                                    "description": "No description provided.",
+                                "tmp_db": {
+                                    "description": "Location of the disk-backed temporary database.",
                                     "type": [
                                         "string",
                                         "null"
@@ -1102,6 +1122,13 @@
                                 },
                                 "extraLogging": {
                                     "description": "No description provided.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "hide_connection_error": {
+                                    "description": "Suppress connection error logging (FTL v6.8).",
                                     "type": [
                                         "boolean",
                                         "null"
@@ -1185,35 +1212,6 @@
                                         }
                                     }
                                 },
-                                "service": {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "type": "object"
-                                        },
-                                        "enabled": {
-                                            "description": "NTP Kubernetes Service. Required for external access to NTP functionality (port 123).",
-                                            "type": [
-                                                "boolean",
-                                                "null"
-                                            ]
-                                        },
-                                        "externalTrafficPolicy": {
-                                            "type": "string"
-                                        },
-                                        "ports": {
-                                            "type": "object",
-                                            "properties": {
-                                                "ntp": {
-                                                    "type": "integer"
-                                                }
-                                            }
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
                                 "sync": {
                                     "type": "object",
                                     "properties": {
@@ -1278,6 +1276,13 @@
                         "resolver": {
                             "type": "object",
                             "properties": {
+                                "macNames": {
+                                    "description": "Resolve client MAC addresses through configured names.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
                                 "networkNames": {
                                     "description": "Control whether FTL should use the fallback option to try to obtain client names from checking the network table.",
                                     "type": [
@@ -1577,95 +1582,30 @@
                     ]
                 },
                 "groups": {
-                    "description": "List of Pi-hole groups. Groups are used to apply settings (e.g. adlists) to specific clients.",
+                    "description": "Owned groups. Built-in Default is protected. Entries accept name, description and enabled.",
                     "type": [
                         "array",
                         "null"
-                    ],
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "description": {
-                                "description": "Description of the group.",
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            },
-                            "enabled": {
-                                "description": "Whether the group is enabled.",
-                                "type": [
-                                    "boolean",
-                                    "null"
-                                ]
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
-                    }
+                    ]
                 },
                 "lists": {
                     "type": "object",
                     "properties": {
                         "adlists": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "address": {
-                                        "type": "string"
-                                    },
-                                    "comment": {
-                                        "type": "string"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean"
-                                    }
-                                }
-                            }
+                            "description": "Subscriptions: address, optional sha256, type (block/allow), enabled, comment, groups. Pinned content is cached on each PVC.",
+                            "type": "array"
                         },
                         "blacklist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "comment": {
-                                        "type": "string"
-                                    },
-                                    "domain": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
+                            "type": "array"
                         },
                         "regex_blacklist": {
                             "type": "array"
                         },
                         "regex_whitelist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "comment": {
-                                        "type": "string"
-                                    },
-                                    "domain": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
+                            "type": "array"
                         },
                         "whitelist": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "domain": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
+                            "type": "array"
                         }
                     }
                 },
@@ -1701,7 +1641,7 @@
                             ]
                         },
                         "password": {
-                            "description": "Web interface password. Set to empty string to disable password protection. Ignored if using external secret injection.",
+                            "description": "Explicit non-empty password for a chart-managed Secret. Prefer existingSecret in production. No random password is generated.",
                             "type": [
                                 "string",
                                 "null"
@@ -1713,38 +1653,6 @@
                                 "string",
                                 "null"
                             ]
-                        },
-                        "service": {
-                            "type": "object",
-                            "properties": {
-                                "annotations": {
-                                    "type": "object"
-                                },
-                                "enabled": {
-                                    "description": "Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)",
-                                    "type": [
-                                        "boolean",
-                                        "null"
-                                    ]
-                                },
-                                "externalTrafficPolicy": {
-                                    "type": "string"
-                                },
-                                "ports": {
-                                    "type": "object",
-                                    "properties": {
-                                        "http": {
-                                            "type": "integer"
-                                        },
-                                        "https": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "type": {
-                                    "type": "string"
-                                }
-                            }
                         },
                         "skipPasswordEnv": {
                             "description": "Whether to skip setting the default web password environment variable when using external secret injection. Set to true if you are defining the FTLCONF_webserver_api_password variable in extraEnv with a value sourced from an external secret.",
@@ -1771,6 +1679,14 @@
                 }
             }
         },
+        "podManagementPolicy": {
+            "description": "Stable StatefulSet identity for all replica counts.",
+            "type": "string",
+            "enum": [
+                "Parallel",
+                "OrderedReady"
+            ]
+        },
         "podSecurityContext": {
             "type": "object",
             "properties": {
@@ -1784,8 +1700,106 @@
                 }
             }
         },
+        "policy": {
+            "type": "object",
+            "properties": {
+                "adoptExisting": {
+                    "description": "Explicitly adopt matching existing records. Enable only for a reviewed migration, then disable.",
+                    "type": "boolean"
+                },
+                "existingConfigMap": {
+                    "description": "Optional externally retained immutable artifact containing policy.json and the runner files.",
+                    "type": "string"
+                },
+                "mode": {
+                    "description": "Reconcile owned records, apply without deletion, or explicitly freeze policy management.",
+                    "type": "string",
+                    "enum": [
+                        "reconcile",
+                        "additive",
+                        "disabled"
+                    ]
+                },
+                "owner": {
+                    "description": "Explicit original namespace/release identity when restoring a journal into a new release. Empty derives the current identity.",
+                    "type": "string"
+                },
+                "requirePinnedLists": {
+                    "description": "Require SHA-256 pinned HTTPS subscriptions and reject enabled unmanaged feeds.",
+                    "type": "boolean"
+                },
+                "revision": {
+                    "description": "Required SHA-256 of policy.json when referencing an external artifact.",
+                    "type": "string"
+                }
+            }
+        },
+        "policyImportTimeout": {
+            "description": "Total deadline in seconds for policy validation, reconciliation and gravity.",
+            "type": "integer",
+            "minimum": 1
+        },
+        "probes": {
+            "type": "object",
+            "properties": {
+                "dns": {
+                    "type": "object",
+                    "properties": {
+                        "expectedAddress": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "liveness": {
+                    "type": "object",
+                    "properties": {
+                        "failureThreshold": {
+                            "type": "integer"
+                        },
+                        "periodSeconds": {
+                            "type": "integer"
+                        },
+                        "timeoutSeconds": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "readiness": {
+                    "type": "object",
+                    "properties": {
+                        "failureThreshold": {
+                            "type": "integer"
+                        },
+                        "periodSeconds": {
+                            "type": "integer"
+                        },
+                        "timeoutSeconds": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "startup": {
+                    "type": "object",
+                    "properties": {
+                        "failureThreshold": {
+                            "type": "integer"
+                        },
+                        "periodSeconds": {
+                            "type": "integer"
+                        },
+                        "timeoutSeconds": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
         "replicas": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 1
         },
         "resources": {
             "type": "object",
@@ -1824,10 +1838,17 @@
                     "type": "object",
                     "properties": {
                         "add": {
-                            "type": "array"
+                            "description": "Stock-image startup needs ownership, identity/capability setup and child-process shutdown. DHCP adds its network capabilities separately.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         },
                         "drop": {
-                            "type": "array"
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 },
@@ -1842,6 +1863,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "automountServiceAccountToken": {
+                    "type": "boolean"
+                },
                 "create": {
                     "type": "boolean"
                 },
@@ -1850,11 +1874,325 @@
                 }
             }
         },
-        "strategy": {
+        "services": {
+            "description": "Kubernetes Services are independent of the native FTL configuration tree.",
             "type": "object",
             "properties": {
-                "type": {
+                "dhcp": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "DHCP Kubernetes Service. Required for external access to DHCP functionality (port 67).",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "externalTrafficPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Local",
+                                "Cluster"
+                            ]
+                        },
+                        "ports": {
+                            "type": "object",
+                            "properties": {
+                                "dhcp": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
+                        }
+                    }
+                },
+                "dhcpv6": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "DHCPv6 Kubernetes Service. Required for external access to DHCPv6 functionality (port 547).",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "externalTrafficPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Local",
+                                "Cluster"
+                            ]
+                        },
+                        "ports": {
+                            "type": "object",
+                            "properties": {
+                                "dhcpv6": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
+                        }
+                    }
+                },
+                "dns": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "DNS Kubernetes Service. Required for external access to DNS functionality (port 53).",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "externalTrafficPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Local",
+                                "Cluster"
+                            ]
+                        },
+                        "loadBalancerClass": {
+                            "description": "Optional provider class; immutable after the LoadBalancer Service is created.",
+                            "type": "string"
+                        },
+                        "loadBalancerSourceRanges": {
+                            "type": "array"
+                        },
+                        "nodePorts": {
+                            "type": "object"
+                        },
+                        "ports": {
+                            "type": "object",
+                            "properties": {
+                                "tcp": {
+                                    "type": "integer"
+                                },
+                                "udp": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "splitTcpUdp": {
+                            "description": "Whether to create separate Kubernetes Services for TCP and UDP DNS ports.",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "tcp": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "type": "object"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "externalTrafficPolicy": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Local",
+                                        "Cluster"
+                                    ]
+                                },
+                                "loadBalancerClass": {
+                                    "type": "string"
+                                },
+                                "loadBalancerSourceRanges": {
+                                    "type": "array"
+                                },
+                                "port": {
+                                    "type": "integer"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ClusterIP",
+                                        "NodePort",
+                                        "LoadBalancer"
+                                    ]
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
+                        },
+                        "udp": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "type": "object"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "externalTrafficPolicy": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Local",
+                                        "Cluster"
+                                    ]
+                                },
+                                "loadBalancerClass": {
+                                    "type": "string"
+                                },
+                                "loadBalancerSourceRanges": {
+                                    "type": "array"
+                                },
+                                "port": {
+                                    "type": "integer"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ClusterIP",
+                                        "NodePort",
+                                        "LoadBalancer"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "ntp": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "NTP Kubernetes Service. Required for external access to NTP functionality (port 123).",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "externalTrafficPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Local",
+                                "Cluster"
+                            ]
+                        },
+                        "ports": {
+                            "type": "object",
+                            "properties": {
+                                "ntp": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
+                        }
+                    }
+                },
+                "web": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "Web Kubernetes Service. Required for external access to the Pi-hole web interface. (port 80/443)",
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "externalTrafficPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Local",
+                                "Cluster"
+                            ]
+                        },
+                        "loadBalancerClass": {
+                            "type": "string"
+                        },
+                        "loadBalancerSourceRanges": {
+                            "type": "array"
+                        },
+                        "nodePorts": {
+                            "type": "object"
+                        },
+                        "ports": {
+                            "type": "object",
+                            "properties": {
+                                "http": {
+                                    "type": "integer"
+                                },
+                                "https": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "ClusterIP",
+                                "NodePort",
+                                "LoadBalancer"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "terminationGracePeriodSeconds": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "tests": {
+            "type": "object",
+            "properties": {
+                "authentication": {
+                    "description": "Verify credentials against every replica and the private web Service when enabled.",
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "existingSecret": {
+                    "description": "Optional credential Secret for tests when application credentials use an injector.",
                     "type": "string"
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "minimum": 10
                 }
             }
         },
@@ -1864,10 +2202,30 @@
         "tolerations": {
             "type": "array"
         },
+        "topologySpreadConstraints": {
+            "type": "array"
+        },
         "updateStrategy": {
             "type": "object",
             "properties": {
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "validation": {
+            "type": "object",
+            "properties": {
+                "blockedAnswer": {
+                    "description": "Expected blocked A answer, or NXDOMAIN when using that blocking mode.",
+                    "type": "string"
+                },
+                "blockedDomain": {
+                    "description": "Optional known blocked domain for Helm tests and scheduled DNS checks. No rules are installed implicitly.",
+                    "type": "string"
+                },
+                "upstreamDomain": {
+                    "description": "Optional upstream lookup. Empty keeps checks independent of public DNS.",
                     "type": "string"
                 }
             }

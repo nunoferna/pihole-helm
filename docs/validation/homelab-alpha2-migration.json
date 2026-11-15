@@ -1,0 +1,21 @@
+{
+  "context": "admin@homelab",
+  "namespace": "pihole-staging",
+  "reason": "Remove version-dependent labels from immutable claim templates; adopt staging monitoring resources into Helm.",
+  "old_controller_uid": "8a968888-3b18-4d8d-a10a-f2c7eaa9c760",
+  "pod_uids_before": {
+    "pihole-staging-0": "ab6f8aee-77d9-47c7-a410-8ab06e6119ed",
+    "pihole-staging-1": "cfe0fe2e-600d-423a-894e-9752766fb640"
+  },
+  "pvc_uids_before": {
+    "etc-pihole-pihole-staging-0": "508cc1b2-1182-4681-8b94-0bc3aab6d3a0",
+    "etc-pihole-pihole-staging-1": "6bd9c6d8-3109-4da2-96b6-8d0c24157508"
+  },
+  "consistent_gravity_backups_present": true,
+  "storage_specs_unchanged": true,
+  "pods_and_claims_retained_during_controller_recreation": true,
+  "new_controller_uid": "b2404366-4a60-4dc8-a5d2-a9c958fbb643",
+  "ready_replicas": 2,
+  "claims_preserved_after_rollout": true,
+  "explicit_adoption_rollout_succeeded": true
+}

@@ -1,0 +1,12 @@
+# Disposable chart-testing credential. Never use this fixture in production.
+pihole:
+  web:
+    password: ci-fixture-only-do-not-use
+resources:
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+services:
+  dns:
+    type: ClusterIP

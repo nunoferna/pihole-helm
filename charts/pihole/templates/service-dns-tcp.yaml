@@ -1,4 +1,4 @@
-{{- if and .Values.pihole.ftl.dns.service.enabled .Values.pihole.ftl.dns.service.splitTcpUdp .Values.pihole.ftl.dns.service.tcp.enabled }}
+{{- if and .Values.services.dns.enabled .Values.services.dns.splitTcpUdp .Values.services.dns.tcp.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -9,26 +9,27 @@ metadata:
     {{- include "pihole.labels" . | nindent 4 }}
     app.kubernetes.io/component: dns-tcp
   annotations:
-    {{- toYaml .Values.pihole.ftl.dns.service.tcp.annotations | nindent 4 }}
+    {{- toYaml .Values.services.dns.tcp.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.pihole.ftl.dns.service.tcp.type }}
-  {{- if or (eq .Values.pihole.ftl.dns.service.tcp.type "LoadBalancer") (eq .Values.pihole.ftl.dns.service.tcp.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.ftl.dns.service.tcp.externalTrafficPolicy }}
+  type: {{ .Values.services.dns.tcp.type }}
+  {{- include "pihole.loadBalancerFields" .Values.services.dns.tcp | nindent 2 }}
+  {{- if or (eq .Values.services.dns.tcp.type "LoadBalancer") (eq .Values.services.dns.tcp.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.dns.tcp.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dns.service.tcp.loadBalancerIP }}
+  {{- with .Values.services.dns.tcp.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.ftl.dns.service.tcp.externalIPs }}
+  {{- with .Values.services.dns.tcp.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.ftl.dns.service.tcp.port }}
+    - port: {{ .Values.services.dns.tcp.port }}
       targetPort: dns-tcp
       protocol: TCP
       name: dns-tcp
-  {{- if and (eq .Values.pihole.ftl.dns.service.tcp.type "NodePort") .Values.pihole.ftl.dns.service.tcp.nodePort }}
-      nodePort: {{ .Values.pihole.ftl.dns.service.tcp.nodePort }}
+  {{- if and (eq .Values.services.dns.tcp.type "NodePort") .Values.services.dns.tcp.nodePort }}
+      nodePort: {{ .Values.services.dns.tcp.nodePort }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

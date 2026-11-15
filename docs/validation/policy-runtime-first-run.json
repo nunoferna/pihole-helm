@@ -1,0 +1,38 @@
+{
+  "started_utc": "2026-11-14T20:18:43.852861+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.46,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "ownership_crud_and_empty_policy",
+      "passed": true,
+      "seconds": 5.46,
+      "details": {
+        "create_update_remove_last_owned_rule": true,
+        "unmanaged_rule_retained": true
+      }
+    },
+    {
+      "check": "unmanaged_collision_and_explicit_adoption",
+      "passed": true,
+      "seconds": 7.37,
+      "details": {
+        "collision_preflight": true,
+        "explicit_adoption_and_later_deletion": true
+      }
+    }
+  ],
+  "error": "Policy apply failed: jq: error (at <stdin>:0): API identity mismatch\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T20:19:50.756408+00:00"
+}

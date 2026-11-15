@@ -1,0 +1,113 @@
+{
+  "started_utc": "2026-10-29T19:54:42.293191+00:00",
+  "chart_version": "2.0.0-alpha.1",
+  "scope": "single-node amd64 v2 integration; no external HA certification",
+  "checks": [
+    {
+      "check": "install_one_replica",
+      "passed": true,
+      "seconds": 32.61,
+      "details": {
+        "ready": 1
+      }
+    },
+    {
+      "check": "service_53_to_5353_and_api_policy",
+      "passed": true,
+      "seconds": 2.13,
+      "details": {
+        "udp": {
+          "health.audit.test": "192.0.2.123",
+          "blocked.audit.test": "0.0.0.0"
+        },
+        "tcp": {
+          "health.audit.test": "192.0.2.123",
+          "blocked.audit.test": "0.0.0.0"
+        },
+        "unprivileged_port_start": "1024"
+      }
+    },
+    {
+      "check": "scale_one_to_two",
+      "passed": true,
+      "seconds": 27.85,
+      "details": {
+        "same_controller_uid": true,
+        "ready": 2
+      }
+    },
+    {
+      "check": "isolated_headless_and_pdb",
+      "passed": true,
+      "seconds": 0.46,
+      "details": {
+        "headless_targets": [
+          "audit-pihole-0",
+          "audit-pihole-1"
+        ],
+        "pdb_healthy": 2,
+        "pdb_expected": 2
+      }
+    },
+    {
+      "check": "automatic_exporter_auth_and_port_mapping",
+      "passed": true,
+      "seconds": 5.26,
+      "details": {
+        "authenticated_both_targets": true,
+        "blocking_status": {
+          "audit-pihole-0": 1,
+          "audit-pihole-1": 1
+        }
+      }
+    },
+    {
+      "check": "rotate_credentials",
+      "passed": true,
+      "seconds": 118.08,
+      "details": {
+        "dns_ready": 2,
+        "exporter_ready": 1
+      }
+    },
+    {
+      "check": "metrics_after_rotation",
+      "passed": true,
+      "seconds": 7.42,
+      "details": {
+        "authenticated_both_targets": true,
+        "blocking_status": {
+          "audit-pihole-0": 1,
+          "audit-pihole-1": 1
+        }
+      }
+    },
+    {
+      "check": "dns_after_rotation",
+      "passed": true,
+      "seconds": 2.63,
+      "details": {
+        "udp": {
+          "health.audit.test": "192.0.2.123",
+          "blocked.audit.test": "0.0.0.0"
+        },
+        "tcp": {
+          "health.audit.test": "192.0.2.123",
+          "blocked.audit.test": "0.0.0.0"
+        },
+        "unprivileged_port_start": "1024"
+      }
+    }
+  ],
+  "kubernetes_version": "v1.37.0",
+  "namespace_cleanup_succeeded": true,
+  "completed_utc": "2026-10-29T19:59:09.007559+00:00",
+  "package_sha256": "a5a5e397681f510629f007ada326e3f74ef119976a859f1fdcaa0a2618de7b0c",
+  "static_validation": {
+    "chart_contract_tests": 16,
+    "pre_commit_tracked_and_added_files": "passed",
+    "chart_testing_lint": "passed",
+    "packaged_chart_lint_and_policy_render": "passed"
+  },
+  "test_cluster_removed": true
+}

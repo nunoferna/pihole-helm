@@ -1,0 +1,80 @@
+{
+  "startedUTC": "2026-11-15T01:35:44.240334+00:00",
+  "context": "kind-pihole-stable-arm64",
+  "scope": "disposable kind L2/Local VIP, one abrupt worker-container failure, bounded synthetic load and fresh-namespace recovery; not hardware/site certification",
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "client": "python:3.13-alpine@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916"
+  },
+  "checks": [
+    {
+      "check": "two_replica_offline_snapshot_startup",
+      "passed": true,
+      "seconds": 10.38,
+      "details": {
+        "domains": 100001,
+        "sha256": "7e1a71d840a4985e7c0dac23800f5d47adf1ebbb39d1fff8579434a55e7c957e"
+      }
+    }
+  ],
+  "tested_chart": "/tmp/pihole-2.0.0-final/pihole-2.0.0.tgz",
+  "tested_archive_sha256": "8fa03c627b86e01996384516ebebeb242c44c111099ff4980fa69f207b2d92e4",
+  "nodes": [
+    {
+      "name": "pihole-stable-arm64-control-plane",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "e170665037ee41549e47c25260444b96",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "ad993a3b-350f-4087-b1c4-886aecb0eae5"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "051f227852004ca59846a0c0ccd130b0",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "e43adb3c-4f2d-4973-a84e-4b0ad0d1b19d"
+      }
+    },
+    {
+      "name": "pihole-stable-arm64-worker2",
+      "info": {
+        "architecture": "arm64",
+        "bootID": "5cb5e29e-d349-4eab-ac53-b118d76f55db",
+        "containerRuntimeVersion": "containerd://2.3.4",
+        "kernelVersion": "6.8.0-117-generic",
+        "kubeProxyVersion": "",
+        "kubeletVersion": "v1.37.0",
+        "machineID": "06cb933c591a41f49c413932a03853a2",
+        "operatingSystem": "linux",
+        "osImage": "Debian GNU/Linux 13 (trixie)",
+        "runningInUserNamespace": false,
+        "systemUUID": "d0ee225e-8583-41c7-ad79-bcd6f879f6d5"
+      }
+    }
+  ],
+  "error": "Defaulted container \"pihole\" out of: pihole, fixture-snapshot (init)\ncurl: (7) Failed to connect to admin.fixture.invalid:443 after 0 ms: Could not connect to server\ncommand terminated with exit code 7\n",
+  "diagnostics": {
+    "pihole-ha-4da06c62": "\n  [i] Optimizing database...\n\u001b[K  [\u2713] Optimizing database\n  [i] Swapping databases...\n\u001b[K  [\u2713] Swapping databases\n  [\u2713] The old database remains available\n  [i] Cleaning up stray matter...\n\u001b[K  [\u2713] Cleaning up stray matter\n\n  [\u2713] Done.\n\n  [i] pihole-FTL pre-start checks\n  [i] Setting capabilities on pihole-FTL where possible\n  [i] Applying the following caps to pihole-FTL:\n        * CAP_CHOWN\n\n  [i] Starting pihole-FTL (no-daemon) as pihole\n\n"
+  },
+  "namespaceCleanup": {
+    "pihole-ha-4da06c62": true
+  },
+  "finishedUTC": "2026-11-15T01:36:43.468573+00:00"
+}

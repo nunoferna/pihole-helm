@@ -1,0 +1,176 @@
+{
+  "started_utc": "2026-10-28T21:41:24.098980+00:00",
+  "image": "pihole/pihole:2026.10.0@sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+  "scope": "Docker stock-entrypoint compatibility; not Kubernetes certification",
+  "network": "none; no published ports, host networking, or host bind mounts",
+  "fixture": {
+    "adlists": "empty file on a fresh named volume, initially owned by uid/gid 1000",
+    "dns_record": "192.0.2.10 health.audit.test",
+    "dns_port": 53,
+    "web_port": 8080,
+    "upstream": "192.0.2.53 (unreachable on purpose)",
+    "dhcp": false,
+    "ntp_servers_and_sync": false,
+    "nice": 0,
+    "memory": "512m",
+    "cpus": 2
+  },
+  "startup_timeout_seconds": 90,
+  "stability_seconds": 5,
+  "reduced_capabilities_candidate": [
+    "CHOWN",
+    "DAC_OVERRIDE",
+    "FOWNER",
+    "SETGID",
+    "SETUID",
+    "SETPCAP",
+    "SETFCAP",
+    "NET_BIND_SERVICE",
+    "KILL"
+  ],
+  "cases": [
+    {
+      "case": "stock",
+      "docker_flags": [],
+      "launch_exit_code": 0,
+      "dns_ready": false,
+      "stable": false,
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 13402,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:41:28.322662755Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 2,
+          "Log": [
+            {
+              "Start": "2026-10-28T21:41:58.880281509Z",
+              "End": "2026-10-28T21:42:00.300076297Z",
+              "ExitCode": 1,
+              "Output": ";; communications error to 127.0.0.1#53: connection refused\n;; no servers could be reached\n"
+            },
+            {
+              "Start": "2026-10-28T21:42:30.30899459Z",
+              "End": "2026-10-28T21:42:31.21306375Z",
+              "ExitCode": 1,
+              "Output": ";; communications error to 127.0.0.1#53: connection refused\n;; no servers could be reached\n"
+            }
+          ]
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:41:30.266 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n  [\u2717] DNS resolution is currently unavailable\n"
+    },
+    {
+      "case": "stock_no_new_privileges",
+      "docker_flags": [
+        "--security-opt=no-new-privileges:true"
+      ],
+      "launch_exit_code": 0,
+      "dns_ready": false,
+      "stable": false,
+      "state_before_cleanup": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 14741,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-28T21:43:00.528544139Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "starting",
+          "FailingStreak": 2,
+          "Log": [
+            {
+              "Start": "2026-10-28T21:43:31.120126337Z",
+              "End": "2026-10-28T21:43:32.064939686Z",
+              "ExitCode": 1,
+              "Output": ";; communications error to 127.0.0.1#53: connection refused\n;; no servers could be reached\n"
+            },
+            {
+              "Start": "2026-10-28T21:44:02.068604935Z",
+              "End": "2026-10-28T21:44:02.989582955Z",
+              "ExitCode": 1,
+              "Output": ";; communications error to 127.0.0.1#53: connection refused\n;; no servers could be reached\n"
+            }
+          ]
+        }
+      },
+      "logs": "  [i] Setting up user & group for the pihole user\n  [i] PIHOLE_UID not set in environment, using default (1000)\n  [i] PIHOLE_GID not set in environment, using default (1000)\n\n  [i] Starting FTL configuration\n  [i] Assigning password defined by Environment Variable\n  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker\n\n  [i] Gravity migration checks\n2026-10-28 21:43:02.053 UTC crond: crond (busybox 1.37.0) started, log level 6\n  [i] /etc/pihole/gravity.db does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate.\n  [i] Gravity will now be run to create the database\n  [\u2717] DNS resolution is currently unavailable\n"
+    }
+  ],
+  "cleanup_errors": [],
+  "docker_version": {
+    "Platform": {
+      "Name": "Docker Engine - Community"
+    },
+    "Version": "28.4.0",
+    "ApiVersion": "1.51",
+    "MinAPIVersion": "1.24",
+    "Os": "linux",
+    "Arch": "amd64",
+    "Components": [
+      {
+        "Name": "Engine",
+        "Version": "28.4.0",
+        "Details": {
+          "ApiVersion": "1.51",
+          "Arch": "amd64",
+          "BuildTime": "Wed Sep  3 20:57:32 2025",
+          "Experimental": "false",
+          "GitCommit": "249d679",
+          "GoVersion": "go1.24.7",
+          "KernelVersion": "6.8.0-64-generic",
+          "MinAPIVersion": "1.24",
+          "Os": "linux"
+        }
+      },
+      {
+        "Name": "containerd",
+        "Version": "1.7.27",
+        "Details": {
+          "GitCommit": "05044ec0a9a75232cad458027ca83437aae3f4da"
+        }
+      },
+      {
+        "Name": "runc",
+        "Version": "1.2.5",
+        "Details": {
+          "GitCommit": "v1.2.5-0-g59923ef"
+        }
+      },
+      {
+        "Name": "docker-init",
+        "Version": "0.19.0",
+        "Details": {
+          "GitCommit": "de40ad0"
+        }
+      }
+    ],
+    "GitCommit": "249d679",
+    "GoVersion": "go1.24.7",
+    "KernelVersion": "6.8.0-64-generic",
+    "BuildTime": "2025-09-03T20:57:32.000000000+00:00"
+  },
+  "image_metadata": {
+    "Id": "sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+    "RepoDigests": [
+      "pihole/pihole@sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux",
+    "Created": "2026-10-17T11:55:58.550442431Z"
+  },
+  "completed_utc": "2026-10-28T21:44:32.103827+00:00"
+}

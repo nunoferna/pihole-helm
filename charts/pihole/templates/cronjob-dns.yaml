@@ -1,0 +1,60 @@
+{{- if .Values.monitoring.syntheticDns.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "pihole.fullname" . | trunc 40 | trimSuffix "-" }}-dns-check
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.monitoring.syntheticDns.schedule | quote }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: {{ .Values.monitoring.syntheticDns.timeoutSeconds }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: {{ .Values.monitoring.syntheticDns.timeoutSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "pihole.commonSelectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: test
+        spec:
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 1
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+  {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+  {{- end }}
+          containers:
+            - name: dns-check
+              image: {{ include "pihole.image" (dict "image" .Values.image "defaultTag" .Chart.AppVersion) | quote }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: [/bin/bash, -ec]
+              args:
+                - |
+                  {{- .Files.Get "files/check-dns.sh" | nindent 18 }}
+              env:
+                {{- include "pihole.checkEnvironment" (dict "root" . "authentication" false "metrics" false) | nindent 16 }}
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 96Mi
+{{- end }}

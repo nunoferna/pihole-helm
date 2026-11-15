@@ -1,12 +1,3 @@
-{{- $webPassword := "" }}
-{{- if .Values.pihole.web.existingSecret }}
-  {{- $webPassword = "(from existing secret)" }}
-{{- else if .Values.pihole.web.password }}
-  {{- $webPassword = .Values.pihole.web.password }}
-{{- else }}
-  {{- $webPassword = "(auto-generated)" }}
-{{- end }}
-
 ****************************************************************************
 *** Pi-hole v6 has been deployed! ***
 ****************************************************************************
@@ -18,30 +9,34 @@ Namespace: {{ .Release.Namespace }}
 ------------------------------------------------------------------------------
 🌐 Web Interface Access
 ------------------------------------------------------------------------------
-{{- if eq .Values.pihole.web.service.type "LoadBalancer" }}
+{{- if eq .Values.services.web.type "LoadBalancer" }}
   Run this to get the LoadBalancer IP:
   export WEB_IP=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   echo "http://$WEB_IP/admin/"
-{{- else if eq .Values.pihole.web.service.type "NodePort" }}
+{{- else if eq .Values.services.web.type "NodePort" }}
   export NODE_PORT=$(kubectl get svc {{ include "pihole.fullname" . }}-web -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
   export NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
   echo "http://$NODE_IP:$NODE_PORT/admin/"
 {{- else }}
-  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "pihole.fullname" . }}-web 8080:80
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "pihole.fullname" . }}-web 8080:{{ .Values.services.web.ports.http }}
   Then visit: http://localhost:8080/admin/
 {{- end }}
 
-  Password: {{ $webPassword }}
+  {{- if .Values.pihole.web.skipPasswordEnv }}
+  Credentials are provided by your external injection configuration.
+  {{- else }}
+  Credentials Secret: {{ include "pihole.passwordSecretName" . }} (key {{ .Values.pihole.web.passwordSecretKey }})
+  {{- end }}
 
 ------------------------------------------------------------------------------
 🔍 DNS Service Access
 ------------------------------------------------------------------------------
-{{- if .Values.pihole.ftl.dns.service.enabled }}
-{{- if eq .Values.pihole.ftl.dns.service.type "LoadBalancer" }}
+{{- if .Values.services.dns.enabled }}
+{{- if eq .Values.services.dns.type "LoadBalancer" }}
   DNS Server IP (LoadBalancer):
   kubectl get svc {{ include "pihole.fullname" . }}-dns -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 {{- else }}
-  Service Type: {{ .Values.pihole.ftl.dns.service.type }}
+  Service Type: {{ .Values.services.dns.type }}
   Service Name: {{ include "pihole.fullname" . }}-dns
 {{- end }}
 {{- end }}
@@ -58,7 +53,7 @@ Namespace: {{ .Release.Namespace }}
   {{- end }}
 {{- else }}
   ! Metrics disabled - set metrics.enabled=true to enable monitoring
-  ! Note: Configure authentication via PIHOLE_PASSWORD or PIHOLE_API_TOKEN in values.yaml
+  ! Note: Configure authentication via PIHOLE_PASSWORD or PIHOLE_PASSWORD_FILE in values.yaml
 {{- end }}
 
 ------------------------------------------------------------------------------

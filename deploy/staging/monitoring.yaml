@@ -1,0 +1,21 @@
+# Homelab-specific source egress permission. The Helm chart owns its
+# ServiceMonitor and PrometheusRule in namespace monitoring.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pihole-staging-scrape-egress
+  namespace: monitoring
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:io.cilium.k8s.policy.serviceaccount: monitoring-prometheus
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: pihole-staging
+        k8s:app.kubernetes.io/instance: pihole-staging
+        k8s:app.kubernetes.io/component: metrics
+    toPorts:
+    - ports:
+      - port: '9617'
+        protocol: TCP

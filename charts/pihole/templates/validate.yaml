@@ -1,0 +1,70 @@
+{{- $compatibility := .Files.Get "files/compatibility.json" | fromJson -}}
+{{- if and .Values.networkPolicy.egressEnabled (not .Values.networkPolicy.enabled) -}}
+  {{- fail "networkPolicy.egressEnabled requires networkPolicy.enabled=true" -}}
+{{- end -}}
+{{- if and .Values.policy.owner (not (regexMatch "^[a-z0-9][a-z0-9.-]*/[a-z0-9][a-z0-9.-]*$" .Values.policy.owner)) -}}
+  {{- fail "policy.owner must identify the original namespace/release for a deliberate restore" -}}
+{{- end -}}
+{{- if and .Values.policy.requirePinnedLists (or (ne .Values.policy.mode "reconcile") .Values.command) -}}
+  {{- fail "Pinned-list mode requires policy.mode=reconcile and the chart's stock-entrypoint wrapper" -}}
+{{- end -}}
+{{- if or (hasKey .Values.pihole.web "service") (hasKey .Values.pihole.ftl.dns "service") (hasKey .Values.pihole.ftl.dhcp "service") (hasKey .Values.pihole.ftl.ntp "service") -}}
+  {{- fail "Move Kubernetes Service settings to services.dns/web/dhcp/dhcpv6/ntp; use scripts/migrate-values.py for alpha/v1 values" -}}
+{{- end -}}
+{{- if and .Values.tests.enabled .Values.tests.authentication .Values.pihole.web.skipPasswordEnv (not .Values.tests.existingSecret) -}}
+  {{- fail "Authentication tests with skipPasswordEnv require tests.existingSecret, or explicitly disable tests.authentication" -}}
+{{- end -}}
+{{- if and .Values.policy.existingConfigMap (not (regexMatch "^[a-f0-9]{64}$" .Values.policy.revision)) -}}
+  {{- fail "policy.existingConfigMap requires the full lowercase SHA-256 policy.revision" -}}
+{{- end -}}
+{{- if and (not .Values.policy.existingConfigMap) .Values.policy.revision -}}
+  {{- fail "policy.revision is derived automatically unless policy.existingConfigMap is set" -}}
+{{- end -}}
+{{- if or (eq (int .Values.listeners.dns) (int .Values.listeners.http)) (and (gt (int .Values.listeners.https) 0) (or (eq (int .Values.listeners.https) (int .Values.listeners.dns)) (eq (int .Values.listeners.https) (int .Values.listeners.http)))) -}}
+  {{- fail "DNS, HTTP and enabled HTTPS listeners must use distinct TCP ports" -}}
+{{- end -}}
+{{- $digests := append (values $compatibility.platformDigests) $compatibility.digest -}}
+{{- if and (not .Values.image.allowUnverified) (or (ne (.Values.image.tag | default .Chart.AppVersion) $compatibility.dockerTag) (not (has .Values.image.digest $digests))) -}}
+  {{- fail "Image tag/digest is outside files/compatibility.json; update the compatibility evidence or explicitly set image.allowUnverified=true" -}}
+{{- end -}}
+{{- if and .Values.metrics.enabled (not .Values.metrics.image.allowUnverified) (or (ne .Values.metrics.image.tag $compatibility.exporterTag) (ne .Values.metrics.image.digest $compatibility.exporterDigest)) -}}
+  {{- fail "Exporter tag/digest is outside files/compatibility.json; update the compatibility evidence or set metrics.image.allowUnverified=true" -}}
+{{- end -}}
+{{- if and .Values.pihole.web.password .Values.pihole.web.existingSecret -}}
+  {{- fail "Set only one of pihole.web.password and pihole.web.existingSecret" -}}
+{{- end -}}
+{{- if and .Values.pihole.web.skipPasswordEnv (or .Values.pihole.web.password .Values.pihole.web.existingSecret) -}}
+  {{- fail "skipPasswordEnv cannot be combined with password or existingSecret" -}}
+{{- end -}}
+{{- if and (not .Values.pihole.web.skipPasswordEnv) (not .Values.pihole.web.password) (not .Values.pihole.web.existingSecret) -}}
+  {{- fail "Credentials are required: set pihole.web.existingSecret or a non-empty pihole.web.password (or skipPasswordEnv for external injection)" -}}
+{{- end -}}
+{{- if and (gt (int .Values.replicas) 1) (or .Values.pihole.ftl.dhcp.active .Values.services.dhcp.enabled .Values.pihole.ftl.dhcp.ipv6 .Values.services.dhcpv6.enabled) -}}
+  {{- fail "Multiple DNS replicas do not coordinate DHCP leases; disable DHCP for HA" -}}
+{{- end -}}
+{{- if not (kindIs "invalid" .Values.pihole.ftl.files.pid) -}}
+  {{- fail "FTL v6.8 removed files.pid; remove pihole.ftl.files.pid" -}}
+{{- end -}}
+{{- if and (ne .Values.policy.mode "disabled") (not (kindIs "invalid" .Values.pihole.ftl.files.gravity)) (ne .Values.pihole.ftl.files.gravity "/etc/pihole/gravity.db") -}}
+  {{- fail "Managed policy and recovery require files.gravity=/etc/pihole/gravity.db on the independent per-replica PVC" -}}
+{{- end -}}
+{{- if and (not (kindIs "invalid" .Values.pihole.ftl.dns.port)) (ne (int .Values.pihole.ftl.dns.port) (int .Values.listeners.dns)) -}}
+  {{- fail "Configure DNS ports with listeners.dns; pihole.ftl.dns.port must match it" -}}
+{{- end -}}
+{{- if and (not (kindIs "invalid" .Values.pihole.ftl.webserver.port)) (ne (toString .Values.pihole.ftl.webserver.port) (include "pihole.webListener" .)) -}}
+  {{- fail "Configure HTTP/HTTPS ports with listeners.http and listeners.https; pihole.ftl.webserver.port must match the generated listener" -}}
+{{- end -}}
+{{- if hasKey .Values "strategy" -}}
+  {{- fail "v2 always uses a StatefulSet; remove strategy and use updateStrategy" -}}
+{{- end -}}
+{{- range .Values.extraEnv -}}
+  {{- if has .name (list "HELM_HTTP_PORT" "HELM_POLICY_TIMEOUT" "HELM_POLICY_EXPECTED_REVISION" "HELM_POLICY_OWNER" "HELM_POLICY_REQUIRE_PINNED_LISTS" "HELM_POLICY_FILE" "HELM_POLICY_FILTER") -}}
+    {{- fail "HELM_* policy runner variables are reserved by the chart" -}}
+  {{- end -}}
+  {{- if has .name (list "FTLCONF_dns_port" "FTLCONF_webserver_port") -}}
+    {{- fail "Set listener ports through listeners, not extraEnv" -}}
+  {{- end -}}
+  {{- if and (eq .name "FTLCONF_webserver_api_password") (not $.Values.pihole.web.skipPasswordEnv) -}}
+    {{- fail "Set skipPasswordEnv=true before injecting FTLCONF_webserver_api_password" -}}
+  {{- end -}}
+{{- end -}}

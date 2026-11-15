@@ -1,0 +1,169 @@
+{
+  "started_utc": "2026-10-28T21:45:55.273781+00:00",
+  "images": {
+    "pihole": "pihole/pihole:2026.10.0@sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+    "exporter": "ekofr/pihole-exporter:v1.3.0@sha256:67dd0ec8c0fbc2f4edeffd6b0c6768f2b962dcc983b230bedd933a33e5a05cd9",
+    "fixture": "python:3.13-alpine@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916"
+  },
+  "scope": "amd64 Docker API/DNS/persistence smoke; no cluster HA claim",
+  "network": "internal bridge; no host ports or host bind mounts",
+  "checks": [
+    {
+      "check": "startup_a",
+      "passed": true,
+      "details": {
+        "dns_ready_after_seconds": 15.1
+      },
+      "seconds": 15.1
+    },
+    {
+      "check": "startup_b",
+      "passed": true,
+      "details": {
+        "dns_ready_after_seconds": 11.32
+      },
+      "seconds": 11.32
+    },
+    {
+      "check": "api_authentication",
+      "passed": true,
+      "details": {
+        "admin_session_valid": true,
+        "cli_session_valid": true
+      },
+      "seconds": 0.9
+    },
+    {
+      "check": "udp_tcp_filtering",
+      "passed": true,
+      "details": {
+        "udp": {
+          "health.audit.test": "192.0.2.123",
+          "allowed.audit.test": "192.0.2.10",
+          "blocked.audit.test": "0.0.0.0"
+        },
+        "tcp": {
+          "health.audit.test": "192.0.2.123",
+          "allowed.audit.test": "192.0.2.10",
+          "blocked.audit.test": "0.0.0.0"
+        }
+      },
+      "seconds": 2.77
+    },
+    {
+      "check": "group_client_crud",
+      "passed": true,
+      "details": {
+        "create_update_delete": true,
+        "literal_text_preserved": true,
+        "explicit_group_membership": [
+          1
+        ],
+        "default_group_zero_preserved": true
+      },
+      "seconds": 2.26
+    },
+    {
+      "check": "domain_crud",
+      "passed": true,
+      "details": {
+        "cli_credential_policy_mutation": true,
+        "create_update_delete": true
+      },
+      "seconds": 4.1
+    },
+    {
+      "check": "list_crud",
+      "passed": true,
+      "details": {
+        "create_update_delete": true
+      },
+      "seconds": 1.27
+    },
+    {
+      "check": "restart_without_list_provider",
+      "passed": true,
+      "details": {
+        "list_provider_unavailable": true,
+        "dns_ready_after_seconds": 3.59,
+        "existing_gravity_still_effective": true
+      },
+      "seconds": 26.05
+    },
+    {
+      "check": "exporter_authenticated_targets",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "pihole_sample_count": 107,
+        "both_targets_present": true
+      },
+      "seconds": 1.04
+    },
+    {
+      "check": "exporter_target_failure_and_recovery",
+      "passed": true,
+      "details": {
+        "http_status_while_target_down": 200,
+        "down_target_samples_retained": true,
+        "scrape_after_target_restart": true
+      },
+      "seconds": 11.33
+    }
+  ],
+  "cleanup_errors": [],
+  "engine": {
+    "Platform": {
+      "Name": "Docker Engine - Community"
+    },
+    "Version": "28.4.0",
+    "ApiVersion": "1.51",
+    "MinAPIVersion": "1.24",
+    "Os": "linux",
+    "Arch": "amd64",
+    "Components": [
+      {
+        "Name": "Engine",
+        "Version": "28.4.0",
+        "Details": {
+          "ApiVersion": "1.51",
+          "Arch": "amd64",
+          "BuildTime": "Wed Sep  3 20:57:32 2025",
+          "Experimental": "false",
+          "GitCommit": "249d679",
+          "GoVersion": "go1.24.7",
+          "KernelVersion": "6.8.0-64-generic",
+          "MinAPIVersion": "1.24",
+          "Os": "linux"
+        }
+      },
+      {
+        "Name": "containerd",
+        "Version": "1.7.27",
+        "Details": {
+          "GitCommit": "05044ec0a9a75232cad458027ca83437aae3f4da"
+        }
+      },
+      {
+        "Name": "runc",
+        "Version": "1.2.5",
+        "Details": {
+          "GitCommit": "v1.2.5-0-g59923ef"
+        }
+      },
+      {
+        "Name": "docker-init",
+        "Version": "0.19.0",
+        "Details": {
+          "GitCommit": "de40ad0"
+        }
+      }
+    ],
+    "GitCommit": "249d679",
+    "GoVersion": "go1.24.7",
+    "KernelVersion": "6.8.0-64-generic",
+    "BuildTime": "2025-09-03T20:57:32.000000000+00:00"
+  },
+  "ftl_version": "v6.8",
+  "completed_utc": "2026-10-28T21:47:40.867267+00:00"
+}

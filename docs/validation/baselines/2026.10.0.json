@@ -1,0 +1,10 @@
+{
+  "dockerTag": "2026.10.0",
+  "digest": "sha256:d34134716fc32038b052a8674c7c6879e0ff21f0e6d8af345166fffa2c27c113",
+  "components": {
+    "ftl": "6.8",
+    "core": "6.5",
+    "web": "6.6.1"
+  },
+  "evidence": "alpha2-validation.json and homelab-alpha2-runtime.json"
+}

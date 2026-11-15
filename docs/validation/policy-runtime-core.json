@@ -1,0 +1,82 @@
+{
+  "started_utc": "2026-11-14T20:20:25.017805+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.5,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "ownership_crud_and_empty_policy",
+      "passed": true,
+      "seconds": 4.96,
+      "details": {
+        "create_update_remove_last_owned_rule": true,
+        "unmanaged_rule_retained": true
+      }
+    },
+    {
+      "check": "unmanaged_collision_and_explicit_adoption",
+      "passed": true,
+      "seconds": 6.79,
+      "details": {
+        "collision_preflight": true,
+        "explicit_adoption_and_later_deletion": true
+      }
+    },
+    {
+      "check": "groups_clients_and_dependency_protection",
+      "passed": true,
+      "seconds": 6.5,
+      "details": {
+        "explicit_associations": true,
+        "unmanaged_dependency_guard": true,
+        "default_group_preserved": true
+      }
+    },
+    {
+      "check": "ownership_identity_conflict",
+      "passed": true,
+      "seconds": 4.64,
+      "details": {
+        "changed_ownership_marker_refuses_deletion": true
+      }
+    },
+    {
+      "check": "invalid_policy_and_artifact_rejection",
+      "passed": true,
+      "seconds": 3.53,
+      "details": {
+        "all_group_references_prevalidated": true,
+        "artifact_checksum_enforced": true
+      }
+    },
+    {
+      "check": "partial_apply_rollback_repair",
+      "passed": true,
+      "seconds": 3.39,
+      "details": {
+        "partial_api_failure_withholds_readiness": true,
+        "rollback_repairs_journal": true
+      }
+    },
+    {
+      "check": "helm_revision_retention_and_rollback",
+      "passed": true,
+      "seconds": 86.49,
+      "details": {
+        "original_artifact_retained": true,
+        "rollback_policy_and_readiness_restored": true
+      }
+    }
+  ],
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T20:23:18.370708+00:00"
+}

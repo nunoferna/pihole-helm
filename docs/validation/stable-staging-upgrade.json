@@ -1,0 +1,90 @@
+{
+  "started_utc": "2026-11-15T12:34:26.813238+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-staging",
+  "tested_archive_sha256": "a00aef6e8d1125ad188963fe5c3cdf3be7851c362e388ab682e8cb1ab7ca53bc",
+  "target_image": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+  "target_exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827",
+  "checks": [
+    {
+      "check": "pre_upgrade_migration_backups",
+      "passed": true,
+      "seconds": 2.79,
+      "details": {
+        "path_on_each_pvc": "/etc/pihole/helm-migration-backup/before-20261115T123427Z",
+        "consistent_gravity_backup_integrity": "ok",
+        "ownership_and_configuration_retained": true,
+        "storage_scope": "same-disk migration safeguard; not disaster recovery"
+      }
+    },
+    {
+      "check": "normal_dependency_upgrade",
+      "passed": true,
+      "seconds": 28.23,
+      "details": {
+        "controller_and_original_pvc_uids_preserved": true,
+        "ownership_identities_preserved": true,
+        "running_ftl": "6.9",
+        "database_integrity": "ok",
+        "adoption_disabled": true,
+        "policy_revision": "46aacb0b3460d6195be4f56eb47c36e60c47464edf61b6130280832d089dd300"
+      }
+    },
+    {
+      "check": "updated_image_functional_helm_test",
+      "passed": true,
+      "seconds": 14.55,
+      "details": {
+        "per_replica_and_service_udp_tcp_filtering_upstream_authentication_metrics": "passed"
+      }
+    },
+    {
+      "check": "external_dns_after_upgrade",
+      "passed": true,
+      "seconds": 0.37,
+      "details": {
+        "workstation_nodeport_udp_tcp_local_and_filtering": "passed"
+      }
+    },
+    {
+      "check": "updated_scheduled_dns_success",
+      "passed": true,
+      "seconds": 62.88,
+      "details": {
+        "last_successful_time": "2026-11-15T12:36:14Z",
+        "schedule": "* * * * *",
+        "image": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778"
+      }
+    },
+    {
+      "check": "updated_exporter_scrape_and_alert_rules",
+      "passed": true,
+      "seconds": 2.23,
+      "details": {
+        "healthy_scrape_targets": 1,
+        "last_scrape": [
+          "2026-11-15T12:36:03.45606362Z"
+        ],
+        "authenticated_status_samples": 2,
+        "alert_rules": {
+          "PiholeReplicasUnavailable": "inactive",
+          "PiholeExporterUnavailable": "inactive",
+          "PiholeBlockingDisabled": "inactive",
+          "PiholeSyntheticDnsStale": "inactive"
+        },
+        "notification_delivery_tested": false,
+        "scheduled_synthetic_dns_monitor_installed": true,
+        "synthetic_scope": "in-cluster Service and all replicas; one-minute schedule"
+      }
+    }
+  ],
+  "scope": "retained staging dependency upgrade; no production cutover, hard-failure or off-node restoration claim",
+  "previous_image": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+  "controller_uid_before": "b2404366-4a60-4dc8-a5d2-a9c958fbb643",
+  "pvc_uids_before": {
+    "etc-pihole-pihole-staging-0": "508cc1b2-1182-4681-8b94-0bc3aab6d3a0",
+    "etc-pihole-pihole-staging-1": "6bd9c6d8-3109-4da2-96b6-8d0c24157508"
+  },
+  "staging_retained": true,
+  "completed_utc": "2026-11-15T12:36:18.551619+00:00"
+}

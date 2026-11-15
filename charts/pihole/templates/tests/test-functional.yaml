@@ -1,0 +1,66 @@
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "pihole.fullname" . }}-test-functional
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pihole.commonSelectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  activeDeadlineSeconds: {{ .Values.tests.timeoutSeconds }}
+  terminationGracePeriodSeconds: 1
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  containers:
+    - name: checks
+      image: {{ include "pihole.image" (dict "image" .Values.image "defaultTag" .Chart.AppVersion) | quote }}
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      command: [/bin/bash, -ec]
+      args:
+        - |
+          {{- .Files.Get "files/check-dns.sh" | nindent 10 }}
+      env:
+        {{- include "pihole.checkEnvironment" (dict "root" . "authentication" .Values.tests.authentication "metrics" (and .Values.metrics.enabled .Values.metrics.service.enabled)) | nindent 8 }}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 96Mi
+  {{- if .Values.tests.authentication }}
+      volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+          readOnly: true
+  volumes:
+    - name: credentials
+      secret:
+        secretName: {{ .Values.tests.existingSecret | default (include "pihole.passwordSecretName" .) }}
+        defaultMode: 0440
+        items:
+          - key: {{ .Values.pihole.web.passwordSecretKey }}
+            path: password
+  {{- end }}
+{{- end }}

@@ -1,0 +1,197 @@
+{
+  "started_utc": "2026-11-15T12:28:11.459642+00:00",
+  "context": "kind-pihole-stable-amd64",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "previous_image_retained_data_upgrade",
+      "passed": true,
+      "seconds": 211.62,
+      "details": {
+        "from_tag": "2026.10.0",
+        "to_tag": "2026.11.0",
+        "same_pod_volume_retained": true,
+        "ownership_and_filtering_retained": true,
+        "database_integrity": "ok",
+        "new_exporter_authenticated_to_old_server": true,
+        "volume_scope": "same-pod emptyDir retained across container restart; real PVC rollout is tested separately in staging"
+      }
+    },
+    {
+      "check": "pinned_runtime_component_versions",
+      "passed": true,
+      "seconds": 2.74,
+      "details": {
+        "ftl_binary": "v6.9",
+        "component_versions": {
+          "CORE_VERSION": "6.6",
+          "WEB_VERSION": "6.6.1",
+          "FTL_VERSION": "6.9"
+        },
+        "installed_descriptions": {
+          "CORE_VERSION": "v6.6",
+          "WEB_VERSION": "v6.6.1",
+          "FTL_VERSION": "v6.9"
+        }
+      }
+    },
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.78,
+      "details": {
+        "revision": "8965c0300ddd675f4515fddcb91d2bc199bf005f29605a8a8a830c5f0ac20015",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "ownership_crud_and_empty_policy",
+      "passed": true,
+      "seconds": 23.15,
+      "details": {
+        "create_update_remove_last_owned_rule": true,
+        "unmanaged_rule_retained": true
+      }
+    },
+    {
+      "check": "expired_api_session_reauthentication",
+      "passed": true,
+      "seconds": 13.82,
+      "details": {
+        "live_sid_revoked_before_post": true,
+        "bounded_reauthentication": true,
+        "exactly_one_created_rule": true,
+        "filtering_and_readiness": true
+      }
+    },
+    {
+      "check": "unmanaged_collision_and_explicit_adoption",
+      "passed": true,
+      "seconds": 33.61,
+      "details": {
+        "collision_preflight": true,
+        "explicit_adoption_and_later_deletion": true
+      }
+    },
+    {
+      "check": "groups_clients_and_dependency_protection",
+      "passed": true,
+      "seconds": 26.15,
+      "details": {
+        "explicit_associations": true,
+        "unmanaged_dependency_guard": true,
+        "default_group_preserved": true
+      }
+    },
+    {
+      "check": "subscription_types_and_gravity_state",
+      "passed": true,
+      "seconds": 29.73,
+      "details": {
+        "allow_and_block_subscriptions": true,
+        "last_list_removal_rebuilds_gravity": true,
+        "unchanged_lists_do_not_invoke_gravity": true
+      }
+    },
+    {
+      "check": "pinned_snapshots_and_offline_refresh",
+      "passed": true,
+      "seconds": 101.84,
+      "details": {
+        "https_fixture_image": "python:3.13-alpine@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916",
+        "sha256": "3ce4ed9c42fe3b93a6a219d6dae5e7344cef8fe04d56b1e131eb4169d919472a",
+        "tampered_body_rejected_before_mutation": true,
+        "unmanaged_enabled_feed_rejected": true,
+        "verified_file_feed_filters": true,
+        "provider_down_reconcile_and_refresh": true,
+        "scheduled_refresh_uses_runner": true,
+        "unchanged_scheduled_snapshot_check_preserves_readiness": true
+      }
+    },
+    {
+      "check": "ownership_identity_conflict",
+      "passed": true,
+      "seconds": 15.64,
+      "details": {
+        "changed_ownership_marker_refuses_deletion": true
+      }
+    },
+    {
+      "check": "invalid_policy_and_artifact_rejection",
+      "passed": true,
+      "seconds": 9.65,
+      "details": {
+        "all_group_references_prevalidated": true,
+        "artifact_checksum_enforced": true
+      }
+    },
+    {
+      "check": "write_ahead_create_intent_recovery",
+      "passed": true,
+      "seconds": 17.81,
+      "details": {
+        "simulated_post_create_pre_commit_window": true,
+        "claim_marker_recovers_created_record": true
+      }
+    },
+    {
+      "check": "partial_apply_rollback_repair",
+      "passed": true,
+      "seconds": 11.78,
+      "details": {
+        "partial_api_failure_withholds_readiness": true,
+        "rollback_repairs_journal": true
+      }
+    },
+    {
+      "check": "helm_revision_retention_and_rollback",
+      "passed": true,
+      "seconds": 97.8,
+      "details": {
+        "original_artifact_retained": true,
+        "rollback_policy_and_readiness_restored": true
+      }
+    },
+    {
+      "check": "meaningful_helm_tests_under_network_policy",
+      "passed": true,
+      "seconds": 159.46,
+      "details": {
+        "udp_tcp_per_replica_and_service": true,
+        "authenticated_api_and_metrics": true,
+        "wrong_filtering_answer_rejected": true,
+        "repeatable_hook_cleanup": true,
+        "synthetic_job_good_and_bad_answers": true,
+        "split_services_with_distinct_custom_ports": true
+      }
+    }
+  ],
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
+  },
+  "helm_version": "v3.22.1+gd6c1a0e",
+  "tested_chart": "/tmp/pihole-2.0.0-certified/pihole-2.0.0.tgz",
+  "tested_archive_sha256": "a00aef6e8d1125ad188963fe5c3cdf3be7851c362e388ab682e8cb1ab7ca53bc",
+  "network_policy_enforcement": "Not asserted by this generic fixture; validate enforcement in a real-CNI deployment profile",
+  "nodes": [
+    {
+      "name": "pihole-stable-amd64-control-plane",
+      "architecture": "amd64",
+      "kubelet": "v1.37.0"
+    }
+  ],
+  "observed_component_versions": {
+    "CORE_VERSION": "6.6",
+    "WEB_VERSION": "6.6.1",
+    "FTL_VERSION": "6.9"
+  },
+  "installed_component_descriptions": {
+    "CORE_VERSION": "v6.6",
+    "WEB_VERSION": "v6.6.1",
+    "FTL_VERSION": "v6.9"
+  },
+  "namespace_removed": true,
+  "completed_utc": "2026-11-15T12:42:13.887258+00:00"
+}

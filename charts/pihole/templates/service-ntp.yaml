@@ -1,4 +1,4 @@
-{{- if .Values.pihole.ftl.ntp.service.enabled }}
+{{- if .Values.services.ntp.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,26 +8,26 @@ metadata:
   labels:
     {{- include "pihole.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.pihole.ftl.ntp.service.annotations | nindent 4 }}
+    {{- toYaml .Values.services.ntp.annotations | nindent 4 }}
 spec:
-  type: {{ .Values.pihole.ftl.ntp.service.type }}
-  {{- if or (eq .Values.pihole.ftl.ntp.service.type "LoadBalancer") (eq .Values.pihole.ftl.ntp.service.type "NodePort") }}
-  externalTrafficPolicy: {{ .Values.pihole.ftl.ntp.service.externalTrafficPolicy }}
+  type: {{ .Values.services.ntp.type }}
+  {{- if or (eq .Values.services.ntp.type "LoadBalancer") (eq .Values.services.ntp.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.services.ntp.externalTrafficPolicy }}
   {{- end }}
-  {{- with .Values.pihole.ftl.ntp.service.loadBalancerIP }}
+  {{- with .Values.services.ntp.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
-  {{- with .Values.pihole.ftl.ntp.service.externalIPs }}
+  {{- with .Values.services.ntp.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.pihole.ftl.ntp.service.ports.ntp }}
+    - port: {{ .Values.services.ntp.ports.ntp }}
       targetPort: ntp
       protocol: UDP
       name: ntp
-  {{- if and (eq .Values.pihole.ftl.ntp.service.type "NodePort") .Values.pihole.ftl.ntp.service.nodePort }}
-      nodePort: {{ .Values.pihole.ftl.ntp.service.nodePort }}
+  {{- if and (eq .Values.services.ntp.type "NodePort") .Values.services.ntp.nodePort }}
+      nodePort: {{ .Values.services.ntp.nodePort }}
   {{- end }}
   selector:
     {{- include "pihole.selectorLabels" . | nindent 4 }}

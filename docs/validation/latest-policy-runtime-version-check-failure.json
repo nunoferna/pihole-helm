@@ -1,0 +1,31 @@
+{
+  "started_utc": "2026-11-14T21:13:52.460378+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "previous_image_retained_data_upgrade",
+      "passed": true,
+      "seconds": 85.72,
+      "details": {
+        "from_tag": "2026.10.0",
+        "to_tag": "2026.11.0",
+        "same_pod_volume_retained": true,
+        "ownership_and_filtering_retained": true,
+        "database_integrity": "ok",
+        "new_exporter_authenticated_to_old_server": true,
+        "volume_scope": "same-pod emptyDir retained across container restart; real PVC rollout is tested separately in staging"
+      }
+    }
+  ],
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
+  },
+  "helm_version": "v4.3.2+g8346aaa",
+  "error": "running component version differs: CORE_VERSION",
+  "fixture_journal_diagnostic": "{\n  \"formatVersion\": 1,\n  \"owner\": \"pihole-policy-validation/policy-audit\",\n  \"revision\": \"028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f\",\n  \"gravityDirty\": false,\n  \"entries\": []\n}\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T21:16:20.212654+00:00"
+}

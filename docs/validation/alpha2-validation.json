@@ -1,0 +1,29 @@
+{
+  "chart_version": "2.0.0-alpha.2",
+  "docker_tag": "2026.10.0",
+  "source": "uncommitted working tree; not published",
+  "contract_regressions_passed": 23,
+  "isolated_lifecycle_cases_passed": 11,
+  "post_upgrade_staging_checks_passed": 5,
+  "required_checks": {
+    "helm_formatting": "passed",
+    "whitespace": "passed",
+    "chart_testing_lint": "passed",
+    "docs_and_schema": "passed",
+    "kube_linter": "passed",
+    "shellcheck": "native official v0.11.0 passed; Docker hook unavailable because Colima was stopped",
+    "packaged_chart_lint": "passed"
+  },
+  "package_sha256": "c7248420c9f6b9cc221a311f70777c18baec19591426c5921f587c01a8bb08f0",
+  "runtime_policy_artifact_matches_final_source": true,
+  "staging_retained": true,
+  "production_cutover_performed": false,
+  "remaining_gates": [
+    "controlled list snapshots and refresh coordination",
+    "off-node backup restoration",
+    "abrupt node/VIP failure testing",
+    "independent external/site probes and notification delivery",
+    "capacity and arm64/version coverage",
+    "release security and publication gates"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "utc": "2026-11-15T13:22:09.736170+00:00",
+  "scope": "Only disposable local chart-validation infrastructure; retained staging remains running",
+  "local": [
+    {
+      "dockerHost": "unix:///Users/nof/.colima/default/docker.sock",
+      "removedClusters": [
+        "pihole-stable-amd64"
+      ],
+      "remainingClusters": []
+    },
+    {
+      "dockerHost": "unix:///Users/nof/.colima/pihole-stable/docker.sock",
+      "removedClusters": [
+        "pihole-stable-135-arm64",
+        "pihole-stable-136-arm64",
+        "pihole-stable-arm64"
+      ],
+      "removedRegistry": "pihole-release-registry",
+      "remainingClusters": []
+    }
+  ],
+  "colimaProfiles": {
+    "default": "Stopped (initial state restored)",
+    "pihole-stable": "Stopped (created for validation; disk retained)"
+  },
+  "clientContexts": {
+    "docker": "default",
+    "kubernetes": "admin@homelab",
+    "changed": false
+  },
+  "staging": {
+    "context": "admin@homelab",
+    "namespace": "pihole-staging",
+    "chart": "pihole-2.0.0",
+    "statefulSetUid": "b2404366-4a60-4dc8-a5d2-a9c958fbb643",
+    "readyReplicas": 2,
+    "desiredReplicas": 2
+  },
+  "passed": true
+}

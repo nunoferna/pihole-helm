@@ -1,0 +1,27 @@
+{
+  "started_utc": "2026-11-14T20:31:34.422630+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.53,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "initial_helm_functional_test",
+      "passed": true,
+      "seconds": 9.74,
+      "details": {
+        "passed": true
+      }
+    }
+  ],
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T20:32:40.611736+00:00"
+}

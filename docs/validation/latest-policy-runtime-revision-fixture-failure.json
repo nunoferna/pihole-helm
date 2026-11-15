@@ -1,0 +1,140 @@
+{
+  "started_utc": "2026-11-14T21:19:46.201236+00:00",
+  "context": "admin@homelab",
+  "namespace": "pihole-policy-validation",
+  "scope": "isolated pinned-image API policy lifecycle and retained-artifact rollback; no production HA claim",
+  "checks": [
+    {
+      "check": "previous_image_retained_data_upgrade",
+      "passed": true,
+      "seconds": 84.72,
+      "details": {
+        "from_tag": "2026.10.0",
+        "to_tag": "2026.11.0",
+        "same_pod_volume_retained": true,
+        "ownership_and_filtering_retained": true,
+        "database_integrity": "ok",
+        "new_exporter_authenticated_to_old_server": true,
+        "volume_scope": "same-pod emptyDir retained across container restart; real PVC rollout is tested separately in staging"
+      }
+    },
+    {
+      "check": "pinned_runtime_component_versions",
+      "passed": true,
+      "seconds": 0.75,
+      "details": {
+        "ftl_binary": "v6.9",
+        "component_versions": {
+          "CORE_VERSION": "6.6",
+          "WEB_VERSION": "6.6.1",
+          "FTL_VERSION": "6.9"
+        },
+        "installed_descriptions": {
+          "CORE_VERSION": "v6.6",
+          "WEB_VERSION": "v6.6.1",
+          "FTL_VERSION": "v6.9"
+        }
+      }
+    },
+    {
+      "check": "empty_policy_initial_hook",
+      "passed": true,
+      "seconds": 0.52,
+      "details": {
+        "revision": "028b827c8c6bc15385de1e527c9e3a124f432f771f14e5280d1ae43e73e6c35f",
+        "owned_count": 0
+      }
+    },
+    {
+      "check": "ownership_crud_and_empty_policy",
+      "passed": true,
+      "seconds": 5.76,
+      "details": {
+        "create_update_remove_last_owned_rule": true,
+        "unmanaged_rule_retained": true
+      }
+    },
+    {
+      "check": "unmanaged_collision_and_explicit_adoption",
+      "passed": true,
+      "seconds": 7.64,
+      "details": {
+        "collision_preflight": true,
+        "explicit_adoption_and_later_deletion": true
+      }
+    },
+    {
+      "check": "groups_clients_and_dependency_protection",
+      "passed": true,
+      "seconds": 7.2,
+      "details": {
+        "explicit_associations": true,
+        "unmanaged_dependency_guard": true,
+        "default_group_preserved": true
+      }
+    },
+    {
+      "check": "subscription_types_and_gravity_state",
+      "passed": true,
+      "seconds": 5.85,
+      "details": {
+        "allow_and_block_subscriptions": true,
+        "last_list_removal_rebuilds_gravity": true
+      }
+    },
+    {
+      "check": "ownership_identity_conflict",
+      "passed": true,
+      "seconds": 5.14,
+      "details": {
+        "changed_ownership_marker_refuses_deletion": true
+      }
+    },
+    {
+      "check": "invalid_policy_and_artifact_rejection",
+      "passed": true,
+      "seconds": 4.04,
+      "details": {
+        "all_group_references_prevalidated": true,
+        "artifact_checksum_enforced": true
+      }
+    },
+    {
+      "check": "write_ahead_create_intent_recovery",
+      "passed": true,
+      "seconds": 5.65,
+      "details": {
+        "simulated_post_create_pre_commit_window": true,
+        "claim_marker_recovers_created_record": true
+      }
+    },
+    {
+      "check": "partial_apply_rollback_repair",
+      "passed": true,
+      "seconds": 3.26,
+      "details": {
+        "partial_api_failure_withholds_readiness": true,
+        "rollback_repairs_journal": true
+      }
+    }
+  ],
+  "images": {
+    "pihole": "pihole/pihole:2026.11.0@sha256:66c798d79a95c2691f280329c3611dba1746117c61c9f331907ca35a06a52778",
+    "exporter": "ekofr/pihole-exporter:v1.3.1@sha256:4233c06fcd2d62c37b9345228bc9f798b3a66d052b4955ec6a0e5b8825e20827"
+  },
+  "helm_version": "v4.3.2+g8346aaa",
+  "observed_component_versions": {
+    "CORE_VERSION": "6.6",
+    "WEB_VERSION": "6.6.1",
+    "FTL_VERSION": "6.9"
+  },
+  "installed_component_descriptions": {
+    "CORE_VERSION": "v6.6",
+    "WEB_VERSION": "v6.6.1",
+    "FTL_VERSION": "v6.9"
+  },
+  "error": "rollback selected wrong policy",
+  "fixture_journal_diagnostic": "{\n  \"formatVersion\": 1,\n  \"owner\": \"pihole-policy-validation/policy-audit\",\n  \"revision\": \"2cd8fef97edbf813dfc5b54eba7f2e0014adce5d0ff79b5311252d77ac52b401\",\n  \"gravityDirty\": false,\n  \"entries\": [\n    {\n      \"kind\": \"domains/deny/exact\",\n      \"key\": \"owned.fixture.invalid\",\n      \"claim\": \"0d5962ec-9529-4d96-a835-7e46150f3e3e\",\n      \"id\": 1,\n      \"date_added\": 1794691410,\n      \"adopting\": false\n    }\n  ]\n}\n",
+  "namespace_removed": true,
+  "completed_utc": "2026-11-14T21:24:22.304465+00:00"
+}

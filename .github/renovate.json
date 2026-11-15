@@ -12,12 +12,13 @@
   "platformAutomerge": true,
   "packageRules": [
     {
-      "description": "Disable Docker digest pinning for Helm charts (breaks appVersion and tags)",
+      "description": "Image updates require compatible tag/digest evidence and review",
       "matchFileNames": [
         "charts/pihole/Chart.yaml",
         "charts/pihole/values.yaml"
       ],
-      "pinDigests": false
+      "pinDigests": true,
+      "automerge": false
     },
     {
       "description": "Automatically bump Chart version when dependencies update",
@@ -28,22 +29,37 @@
       "bumpVersions": [
         {
           "name": "Bump Pi-hole chart version",
-          "filePatterns": ["charts/pihole/Chart.yaml"],
-          "matchStrings": ["(?:^|\\n)version:[ \\t]*(?<version>\\d+\\.\\d+\\.\\d+)(?:\\r?\\n|$)"],
+          "filePatterns": [
+            "charts/pihole/Chart.yaml"
+          ],
+          "matchStrings": [
+            "(?:^|\\n)version:[ \\t]*(?<version>\\d+\\.\\d+\\.\\d+)(?:\\r?\\n|$)"
+          ],
           "bumpType": "patch"
         }
       ]
     },
     {
       "description": "Group all CI/CD and tooling updates into a single PR",
-      "matchManagers": ["pre-commit", "github-actions"],
+      "matchManagers": [
+        "pre-commit",
+        "github-actions"
+      ],
       "groupName": "Tooling & CI dependencies",
-      "schedule": ["before 5am on saturday"]
+      "schedule": [
+        "before 5am on saturday"
+      ]
     },
     {
       "description": "Group minor and patch updates for Helm dependencies",
-      "matchManagers": ["helm-values", "custom.regex"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchManagers": [
+        "helm-values",
+        "custom.regex"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "groupName": "Helm minor and patch updates"
     }
   ]
