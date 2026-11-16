@@ -6,7 +6,9 @@
   ],
   "semanticCommits": "enabled",
   "timezone": "Europe/Lisbon",
-  "dependencyDashboard": false,
+  "dependencyDashboard": {
+    "enabled": false
+  },
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": true,
