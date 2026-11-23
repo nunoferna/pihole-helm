@@ -995,6 +995,11 @@ metrics:
   # Authentication uses the Pi-hole Secret unless PIHOLE_PASSWORD or PIHOLE_PASSWORD_FILE is supplied here.
   env: []
   podAnnotations: {}
+  # @schema type:string,null
+  # -- (string) PriorityClass for the metrics exporter pod. Separate from the DNS
+  # priorityClassName so the exporter does not inherit resolver-level priority.
+  # @section -- Metrics
+  priorityClassName: ""
   affinity: {}
   nodeSelector: {}
   tolerations: []
@@ -1089,6 +1094,11 @@ resources:
     cpu: 100m
 
 topologySpreadConstraints: []
+# @schema type:string,null
+# -- (string) PriorityClass for the DNS pods. Raises their scheduling priority so a
+# cluster-critical resolver is placed ahead of, and preempts, lower-priority workloads
+# under node pressure. Empty leaves the namespace or cluster default in place.
+priorityClassName: ""
 affinity: {}
 nodeSelector: {}
 tolerations: []

@@ -1,6 +1,6 @@
 # pihole
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.11.0](https://img.shields.io/badge/AppVersion-2026.11.0-informational?style=flat-square)
+![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.11.0](https://img.shields.io/badge/AppVersion-2026.11.0-informational?style=flat-square)
 
 Pi-hole v6 DNS with independent replicas, verified policy snapshots and recovery tooling.
 
@@ -61,6 +61,7 @@ helm install pihole nunoferna/pihole \
 | metrics.image.repository | string | `"ekofr/pihole-exporter"` | Container image for the Pi-hole metrics exporter. |
 | metrics.podSecurityContext | object | `{"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls where compatible. |
 | metrics.port | integer | `9617` | Port on which the metrics exporter will listen. |
+| metrics.priorityClassName | string | `""` | PriorityClass for the metrics exporter pod. Separate from the DNS priorityClassName so the exporter does not inherit resolver-level priority. |
 | metrics.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` | Container security context for the metrics exporter. Defaults follow Pod Security Standards Restricted controls. |
 | metrics.serviceMonitor.enabled | boolean | `false` | Whether to create a ServiceMonitor resource for Prometheus Operator integration. |
 
@@ -355,6 +356,7 @@ helm install pihole nunoferna/pihole \
 | policy.requirePinnedLists | bool | `false` | Require SHA-256 pinned HTTPS subscriptions and reject enabled unmanaged feeds. |
 | policy.revision | string | `""` | Required SHA-256 of policy.json when referencing an external artifact. |
 | policyImportTimeout | int | `180` | Total deadline in seconds for policy validation, reconciliation and gravity. |
+| priorityClassName | string | `""` | PriorityClass for the DNS pods. Raises their scheduling priority so a cluster-critical resolver is placed ahead of, and preempts, lower-priority workloads under node pressure. Empty leaves the namespace or cluster default in place. |
 | probes.dns.expectedAddress | string | `""` |  |
 | probes.dns.name | string | `"pi.hole"` |  |
 | probes.liveness.failureThreshold | int | `3` |  |

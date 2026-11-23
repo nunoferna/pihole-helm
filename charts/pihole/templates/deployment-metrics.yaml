@@ -34,6 +34,9 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
   {{- end }}
+  {{- with .Values.metrics.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+  {{- end }}
   {{- with .Values.metrics.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -182,6 +182,13 @@
                         "null"
                     ]
                 },
+                "priorityClassName": {
+                    "description": "PriorityClass for the metrics exporter pod. Separate from the DNS priorityClassName so the exporter does not inherit resolver-level priority.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "resources": {
                     "type": "object",
                     "properties": {
@@ -1738,6 +1745,13 @@
             "description": "Total deadline in seconds for policy validation, reconciliation and gravity.",
             "type": "integer",
             "minimum": 1
+        },
+        "priorityClassName": {
+            "description": "PriorityClass for the DNS pods. Raises their scheduling priority so a cluster-critical resolver is placed ahead of, and preempts, lower-priority workloads under node pressure. Empty leaves the namespace or cluster default in place.",
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "probes": {
             "type": "object",
